@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* PortIQ design tokens (section 8) */
+    --deep-ink: 7 29 43;
+    --harbor-navy: 16 42 67;
+    --ocean-teal: 13 148 136;
+    --light-teal: 216 243 239;
+    --route-blue: 59 130 246;
+    --canvas: 245 247 250;
+    --surface: 255 255 255;
+    --border: 217 226 236;
+    --text: 23 43 77;
+    --muted: 91 115 139;
+    --success: 31 138 91;
+    --warning: 183 121 31;
+    --danger: 194 65 58;
+    --info: 37 99 235;
+
+    /* shadcn/ui semantic aliases mapped to the PortIQ tokens above */
+    --background: 245 247 250;
+    --foreground: 23 43 77;
+    --card: 255 255 255;
+    --card-foreground: 23 43 77;
+    --popover: 255 255 255;
+    --popover-foreground: 23 43 77;
+    --primary: 16 42 67;
+    --primary-foreground: 255 255 255;
+    --secondary: 245 247 250;
+    --secondary-foreground: 23 43 77;
+    --muted-foreground: 91 115 139;
+    --accent: 216 243 239;
+    --accent-foreground: 16 42 67;
+    --destructive: 194 65 58;
+    --destructive-foreground: 255 255 255;
+    --input: 217 226 236;
+    --ring: 13 148 136;
+    --radius: 8px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas text-text font-sans antialiased;
+    font-feature-settings: "tnum";
+    line-height: 1.5;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ocean-teal ring-offset-2 ring-offset-surface;
+  }
+
+  .tabular-nums {
+    font-feature-settings: "tnum";
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

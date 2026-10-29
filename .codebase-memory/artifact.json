@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "6576ab47bfac818f94cffa2163c8c16159290cff",
+    "indexed_at": "2026-10-29T09:53:38Z",
+    "project": "portiq",
+    "nodes": 322,
+    "edges": 421,
+    "original_size": 2621440,
+    "compressed_size": 173074,
+    "compression_level": 9
+}
