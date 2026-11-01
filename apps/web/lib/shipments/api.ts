@@ -4,8 +4,16 @@ import type {
   Port,
   Shipment,
   ShipmentCreate,
+  ShipmentDetail,
+  ShipmentPatch,
+  ShipmentEvent,
+  EventCreate,
+  PredictionHistoryItem,
+  Prediction,
 } from "../api/types";
 import { buildShipmentListQuery, type ShipmentListQuery } from "./query";
+
+export type { ShipmentDetail, PredictionHistoryItem };
 
 export interface ShipmentListRequest extends ShipmentListQuery {
   mockError?: string;
@@ -62,5 +70,93 @@ export async function createShipment(
     },
   );
 
+  return response.data;
+}
+
+export async function fetchShipmentDetail(
+  id: string,
+  mockError?: string,
+): Promise<ShipmentDetail> {
+  const response = await apiClient<ShipmentDetail>(
+    withMockError(`/shipments/${id}`, mockError),
+  );
+  return response.data;
+}
+
+export async function updateShipment(
+  id: string,
+  patch: ShipmentPatch,
+  mockError?: string,
+): Promise<ShipmentDetail> {
+  const response = await apiClient<ShipmentDetail>(
+    withMockError(`/shipments/${id}`, mockError),
+    {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    },
+  );
+  return response.data;
+}
+
+export async function recordShipmentEvent(
+  id: string,
+  event: EventCreate,
+  mockError?: string,
+): Promise<ShipmentDetail> {
+  const response = await apiClient<ShipmentDetail>(
+    withMockError(`/shipments/${id}/events`, mockError),
+    {
+      method: "POST",
+      body: JSON.stringify(event),
+    },
+  );
+  return response.data;
+}
+
+export async function fetchPredictionHistory(
+  id: string,
+  page = 1,
+  pageSize = 20,
+  mockError?: string,
+): Promise<{ history: PredictionHistoryItem[]; pagination: Pagination }> {
+  const response = await apiClient<PredictionHistoryItem[]>(
+    withMockError(
+      `/shipments/${id}/predictions?page=${page}&page_size=${pageSize}`,
+      mockError,
+    ),
+  );
+  return {
+    history: response.data,
+    pagination:
+      response.meta.pagination ?? { page, page_size: pageSize, total: 0 },
+  };
+}
+
+export async function fetchPrediction(
+  shipmentId: string,
+  predictionId: string,
+  mockError?: string,
+): Promise<Prediction> {
+  const response = await apiClient<Prediction>(
+    withMockError(
+      `/shipments/${shipmentId}/predictions/${predictionId}`,
+      mockError,
+    ),
+  );
+  return response.data;
+}
+
+export async function runPrediction(
+  shipmentId: string,
+  idempotencyKey: string,
+  mockError?: string,
+): Promise<Prediction> {
+  const response = await apiClient<Prediction>(
+    withMockError(`/shipments/${shipmentId}/prediction`, mockError),
+    {
+      method: "POST",
+      idempotencyKey,
+    },
+  );
   return response.data;
 }

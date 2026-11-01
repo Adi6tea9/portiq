@@ -81,3 +81,16 @@ export function portWallTimeToUtc(wallTime: string, timeZone: string): string {
 
   return new Date(candidate).toISOString();
 }
+
+// CONTRACT-GAP: GAP-015
+export function utcToPortWallTime(utcIso: string, timeZone: string): string {
+  const date = new Date(utcIso);
+  const parts = zonedParts(date, timeZone);
+  const year = String(parts.year).padStart(4, "0");
+  const month = String(parts.month).padStart(2, "0");
+  const day = String(parts.day).padStart(2, "0");
+  const hour = String(parts.hour).padStart(2, "0");
+  const minute = String(parts.minute).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}

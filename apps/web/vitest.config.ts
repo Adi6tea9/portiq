@@ -11,6 +11,9 @@ export default defineConfig({
     include: ["**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next", "tests/e2e/**"],
     css: false,
+    env: {
+      NODE_ENV: "development",
+    },
   },
   resolve: {
     alias: {
