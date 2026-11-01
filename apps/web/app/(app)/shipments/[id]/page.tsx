@@ -1,5 +1,19 @@
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { ShipmentDetailClient } from "@/components/features/shipments/ShipmentDetailClient";
 
-export default function ShipmentDetailPage() {
-  return <ComingSoon title="Shipment detail" feature="F04" />;
+interface ShipmentDetailPageProps {
+  params: Promise<{ id: string }>;
+  searchParams: Record<string, string | string[] | undefined>;
+}
+
+export default async function ShipmentDetailPage({
+  params,
+  searchParams,
+}: ShipmentDetailPageProps) {
+  const { id } = await params;
+  const mockError =
+    typeof searchParams.mock_error === "string"
+      ? searchParams.mock_error
+      : undefined;
+
+  return <ShipmentDetailClient id={id} mockError={mockError} />;
 }

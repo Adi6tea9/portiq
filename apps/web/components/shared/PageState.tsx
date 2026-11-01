@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 
 interface PageStateProps {
-  state: "loading" | "empty" | "error" | "permission";
+  state: "loading" | "empty" | "error" | "permission" | "not-found";
   title?: string;
   message?: string;
   requestId?: string;
