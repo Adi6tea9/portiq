@@ -1,8 +1,11 @@
 import type { CapacityBucket, ResourceType } from "../../api/types";
 
-const RANGE_START = Date.parse("2026-11-01T00:00:00Z");
+const RANGE_DAYS = 60;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const GENERATED_AT = "2026-10-29T06:00:00Z";
+const RANGE_START = Date.parse(
+  `${new Date().toISOString().slice(0, 10)}T00:00:00Z`,
+);
+const GENERATED_AT = new Date().toISOString();
 
 function bucketStart(dayOffset: number): string {
   return new Date(RANGE_START + dayOffset * DAY_MS).toISOString();
@@ -13,7 +16,7 @@ function makeBuckets(
   totalCapacity: number,
   occupied: (dayOffset: number) => number,
 ): CapacityBucket[] {
-  return Array.from({ length: 30 }, (_, dayOffset) => {
+  return Array.from({ length: RANGE_DAYS }, (_, dayOffset) => {
     const predictedOccupied = occupied(dayOffset);
 
     return {
@@ -60,8 +63,8 @@ export const mockEmptyCapacity: CapacityBucket[] = [];
 
 export const mockInvalidCapacity: CapacityBucket[] = [
   {
-    bucket_start: "2026-11-01T00:00:00Z",
-    bucket_end: "2026-11-02T00:00:00Z",
+    bucket_start: bucketStart(0),
+    bucket_end: bucketStart(1),
     resource_type: "yard",
     predicted_occupied: 0,
     total_capacity: 0,

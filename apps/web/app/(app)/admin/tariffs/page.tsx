@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { TariffsClient } from "@/components/features/admin/tariffs/TariffsClient";
 
 export default function TariffsPage() {
-  return <ComingSoon title="Tariffs" feature="F09" />;
+  return <TariffsClient />;
 }

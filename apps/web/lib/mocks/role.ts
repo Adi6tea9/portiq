@@ -50,6 +50,12 @@ export function setMockRole(role: Role): void {
 
 export function resetMockRole(): void {
   memoryRole = null;
+
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    return;
+  }
 }
 
 export function subscribeToMockRole(listener: (role: Role) => void): () => void {

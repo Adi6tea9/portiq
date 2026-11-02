@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
   SheetContent,
@@ -21,10 +20,12 @@ import { DemoBadge } from "@/components/shared/DemoBadge";
 import { Money } from "@/components/shared/Money";
 import { DateTime } from "@/components/shared/DateTime";
 import type { ShipmentDetail, ShipmentStatus } from "@/lib/api/types";
-import { ApiError, createIdempotencyKey } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
 import { useShipmentDetail, usePredictionHistory } from "@/lib/api/hooks/useShipmentDetail";
+import { usePorts } from "@/lib/api/hooks/usePorts";
 import { useRole } from "@/components/providers/RoleProvider";
-import { recordShipmentEvent, runPrediction } from "@/lib/shipments/api";
+import { recordShipmentEvent } from "@/lib/shipments/api";
+import { RunPredictionButton } from "@/components/features/predictions/RunPredictionButton";
 import {
   humanizeOption,
   isShipmentStatus,
@@ -35,6 +36,8 @@ import { SelectControl, type SelectOption } from "./SelectControl";
 interface ShipmentDetailClientProps {
   id: string;
   mockError?: string;
+  eventMockError?: string;
+  runMockError?: string;
 }
 
 const STATUS_OPTIONS: SelectOption[] = SHIPMENT_STATUS_OPTIONS.map((value) => ({
@@ -54,6 +57,7 @@ function formatDwell(value: number | null, label: string): React.ReactNode {
 
 function TimelineItem({
   event,
+  timezone,
 }: {
   event: {
     to_status: ShipmentStatus;
@@ -62,6 +66,7 @@ function TimelineItem({
     actor_display_name: string | null;
     note: string | null;
   };
+  timezone: string;
 }) {
   const showRecorded =
     event.recorded_at !== event.occurred_at &&
@@ -81,9 +86,11 @@ function TimelineItem({
           Status changed to <StatusBadge status={event.to_status} />
         </div>
         <p className="text-xs text-muted">
-          <DateTime isoTimestamp={event.occurred_at} timezone="UTC" />
+          <DateTime isoTimestamp={event.occurred_at} timezone={timezone} />
           {showRecorded && (
-            <span className="ml-1">(recorded: <DateTime isoTimestamp={event.recorded_at} timezone="UTC" />)</span>
+            <span className="ml-1">
+              (recorded: <DateTime isoTimestamp={event.recorded_at} timezone={timezone} />)
+            </span>
           )}
         </p>
         {event.actor_display_name && (
@@ -95,9 +102,18 @@ function TimelineItem({
   );
 }
 
-function FieldsPanel({ shipment }: { shipment: ShipmentDetail }) {
+function FieldsPanel({
+  shipment,
+  portName,
+  timezone,
+}: {
+  shipment: ShipmentDetail;
+  portName: string;
+  timezone: string;
+}) {
   const fieldRows = [
-    { label: "Port", value: shipment.port_id },
+    { label: "Reference", value: shipment.reference },
+    { label: "Port", value: portName },
     { label: "Direction", value: humanizeOption(shipment.direction) },
     { label: "Cargo type", value: humanizeOption(shipment.cargo_type) },
     { label: "Container size", value: `${shipment.container_size_ft} ft` },
@@ -106,7 +122,7 @@ function FieldsPanel({ shipment }: { shipment: ShipmentDetail }) {
     { label: "Declared value", value: <Money amount={shipment.declared_value} /> },
     { label: "Shipping line", value: humanizeOption(shipment.shipping_line) },
     { label: "Vessel size", value: humanizeOption(shipment.vessel_size_band) },
-    { label: "Expected arrival", value: <DateTime isoTimestamp={shipment.expected_arrival_at} timezone="UTC" /> },
+    { label: "Expected arrival", value: <DateTime isoTimestamp={shipment.expected_arrival_at} timezone={timezone} /> },
     { label: "Documentation", value: humanizeOption(shipment.documentation_status) },
   ];
 
@@ -132,6 +148,7 @@ function FieldsPanel({ shipment }: { shipment: ShipmentDetail }) {
 function LatestPredictionCard({
   prediction,
   shipmentId,
+  runMockError,
 }: {
   prediction: {
     prediction_id: string;
@@ -142,6 +159,7 @@ function LatestPredictionCard({
     is_demo_data: boolean;
   };
   shipmentId: string;
+  runMockError?: string;
 }) {
   return (
     <Card>
@@ -156,14 +174,12 @@ function LatestPredictionCard({
             {prediction.predicted_dwell_days.toFixed(1)} days
           </span>
         </div>
-        {prediction.total_estimated_cost && (
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm text-muted">Estimated cost</span>
-            <span className="font-medium">
-              <Money amount={prediction.total_estimated_cost} />
-            </span>
-          </div>
-        )}
+        <div className="flex items-baseline justify-between">
+          <span className="text-sm text-muted">Estimated cost</span>
+          <span className="font-medium">
+            <Money amount={prediction.total_estimated_cost} />
+          </span>
+        </div>
         {prediction.total_is_partial && (
           <Callout variant="warning" className="text-xs">
             Indicative total. Some components could not be calculated.
@@ -174,6 +190,10 @@ function LatestPredictionCard({
             View prediction
           </Link>
         </Button>
+        <RunPredictionButton
+          shipmentId={shipmentId}
+          runMockError={runMockError}
+        />
       </CardContent>
     </Card>
   );
@@ -181,46 +201,11 @@ function LatestPredictionCard({
 
 function NoPredictionCard({
   shipmentId,
-  mockError,
+  runMockError,
 }: {
   shipmentId: string;
-  mockError?: string;
+  runMockError?: string;
 }) {
-  const router = useRouter();
-  const [running, setRunning] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const handleRun = async () => {
-    setRunning(true);
-    setError(null);
-    const key = createIdempotencyKey();
-    try {
-      const prediction = await runPrediction(shipmentId, key, mockError);
-      router.push(`/shipments/${shipmentId}/prediction/${prediction.prediction_id}`);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 503) {
-          setError("The prediction service is unavailable. Try again later.");
-        } else if (err.status === 429) {
-          setError("Too many requests. Please wait and try again.");
-        } else if (err.status === 409 && err.code === "IDEMPOTENCY_CONFLICT") {
-          setError("This request was already submitted with different details.");
-        } else if (err.status === 404) {
-          setError("The requested resource was not found.");
-        } else if (err.status === 401) {
-          // apiClient handles redirect
-          setError(err.message);
-        } else {
-          setError(err.message);
-        }
-      } else {
-        setError("Something went wrong.");
-      }
-    } finally {
-      setRunning(false);
-    }
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -228,15 +213,10 @@ function NoPredictionCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-muted">No prediction yet.</p>
-        {error && <Callout variant="danger">{error}</Callout>}
-        <Button
-          onClick={handleRun}
-          disabled={running}
-          className="w-full"
-          title="Run prediction"
-        >
-          {running ? "Running..." : "Run prediction"}
-        </Button>
+        <RunPredictionButton
+          shipmentId={shipmentId}
+          runMockError={runMockError}
+        />
       </CardContent>
     </Card>
   );
@@ -244,8 +224,10 @@ function NoPredictionCard({
 
 function PredictionHistoryTable({
   shipmentId,
+  timezone,
 }: {
   shipmentId: string;
+  timezone: string;
 }) {
   const { data, isLoading, isError, error } = usePredictionHistory({
     shipmentId,
@@ -275,7 +257,7 @@ function PredictionHistoryTable({
           {history.map((item) => (
             <tr key={item.prediction_id} className="border-b last:border-0">
               <td className="py-2">
-                <DateTime isoTimestamp={item.created_at} timezone="UTC" />
+                <DateTime isoTimestamp={item.created_at} timezone={timezone} />
               </td>
               <td className="text-right py-2">{item.predicted_dwell_days.toFixed(1)}</td>
               <td className="text-right py-2">
@@ -306,12 +288,6 @@ function PredictedVsActual({
   if (actualDwell === null) return null;
 
   const diff = predictedDwell !== null ? actualDwell - predictedDwell : null;
-  const diffText =
-    diff !== null
-      ? diff > 0
-        ? `+${diff.toFixed(1)} days`
-        : `${diff.toFixed(1)} days`
-      : null;
 
   return (
     <Card>
@@ -331,9 +307,13 @@ function PredictedVsActual({
             <p className="text-lg font-semibold text-success">{actualDwell.toFixed(1)} days</p>
           </div>
         </div>
-        {diffText !== null && (
+        {diff !== null && (
           <p className="text-sm text-center mt-3 text-muted">
-            Actual was {diffText} {diff && diff > 0 ? "longer" : "shorter"} than estimate
+            {diff === 0
+              ? "Actual matched the estimate."
+              : `Actual was ${Math.abs(diff).toFixed(1)} days ${
+                  diff > 0 ? "longer" : "shorter"
+                } than estimate.`}
           </p>
         )}
       </CardContent>
@@ -341,10 +321,16 @@ function PredictedVsActual({
   );
 }
 
-export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProps) {
+export function ShipmentDetailClient({
+  id,
+  mockError,
+  eventMockError,
+  runMockError,
+}: ShipmentDetailClientProps) {
   const router = useRouter();
   const { role } = useRole();
   const query = useShipmentDetail({ id, mockError });
+  const portsQuery = usePorts();
   const [eventSheetOpen, setEventSheetOpen] = React.useState(false);
   const [eventSubmitting, setEventSubmitting] = React.useState(false);
   const [eventError, setEventError] = React.useState<string | null>(null);
@@ -380,7 +366,7 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
           to_status: selectedStatus as ShipmentStatus,
           occurred_at: new Date().toISOString(),
         },
-        mockError,
+        eventMockError,
       );
       setEventSheetOpen(false);
       setSelectedStatus("");
@@ -429,6 +415,9 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
   if (!shipment) return null;
 
   const isCleared = shipment.status === "cleared";
+  const port = portsQuery.data?.find((item) => item.id === shipment.port_id);
+  const portName = port?.name ?? shipment.port_id;
+  const timezone = port?.timezone ?? "UTC";
 
   return (
     <div className="space-y-6">
@@ -438,8 +427,9 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
           <h1 className="text-2xl font-semibold text-harbor-navy">
             {shipment.reference}
           </h1>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2">
             <StatusBadge status={shipment.status} />
+            <span className="text-sm text-muted">Port: {portName}</span>
             {shipment.latest_prediction?.is_demo_data && <DemoBadge />}
           </div>
         </div>
@@ -510,7 +500,7 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
           <CardContent>
             <ul>
               {[...shipment.events].reverse().map((event) => (
-                <TimelineItem key={event.id} event={event} />
+                <TimelineItem key={event.id} event={event} timezone={timezone} />
               ))}
             </ul>
           </CardContent>
@@ -519,15 +509,16 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
 
       {/* Main grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <FieldsPanel shipment={shipment} />
+        <FieldsPanel shipment={shipment} portName={portName} timezone={timezone} />
 
         {shipment.latest_prediction ? (
           <LatestPredictionCard
             prediction={shipment.latest_prediction}
             shipmentId={id}
+            runMockError={runMockError}
           />
         ) : (
-          <NoPredictionCard shipmentId={id} mockError={mockError} />
+          <NoPredictionCard shipmentId={id} runMockError={runMockError} />
         )}
       </div>
 
@@ -545,7 +536,7 @@ export function ShipmentDetailClient({ id, mockError }: ShipmentDetailClientProp
           <CardTitle className="text-base">Prediction history</CardTitle>
         </CardHeader>
         <CardContent>
-          <PredictionHistoryTable shipmentId={id} />
+          <PredictionHistoryTable shipmentId={id} timezone={timezone} />
         </CardContent>
       </Card>
 

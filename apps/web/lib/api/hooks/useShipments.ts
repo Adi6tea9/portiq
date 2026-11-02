@@ -19,6 +19,7 @@ export function useShipments(params: ShipmentListRequest) {
       params.page,
       params.pageSize,
       params.mockError ?? null,
+      params.mockEmpty ?? false,
     ],
     queryFn: () => fetchShipments(params),
     placeholderData: keepPreviousData,

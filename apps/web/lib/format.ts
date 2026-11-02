@@ -159,6 +159,25 @@ export function formatDate(isoTimestamp: string, timezone: string): string {
   return formatDateParts(isoTimestamp, timezone, false) ?? "Unavailable";
 }
 
+/** Short day + month in the port timezone, for dense axis ticks. */
+export function formatShortDate(
+  isoTimestamp: string,
+  timezone: string,
+): string {
+  const date = new Date(isoTimestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unavailable";
+  }
+
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: timezone,
+  }).format(date);
+}
+
+
 export function formatContainerSizeFt(size: ContainerSizeFt): string {
   return `${size} ft`;
 }

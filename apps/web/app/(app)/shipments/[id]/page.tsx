@@ -1,4 +1,5 @@
 import { ShipmentDetailClient } from "@/components/features/shipments/ShipmentDetailClient";
+import { mockFlagValue } from "@/lib/mocks/flags";
 
 interface ShipmentDetailPageProps {
   params: Promise<{ id: string }>;
@@ -10,10 +11,13 @@ export default async function ShipmentDetailPage({
   searchParams,
 }: ShipmentDetailPageProps) {
   const { id } = await params;
-  const mockError =
-    typeof searchParams.mock_error === "string"
-      ? searchParams.mock_error
-      : undefined;
 
-  return <ShipmentDetailClient id={id} mockError={mockError} />;
+  return (
+    <ShipmentDetailClient
+      id={id}
+      mockError={mockFlagValue(searchParams, "mock_error")}
+      eventMockError={mockFlagValue(searchParams, "mock_event_error")}
+      runMockError={mockFlagValue(searchParams, "mock_run_error")}
+    />
+  );
 }

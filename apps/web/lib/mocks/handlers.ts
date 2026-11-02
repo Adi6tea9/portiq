@@ -1,6 +1,7 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse, delay } from "msw";
 import type {
   ApiErrorBody,
+  CapacityBucket,
   Envelope,
   Me,
   OperatorOverview,
@@ -22,12 +23,17 @@ import { mockConfig } from "./fixtures/config";
 import { mockPorts } from "./fixtures/ports";
 import { mockUsersByRole } from "./fixtures/users";
 import {
+  eventsFor,
   mockShipmentDetails,
   mockShipments,
 } from "./fixtures/shipments";
 import {
-  mockPredictionHistory,
-  mockPredictions,
+  getMockIdempotentPrediction,
+  mockPredictionFull,
+  mockPredictionHistoryStore,
+  mockPredictionStore,
+  rememberMockIdempotencyKey,
+  rememberMockPrediction,
 } from "./fixtures/predictions";
 import {
   mockBerthCapacity,
@@ -97,8 +103,11 @@ function paginate<T>(
   };
 }
 
-function maybeMockError(request: Request): Response | null {
-  const flag = new URL(request.url).searchParams.get("mock_error");
+function maybeMockError(
+  request: Request,
+  param = "mock_error",
+): Response | null {
+  const flag = new URL(request.url).searchParams.get(param);
 
   if (!flag) {
     return null;
@@ -195,7 +204,21 @@ function filterShipments(shipments: Shipment[], url: URL): Shipment[] {
 }
 
 function shipmentDetail(shipmentId: string): ShipmentDetail | undefined {
-  return mockShipmentDetails.find((shipment) => shipment.id === shipmentId);
+  const detail = mockShipmentDetails.find(
+    (shipment) => shipment.id === shipmentId,
+  );
+
+  if (detail) {
+    return detail;
+  }
+
+  const operatorRow = mockOperatorRows.find(
+    (row) => row.shipment.id === shipmentId,
+  );
+
+  return operatorRow
+    ? { ...operatorRow.shipment, events: eventsFor(operatorRow.shipment) }
+    : undefined;
 }
 
 function statusCounts(shipments: Shipment[]): Record<ShipmentStatus, number> {
@@ -250,6 +273,15 @@ export const handlers = [
       return error;
     }
 
+    if (new URL(request.url).searchParams.get("mock_empty") === "1") {
+      const empty: ShipmentSummary = {
+        total: 0,
+        status_counts: { submitted: 0, arrived: 0, cleared: 0 },
+      };
+
+      return HttpResponse.json(envelope(empty));
+    }
+
     const summary: ShipmentSummary = {
       total: visibleShipments().length,
       status_counts: statusCounts(visibleShipments()),
@@ -266,6 +298,11 @@ export const handlers = [
     }
 
     const url = new URL(request.url);
+
+    if (url.searchParams.get("mock_empty") === "1") {
+      return HttpResponse.json(envelope([], { page: 1, page_size: 20, total: 0 }));
+    }
+
     const filtered = filterShipments(visibleShipments(), url);
     const { items, pagination } = paginate(filtered, url);
 
@@ -306,6 +343,11 @@ export const handlers = [
       latest_prediction: null,
     };
 
+    mockShipmentDetails.unshift({
+      ...shipment,
+      events: eventsFor(shipment),
+    });
+
     return HttpResponse.json(envelope(shipment), { status: 201 });
   }),
 
@@ -316,7 +358,7 @@ export const handlers = [
       return error;
     }
 
-    const prediction = mockPredictions[String(params.predictionId)];
+    const prediction = mockPredictionStore.get(String(params.predictionId));
 
     if (!prediction || prediction.shipment_id !== String(params.id)) {
       return notFound();
@@ -333,26 +375,26 @@ export const handlers = [
     }
 
     const url = new URL(request.url);
-    const history = mockPredictionHistory.filter((item) =>
-      Object.values(mockPredictions).some(
-        (prediction) =>
-          prediction.prediction_id === item.prediction_id &&
-          prediction.shipment_id === String(params.id),
-      ),
-    );
+    const history = mockPredictionHistoryStore.filter((item) => {
+      const prediction = mockPredictionStore.get(item.prediction_id);
+      return prediction?.shipment_id === String(params.id);
+    });
     const { items, pagination } = paginate(history, url);
 
     return HttpResponse.json(envelope(items, pagination));
   }),
 
-  http.post(`${API_BASE}/shipments/:id/prediction`, ({ params, request }) => {
-    const error = maybeMockError(request);
+  http.post(`${API_BASE}/shipments/:id/prediction`, async ({ params, request }) => {
+    const error =
+      maybeMockError(request) ?? maybeMockError(request, "mock_run_error");
 
     if (error) {
       return error;
     }
 
-    if (!request.headers.get("Idempotency-Key")) {
+    const idempotencyKey = request.headers.get("Idempotency-Key");
+
+    if (!idempotencyKey) {
       return validationError(
         "Idempotency-Key",
         "This header is required to run a prediction.",
@@ -365,15 +407,33 @@ export const handlers = [
       return notFound();
     }
 
-    const prediction = Object.values(mockPredictions).find(
-      (item) => item.shipment_id === shipment.id,
-    );
+    const repeated = getMockIdempotentPrediction(idempotencyKey);
 
-    if (!prediction) {
-      return notFound();
+    if (repeated) {
+      await delay(120);
+      return HttpResponse.json(envelope(repeated), { status: 201 });
     }
 
-    return HttpResponse.json(envelope(prediction), { status: 201 });
+    const template =
+      [...mockPredictionStore.values()].find(
+        (item) => item.shipment_id === shipment.id,
+      ) ?? mockPredictionFull;
+
+    const created: Prediction = {
+      ...template,
+      prediction_id: `pred_${crypto.randomUUID().slice(0, 8)}`,
+      shipment_id: shipment.id,
+      provenance: {
+        ...template.provenance,
+        generated_at: new Date().toISOString(),
+      },
+    };
+
+    rememberMockPrediction(created);
+    rememberMockIdempotencyKey(idempotencyKey, created);
+
+    await delay(120);
+    return HttpResponse.json(envelope(created), { status: 201 });
   }),
 
   http.patch(`${API_BASE}/shipments/:id`, async ({ params, request }) => {
@@ -404,7 +464,8 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/shipments/:id/events`, async ({ params, request }) => {
-    const error = maybeMockError(request);
+    const error =
+      maybeMockError(request) ?? maybeMockError(request, "mock_event_error");
 
     if (error) {
       return error;
@@ -490,7 +551,9 @@ export const handlers = [
   }),
 
   http.get(`${API_BASE}/capacity/forecast`, ({ request }) => {
-    const error = maybeMockError(request);
+    const error =
+      maybeMockError(request, "mock_capacity_error") ??
+      maybeMockError(request);
 
     if (error) {
       return error;
@@ -558,7 +621,27 @@ export const handlers = [
       return forbidden();
     }
 
-    const overview: OperatorOverview = mockOperatorOverview;
+    const url = new URL(request.url);
+    const from = url.searchParams.get("from");
+    const to = url.searchParams.get("to");
+    const portId = url.searchParams.get("port_id");
+    const inRange = (bucket: CapacityBucket) =>
+      (!from || bucket.bucket_start >= from) &&
+      (!to || bucket.bucket_start < to);
+    const overview: OperatorOverview = {
+      ...mockOperatorOverview,
+      port_scope: portId
+        ? mockOperatorOverview.port_scope.filter((port) => port.id === portId)
+        : mockOperatorOverview.port_scope,
+      range: {
+        from: from ? `${from}T00:00:00.000Z` : mockOperatorOverview.range.from,
+        to: to ? `${to}T00:00:00.000Z` : mockOperatorOverview.range.to,
+      },
+      utilization: {
+        yard: mockOperatorOverview.utilization.yard.filter(inRange),
+        berth: mockOperatorOverview.utilization.berth.filter(inRange),
+      },
+    };
 
     return HttpResponse.json(envelope(overview));
   }),
@@ -666,11 +749,11 @@ export const handlers = [
       }
 
       if (validOn) {
-        if (rule.valid_from > validOn) {
+        if (rule.valid_from.slice(0, 10) > validOn) {
           return false;
         }
 
-        if (rule.valid_to !== null && rule.valid_to < validOn) {
+        if (rule.valid_to !== null && rule.valid_to.slice(0, 10) < validOn) {
           return false;
         }
       }
@@ -703,11 +786,33 @@ export const handlers = [
       return validationError("valid_to", "Must be after valid_from.");
     }
 
+    const forceConflict =
+      new URL(request.url).searchParams.get("mock_conflict") === "1";
+    const conflict = forceConflict
+      ? mockTariffs[0]
+      : mockTariffs.find(
+          (rule) =>
+            rule.rule_type === body.rule_type &&
+            rule.version === body.version &&
+            rule.port_id === body.port_id &&
+            rule.hs_code_prefix === body.hs_code_prefix &&
+            rule.shipping_line === body.shipping_line &&
+            rule.cargo_type === body.cargo_type &&
+            rule.container_size_ft === body.container_size_ft,
+        );
+
+    if (conflict) {
+      return HttpResponse.json(mockErrorByCode.TARIFF_CONFLICT.body, {
+        status: 409,
+      });
+    }
+
     const rule: TariffRule = {
       ...body,
       id: `rule_${crypto.randomUUID().slice(0, 8)}`,
       is_active: true,
     };
+    mockTariffs.unshift(rule);
 
     return HttpResponse.json(envelope(rule), { status: 201 });
   }),
@@ -733,6 +838,10 @@ export const handlers = [
 
     const patch = (await request.json()) as Partial<TariffRuleCreate>;
     const updated: TariffRule = { ...existing, ...patch };
+    const stored = mockTariffs.findIndex(
+      (rule) => rule.id === String(params.ruleId),
+    );
+    mockTariffs[stored] = updated;
 
     return HttpResponse.json(envelope(updated));
   }),

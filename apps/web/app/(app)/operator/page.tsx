@@ -1,5 +1,5 @@
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { OperatorClient } from "@/components/features/operator/OperatorClient";
 
 export default function OperatorPage() {
-  return <ComingSoon title="Operator overview" feature="F08" />;
+  return <OperatorClient />;
 }

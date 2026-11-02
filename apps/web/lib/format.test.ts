@@ -6,6 +6,7 @@ import {
   formatDays,
   formatMoney,
   formatPercent,
+  formatShortDate,
   formatWeight,
 } from "./format";
 
@@ -108,6 +109,21 @@ describe("formatDate", () => {
 
   it("returns Unavailable for an invalid timestamp", () => {
     expect(formatDate("invalid", "Asia/Kolkata")).toBe("Unavailable");
+  });
+});
+
+describe("formatShortDate", () => {
+  it("formats day and month in the port timezone", () => {
+    expect(formatShortDate("2026-11-02T00:00:00Z", "Asia/Kolkata")).toBe(
+      "2 Nov",
+    );
+    expect(formatShortDate("2026-11-30T00:00:00Z", "Asia/Kolkata")).toBe(
+      "30 Nov",
+    );
+  });
+
+  it("returns Unavailable for an invalid timestamp", () => {
+    expect(formatShortDate("invalid", "Asia/Kolkata")).toBe("Unavailable");
   });
 });
 

@@ -1,4 +1,14 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+
+async function setMockRole(
+  page: Page,
+  role: "importer_exporter" | "port_operator" | "platform_admin",
+) {
+  await page.evaluate((nextRole) => {
+    window.localStorage.setItem("portiq.mock.role", nextRole);
+  }, role);
+  await page.reload();
+}
 
 test.describe("F04 - Shipment detail, timeline, edit, events", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,12 +23,14 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
     page,
   }) => {
     await page.goto("/shipments");
-    await page.click('a[href*="/shipments/ship_"]:has-text("SHIP-2026-001")');
+    await page.getByRole("link", { name: "SHIP-2026-001" }).click();
     await page.waitForURL(/\/shipments\/ship_/);
 
-    // Header
-    await expect(page.locator("h1")).toContainText("SHIP-2026-001");
-    await expect(page.getByText("Submitted")).toBeVisible();
+    // Header: reference, actual status, port
+    const header = page.getByRole("heading", { level: 1 }).locator("..");
+    await expect(header).toContainText("SHIP-2026-001");
+    await expect(header.getByText("Submitted", { exact: true })).toBeVisible();
+    await expect(header.getByText("Port: Nhava Sheva (JNPA)")).toBeVisible();
 
     // Edit button visible for importer
     await expect(page.getByRole("button", { name: "Edit" })).toBeVisible();
@@ -31,10 +43,9 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
     await expect(page.getByText("Port", { exact: true })).toBeVisible();
     await expect(page.getByText("Reference", { exact: true })).toBeVisible();
 
-    // Prediction card
-    await expect(
-      page.getByRole("button", { name: "Run prediction" }),
-    ).toBeDisabled();
+    // Prediction card (run action is covered by the disabled-button test below)
+    await expect(page.getByText("Estimated dwell")).toBeVisible();
+    await expect(page.getByText("Estimated cost")).toBeVisible();
 
     await page.screenshot({
       path: "test-results/f04-submitted-importer.png",
@@ -45,13 +56,9 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
   test("submitted shipment as operator shows Record event button", async ({
     page,
   }) => {
-    // Switch to operator role
-    await page.goto("/dev/sandbox");
-    await page.selectOption('select[aria-label="Role"]', "port_operator");
+    await setMockRole(page, "port_operator");
 
-    await page.goto("/shipments");
-    await page.click('a[href*="/shipments/ship_"]:has-text("SHIP-2026-001")');
-    await page.waitForURL(/\/shipments\/ship_/);
+    await page.goto("/shipments/ship_001");
 
     // Record event button visible for operator
     await expect(
@@ -61,7 +68,7 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
 
     // Open Record event sheet
     await page.click('button:has-text("Record event")');
-    await expect(page.getByText("Record a status change")).toBeVisible();
+    await expect(page.getByText("Record status change")).toBeVisible();
     await expect(
       page.getByText(/Current: Submitted\. Allowed next: Arrived/),
     ).toBeVisible();
@@ -77,22 +84,21 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
   }) => {
     await page.goto("/shipments");
 
-    // Find a cleared shipment
-    const clearedLink = page.locator('a[href*="/shipments/ship_"]').filter({
-      has: page.locator('text="Cleared"'),
-    }).first();
-
-    await clearedLink.click();
+    const clearedRow = page
+      .getByRole("row")
+      .filter({ hasText: "Cleared" })
+      .first();
+    await clearedRow.getByRole("link").click();
     await page.waitForURL(/\/shipments\/ship_/);
 
     // Predicted vs Actual card
     await expect(page.getByText("Predicted vs Actual")).toBeVisible();
-    await expect(page.getByText("Estimate")).toBeVisible();
-    await expect(page.getByText("Recorded")).toBeVisible();
+    await expect(page.getByText("Estimate", { exact: true })).toBeVisible();
+    await expect(page.getByText("Recorded", { exact: true })).toBeVisible();
 
     // Timeline with events
     await expect(page.getByText("Timeline")).toBeVisible();
-    await expect(page.getByText("Status changed to")).toBeVisible();
+    await expect(page.getByText("Status changed to").first()).toBeVisible();
 
     await page.screenshot({
       path: "test-results/f04-cleared-shipment.png",
@@ -103,19 +109,16 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
   test("409 conflict on event recording shows error message", async ({
     page,
   }) => {
-    // Switch to operator role
-    await page.goto("/dev/sandbox");
-    await page.selectOption('select[aria-label="Role"]', "port_operator");
+    await setMockRole(page, "port_operator");
 
-    // Navigate to a shipment with mock error
-    await page.goto("/shipments/ship_001?mock_error=409");
+    // Only the event POST is forced to fail; the shipment itself still loads.
+    await page.goto("/shipments/ship_001?mock_event_error=409");
 
     // Open Record event sheet
     await page.click('button:has-text("Record event")');
 
     // Select status and submit
-    const select = page.locator('select').first();
-    await select.selectOption("arrived");
+    await page.locator("select").first().selectOption("arrived");
     await page.click('button:has-text("Save")');
 
     // Check error message
@@ -148,33 +151,29 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
   test("timeline shows occurred vs recorded time when different", async ({
     page,
   }) => {
-    await page.goto("/shipments");
-    const firstLink = page.locator('a[href*="/shipments/ship_"]').first();
-    await firstLink.click();
-    await page.waitForURL(/\/shipments\/ship_/);
+    await page.goto("/shipments/ship_003");
 
-    const timeline = page.locator('text="Timeline"').locator("..");
-    await expect(timeline).toBeVisible();
+    await expect(page.getByText("Timeline")).toBeVisible();
+    await expect(page.getByText(/\(recorded:/i).first()).toBeVisible();
+    await expect(page.locator("time").first()).toBeVisible();
 
-    // Check for time display
-    await expect(timeline.locator("text=/\\d{1,2}:\\d{2}/")).toBeVisible();
+    const timeText = await page.locator("time").first().innerText();
+    expect(timeText).toMatch(/\d{1,2}:\d{2}/);
   });
 
-  test("Run prediction button is disabled with F05 tooltip", async ({
+  test("Run prediction button is enabled for a shipment without a prediction", async ({
     page,
   }) => {
     await page.goto("/shipments");
 
-    // Find a shipment without prediction
-    const shipmentLink = page.locator('a[href*="/shipments/ship_"]').filter({
-      has: page.locator('text="Not predicted yet"'),
-    }).first();
-
-    await shipmentLink.click();
+    const notPredictedRow = page
+      .getByRole("row")
+      .filter({ hasText: "Not predicted yet" })
+      .first();
+    await notPredictedRow.getByRole("link").click();
     await page.waitForURL(/\/shipments\/ship_/);
 
     const runButton = page.getByRole("button", { name: "Run prediction" });
-    await expect(runButton).toBeDisabled();
-    await expect(runButton).toHaveAttribute("title", "Available after F05");
+    await expect(runButton).toBeEnabled();
   });
 });

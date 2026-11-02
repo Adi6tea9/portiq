@@ -1,4 +1,5 @@
 import { PredictionResultClient } from "@/components/features/predictions/PredictionResultClient";
+import { mockFlagValue } from "@/lib/mocks/flags";
 
 interface PredictionResultPageProps {
   params: Promise<{ id: string; predictionId: string }>;
@@ -10,16 +11,12 @@ export default async function PredictionResultPage({
   searchParams,
 }: PredictionResultPageProps) {
   const { id, predictionId } = await params;
-  const mockError =
-    typeof searchParams.mock_error === "string"
-      ? searchParams.mock_error
-      : undefined;
 
   return (
     <PredictionResultClient
       shipmentId={id}
       predictionId={predictionId}
-      mockError={mockError}
+      mockError={mockFlagValue(searchParams, "mock_error")}
     />
   );
 }

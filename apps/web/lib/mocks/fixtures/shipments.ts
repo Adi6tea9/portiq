@@ -332,7 +332,11 @@ export const mockShipments: Shipment[] = [
   },
 ];
 
-function eventsFor(shipment: Shipment): ShipmentEvent[] {
+function recordedLater(occurredAt: string): string {
+  return new Date(new Date(occurredAt).getTime() + 90 * 60 * 1000).toISOString();
+}
+
+export function eventsFor(shipment: Shipment): ShipmentEvent[] {
   const events: ShipmentEvent[] = [
     {
       id: `evt_${shipment.id}_1`,
@@ -355,7 +359,7 @@ function eventsFor(shipment: Shipment): ShipmentEvent[] {
       from_status: "submitted",
       to_status: "arrived",
       occurred_at: shipment.actual_arrival_at,
-      recorded_at: shipment.actual_arrival_at,
+      recorded_at: recordedLater(shipment.actual_arrival_at),
       actor_display_name: "Demo Operator",
       note: "Vessel berthed.",
     });
@@ -369,7 +373,7 @@ function eventsFor(shipment: Shipment): ShipmentEvent[] {
       from_status: "arrived",
       to_status: "cleared",
       occurred_at: shipment.actual_cleared_at,
-      recorded_at: shipment.actual_cleared_at,
+      recorded_at: recordedLater(shipment.actual_cleared_at),
       actor_display_name: "Demo Operator",
       note: "Customs cleared.",
     });

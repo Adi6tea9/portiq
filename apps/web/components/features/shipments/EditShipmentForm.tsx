@@ -23,6 +23,10 @@ import {
   containerSizeOptionLabel,
   humanizeOption,
 } from "@/lib/shipments/options";
+import {
+  shipmentEditSchema,
+  type ShipmentEditValues,
+} from "@/lib/shipments/schema";
 import { SelectControl, type SelectOption } from "./SelectControl";
 
 const CARGO_TYPE_SELECT_OPTIONS: SelectOption[] = CARGO_TYPE_OPTIONS.map(
@@ -70,20 +74,13 @@ export function EditShipmentForm({
     setError,
     clearErrors,
     formState: { errors, isSubmitting },
-  } = useForm<{
-    cargo_type: string;
-    container_size_ft: string;
-    hs_code: string;
-    weight_kg: string;
-    declared_value: string;
-    shipping_line: string;
-    vessel_size_band: string;
-    expected_arrival_at: string;
-    documentation_status: string;
-  }>({
+  } = useForm<ShipmentEditValues>({
+    resolver: zodResolver(shipmentEditSchema),
     defaultValues: {
       cargo_type: shipment.cargo_type,
-      container_size_ft: String(shipment.container_size_ft),
+      container_size_ft: String(
+        shipment.container_size_ft,
+      ) as ShipmentEditValues["container_size_ft"],
       hs_code: shipment.hs_code,
       weight_kg: String(shipment.weight_kg),
       declared_value: shipment.declared_value,
