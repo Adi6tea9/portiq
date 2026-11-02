@@ -45,9 +45,7 @@ async function fillShipmentForm(
     .selectOption("complete");
 }
 
-test("creates a shipment and lands on the detail placeholder", async ({
-  page,
-}) => {
+test("creates a shipment and opens its detail page", async ({ page }) => {
   await page.goto("/shipments/new");
   await expect(page.getByRole("heading", { name: "New shipment" })).toBeVisible();
 
@@ -55,10 +53,10 @@ test("creates a shipment and lands on the detail placeholder", async ({
   await page.getByRole("button", { name: "Create shipment" }).click();
 
   await expect(page).toHaveURL(/\/shipments\/ship_[a-z0-9]+$/);
-  await expect(
-    page.getByRole("heading", { name: "Shipment detail" }),
-  ).toBeVisible();
-  await expect(page.getByText("Coming in F04")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "SHIP-2026-100",
+  );
+  await expect(page.getByText("Shipment details")).toBeVisible();
 });
 
 test("shows client validation errors and keeps the entered values", async ({

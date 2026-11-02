@@ -10,6 +10,7 @@ import type {
   EventCreate,
   PredictionHistoryItem,
   Prediction,
+  ShipmentSummary,
 } from "../api/types";
 import { buildShipmentListQuery, type ShipmentListQuery } from "./query";
 
@@ -17,6 +18,7 @@ export type { ShipmentDetail, PredictionHistoryItem };
 
 export interface ShipmentListRequest extends ShipmentListQuery {
   mockError?: string;
+  mockEmpty?: boolean;
 }
 
 export interface ShipmentListResult {
@@ -25,13 +27,21 @@ export interface ShipmentListResult {
 }
 
 function withMockError(path: string, mockError?: string): string {
-  if (!mockError) {
+  return withMockParam(path, mockError);
+}
+
+function withMockParam(
+  path: string,
+  value: string | undefined,
+  param = "mock_error",
+): string {
+  if (!value) {
     return path;
   }
 
   const separator = path.includes("?") ? "&" : "?";
 
-  return `${path}${separator}mock_error=${encodeURIComponent(mockError)}`;
+  return `${path}${separator}${param}=${encodeURIComponent(value)}`;
 }
 
 export async function fetchPorts(mockError?: string): Promise<Port[]> {
@@ -43,8 +53,11 @@ export async function fetchShipments(
   request: ShipmentListRequest,
 ): Promise<ShipmentListResult> {
   const query = buildShipmentListQuery(request);
+  const withEmpty = request.mockEmpty
+    ? withMockParam(`/shipments?${query}`, "1", "mock_empty")
+    : `/shipments?${query}`;
   const response = await apiClient<Shipment[]>(
-    withMockError(`/shipments?${query}`, request.mockError),
+    withMockError(withEmpty, request.mockError),
   );
 
   return {
@@ -56,6 +69,15 @@ export async function fetchShipments(
         total: response.data.length,
       },
   };
+}
+
+export async function fetchShipmentSummary(
+  mockEmpty?: boolean,
+): Promise<ShipmentSummary> {
+  const response = await apiClient<ShipmentSummary>(
+    withMockParam("/shipments/summary", mockEmpty ? "1" : undefined, "mock_empty"),
+  );
+  return response.data;
 }
 
 export async function createShipment(
@@ -101,10 +123,14 @@ export async function updateShipment(
 export async function recordShipmentEvent(
   id: string,
   event: EventCreate,
-  mockError?: string,
+  eventMockError?: string,
 ): Promise<ShipmentDetail> {
   const response = await apiClient<ShipmentDetail>(
-    withMockError(`/shipments/${id}/events`, mockError),
+    withMockParam(
+      `/shipments/${id}/events`,
+      eventMockError,
+      "mock_event_error",
+    ),
     {
       method: "POST",
       body: JSON.stringify(event),
@@ -149,10 +175,14 @@ export async function fetchPrediction(
 export async function runPrediction(
   shipmentId: string,
   idempotencyKey: string,
-  mockError?: string,
+  runMockError?: string,
 ): Promise<Prediction> {
   const response = await apiClient<Prediction>(
-    withMockError(`/shipments/${shipmentId}/prediction`, mockError),
+    withMockParam(
+      `/shipments/${shipmentId}/prediction`,
+      runMockError,
+      "mock_run_error",
+    ),
     {
       method: "POST",
       idempotencyKey,

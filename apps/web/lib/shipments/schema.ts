@@ -66,6 +66,21 @@ export const shipmentFormSchema = z.object({
 export type ShipmentFormValues = z.input<typeof shipmentFormSchema>;
 export type ShipmentFormField = keyof ShipmentFormValues;
 
+/** The editable allowlist (ShipmentPatch) reuses the create-form rules. */
+export const shipmentEditSchema = shipmentFormSchema.pick({
+  cargo_type: true,
+  container_size_ft: true,
+  hs_code: true,
+  weight_kg: true,
+  declared_value: true,
+  shipping_line: true,
+  vessel_size_band: true,
+  expected_arrival_at: true,
+  documentation_status: true,
+});
+
+export type ShipmentEditValues = z.input<typeof shipmentEditSchema>;
+
 export const SHIPMENT_FORM_FIELDS = [
   "port_id",
   "reference",

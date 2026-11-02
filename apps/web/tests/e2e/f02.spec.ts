@@ -153,7 +153,9 @@ test("renders role-specific navigation", async ({ page }) => {
   await expect(primary.getByRole("link", { name: "Dashboard" })).toHaveCount(0);
 });
 
-test("renders later-feature placeholders", async ({ page }) => {
+test("renders later-feature placeholders and delivered pages", async ({
+  page,
+}) => {
   await authenticate(page, "importer_exporter", "/settings");
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
   await expect(page.getByText("Coming in F10")).toBeVisible();
@@ -165,14 +167,17 @@ test("renders later-feature placeholders", async ({ page }) => {
   ).toBeVisible();
 
   await page.goto("/shipments/ship_001");
-  await expect(page.getByRole("heading", { name: "Shipment detail" })).toBeVisible();
-  await expect(page.getByText("Coming in F04")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "SHIP-2026-001",
+  );
+  await expect(page.getByText("Shipment details")).toBeVisible();
+  await expect(page.getByText("Coming in F04")).toHaveCount(0);
 
   await page.goto("/shipments/ship_001/prediction/pred_001");
   await expect(
     page.getByRole("heading", { name: "Prediction result" }),
   ).toBeVisible();
-  await expect(page.getByText("Coming in F05")).toBeVisible();
+  await expect(page.getByText("Coming in F05")).toHaveCount(0);
 });
 
 test.describe("API 401 handling", () => {

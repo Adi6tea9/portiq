@@ -56,7 +56,7 @@ describe("ShipmentDetailClient - F04", () => {
     mockRole.role = "importer_exporter";
     renderWithClient(<ShipmentDetailClient id={arrived.id} />);
 
-    await screen.findByText(arrived.reference);
+    await screen.findByRole("heading", { level: 1, name: arrived.reference });
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
   });
 
@@ -65,7 +65,7 @@ describe("ShipmentDetailClient - F04", () => {
     mockRole.role = "port_operator";
     renderWithClient(<ShipmentDetailClient id={submitted.id} />);
 
-    await screen.findByText(submitted.reference);
+    await screen.findByRole("heading", { level: 1, name: submitted.reference });
     expect(await screen.findByRole("button", { name: "Record event" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Edit" })).toBeNull();
   });
@@ -76,7 +76,7 @@ describe("ShipmentDetailClient - F04", () => {
     mockRole.role = "port_operator";
     renderWithClient(<ShipmentDetailClient id={submitted.id} />);
 
-    await screen.findByText(submitted.reference);
+    await screen.findByRole("heading", { level: 1, name: submitted.reference });
     await user.click(screen.getByRole("button", { name: "Record event" }));
 
     expect(await screen.findByText("Record event")).toBeTruthy();
@@ -108,7 +108,7 @@ describe("ShipmentDetailClient - F04", () => {
 
     renderWithClient(<ShipmentDetailClient id={submitted.id} />);
 
-    await screen.findByText(submitted.reference);
+    await screen.findByRole("heading", { level: 1, name: submitted.reference });
     await user.click(screen.getByRole("button", { name: "Record event" }));
     await screen.findByText("Record event");
 
@@ -127,10 +127,25 @@ describe("ShipmentDetailClient - F04", () => {
     )!;
     renderWithClient(<ShipmentDetailClient id={cleared.id} />);
 
-    await screen.findByText(cleared.reference);
+    await screen.findByRole("heading", { level: 1, name: cleared.reference });
     expect(screen.getByText("Predicted vs Actual")).toBeTruthy();
     expect(screen.getByText("Estimate")).toBeTruthy();
     expect(screen.getByText("Recorded")).toBeTruthy();
+  });
+
+  it("offers a rerun control on a shipment that already has a prediction", async () => {
+    const predicted = mockShipments.find((s) => s.latest_prediction !== null)!;
+    renderWithClient(<ShipmentDetailClient id={predicted.id} />);
+
+    await screen.findByRole("heading", {
+      level: 1,
+      name: predicted.reference,
+    });
+
+    const runButton = await screen.findByRole("button", {
+      name: "Run prediction",
+    });
+    expect(runButton.hasAttribute("disabled")).toBe(false);
   });
 
   it("shows not found state for unknown shipment id", async () => {
@@ -159,18 +174,21 @@ describe("ShipmentDetailClient - F04", () => {
     ).toBeTruthy();
   });
 
-  it("renders Run prediction button as disabled with F05 tooltip", async () => {
-    // Use any submitted shipment - button is always disabled in F04
-    const submitted = mockShipments.find((s) => s.status === "submitted")!;
-    renderWithClient(<ShipmentDetailClient id={submitted.id} />);
+  it("renders an enabled Run prediction button when no prediction exists", async () => {
+    const notPredicted = mockShipments.find(
+      (s) => s.status === "submitted" && s.latest_prediction === null,
+    )!;
+    renderWithClient(<ShipmentDetailClient id={notPredicted.id} />);
 
-    await screen.findByText(submitted.reference);
+    await screen.findByRole("heading", {
+      level: 1,
+      name: notPredicted.reference,
+    });
 
-    // Button may not exist if shipment has a prediction, so check conditionally
-    const runButton = screen.queryByRole("button", { name: "Run prediction" });
-    if (runButton) {
-      expect(runButton.hasAttribute("disabled")).toBe(true);
-      expect(runButton.getAttribute("title")).toBe("Available after F05");
-    }
+    const runButton = await screen.findByRole("button", {
+      name: "Run prediction",
+    });
+    expect(runButton.hasAttribute("disabled")).toBe(false);
+    expect(runButton.getAttribute("title")).toBeNull();
   });
 });

@@ -39,6 +39,10 @@ export function rolesForPath(pathname: string): readonly Role[] | null {
     return IMPORTER;
   }
 
+  if (/^\/shipments\/[^/]+\/edit$/.test(pathname)) {
+    return IMPORTER;
+  }
+
   if (/^\/shipments\/[^/]+/.test(pathname)) {
     return IMPORTER_OR_OPERATOR;
   }

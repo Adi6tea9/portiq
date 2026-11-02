@@ -18,6 +18,9 @@ describe("rolesForPath", () => {
       "importer_exporter",
       "port_operator",
     ]);
+    expect(rolesForPath("/shipments/ship_001/edit")).toEqual([
+      "importer_exporter",
+    ]);
     expect(rolesForPath("/capacity")).toEqual([
       "importer_exporter",
       "port_operator",

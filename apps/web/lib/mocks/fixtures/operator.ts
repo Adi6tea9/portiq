@@ -9,6 +9,12 @@ import { mockBerthCapacity, mockYardCapacity } from "./capacity";
 import { mockPorts } from "./ports";
 import { mockShipments } from "./shipments";
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function todayStartIso(): string {
+  return `${new Date().toISOString().slice(0, 10)}T00:00:00Z`;
+}
+
 const STATUSES: readonly ShipmentStatus[] = [
   "submitted",
   "arrived",
@@ -46,6 +52,11 @@ export const mockOperatorRows: OperatorShipmentRow[] = Array.from(
   (_, index) => {
     const base = mockShipments[index % mockShipments.length];
     const number = String(index + 1).padStart(3, "0");
+    const arrivalDay = new Date(
+      Date.parse(todayStartIso()) + (index - 5) * DAY_MS,
+    )
+      .toISOString()
+      .slice(0, 10);
 
     return {
       shipment: {
@@ -53,6 +64,7 @@ export const mockOperatorRows: OperatorShipmentRow[] = Array.from(
         id: `ops_ship_${number}`,
         reference: `OPS-2026-${number}`,
         port_id: index % 2 === 0 ? "port_nsa" : "port_sin",
+        expected_arrival_at: `${arrivalDay}T08:00:00Z`,
       },
       at_risk_reasons: index < 3 ? atRiskReasons(index) : [],
       warning_codes:
@@ -86,11 +98,14 @@ const dwellDistribution: DwellBin[] = [
 
 export const mockOperatorOverview: OperatorOverview = {
   port_scope: mockPorts.map((port) => ({ id: port.id, name: port.name })),
-  range: { from: "2026-11-01T00:00:00Z", to: "2026-12-01T00:00:00Z" },
+  range: {
+    from: todayStartIso(),
+    to: new Date(Date.parse(todayStartIso()) + 30 * DAY_MS).toISOString(),
+  },
   status_counts: statusCounts,
   utilization: {
-    yard: mockYardCapacity.slice(0, 14),
-    berth: mockBerthCapacity.slice(0, 14),
+    yard: mockYardCapacity.slice(0, 30),
+    berth: mockBerthCapacity.slice(0, 30),
   },
   at_risk_count: 3,
   at_risk: mockOperatorRows.slice(0, 3).map((row) => ({

@@ -403,3 +403,54 @@ export const mockPredictionHistory: PredictionHistoryItem[] = Object.values(
   total_is_partial: prediction.total_is_partial,
   is_demo_data: prediction.provenance.is_demo_data,
 }));
+
+/**
+ * Mutable mock state so a POST adds a prediction and a history row instead of
+ * overwriting the fixture set. Reset between tests.
+ */
+export const mockPredictionStore = new Map<string, Prediction>(
+  Object.entries(mockPredictions),
+);
+
+export const mockPredictionHistoryStore: PredictionHistoryItem[] = [
+  ...mockPredictionHistory,
+];
+
+const mockIdempotencyStore = new Map<string, Prediction>();
+
+export function resetMockPredictionStore(): void {
+  mockPredictionStore.clear();
+  Object.entries(mockPredictions).forEach(([id, prediction]) => {
+    mockPredictionStore.set(id, prediction);
+  });
+  mockPredictionHistoryStore.splice(
+    0,
+    mockPredictionHistoryStore.length,
+    ...mockPredictionHistory,
+  );
+  mockIdempotencyStore.clear();
+}
+
+export function getMockIdempotentPrediction(key: string): Prediction | undefined {
+  return mockIdempotencyStore.get(key);
+}
+
+export function rememberMockPrediction(prediction: Prediction): void {
+  mockPredictionStore.set(prediction.prediction_id, prediction);
+  mockPredictionHistoryStore.unshift({
+    prediction_id: prediction.prediction_id,
+    created_at: prediction.provenance.generated_at,
+    model_version: prediction.provenance.model_version,
+    predicted_dwell_days: prediction.predicted_dwell_days,
+    total_estimated_cost: prediction.total_estimated_cost,
+    total_is_partial: prediction.total_is_partial,
+    is_demo_data: prediction.provenance.is_demo_data,
+  });
+}
+
+export function rememberMockIdempotencyKey(
+  key: string,
+  prediction: Prediction,
+): void {
+  mockIdempotencyStore.set(key, prediction);
+}
