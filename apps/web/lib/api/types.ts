@@ -24,6 +24,10 @@ export interface Warning { code: WarningCode; message: string }
 
 export interface Me { user_id: string; email: string; display_name: string | null;
   role: Role; assigned_port_ids: string[] }
+
+/** Confirmed `PATCH /me` contract: the name is trimmed and must be 1-80 chars. */
+export const DISPLAY_NAME_MAX_LENGTH = 80;
+
 export interface AppConfig { capacity_thresholds: { moderate_pct: number; high_pct: number };
   max_forecast_range_days: number; default_bucket: "day" }
 export interface Port { id: string; name: string; port_code: string; timezone: string }

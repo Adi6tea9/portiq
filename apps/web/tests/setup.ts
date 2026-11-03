@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
 import { cleanup } from "@testing-library/react";
+import { resetMockDisplayNames } from "@/lib/mocks/handlers";
 import { server } from "@/lib/mocks/server";
 import { resetMockRole } from "@/lib/mocks/role";
 
@@ -28,6 +29,7 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   resetMockRole();
+  resetMockDisplayNames();
 });
 
 afterAll(() => {

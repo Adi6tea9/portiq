@@ -271,6 +271,35 @@ describe("DataTable", () => {
     ).toBe(true);
   });
 
+  it("right-aligns numeric columns marked with meta.align", () => {
+    const numericColumns: ColumnDef<Row, unknown>[] = [
+      { accessorKey: "name", header: "Name" },
+      {
+        accessorKey: "id",
+        header: "Amount",
+        meta: { align: "right" },
+      },
+    ];
+
+    render(
+      <DataTable
+        columns={numericColumns}
+        data={[{ id: "1", name: "Alpha" }]}
+        caption="Shipment list"
+        getRowId={(row) => row.id}
+      />,
+    );
+
+    const amountHeader = screen.getByRole("columnheader", { name: "Amount" });
+    const amountCell = screen.getByRole("cell", { name: "1" });
+    const nameCell = screen.getByRole("cell", { name: "Alpha" });
+
+    expect(amountHeader.className).toContain("text-right");
+    expect(amountCell.className).toContain("text-right");
+    expect(amountCell.className).toContain("tabular-nums");
+    expect(nameCell.className).not.toContain("text-right");
+  });
+
   it("renders the empty message when there are no rows", () => {
     render(
       <DataTable

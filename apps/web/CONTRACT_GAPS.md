@@ -1,4 +1,4 @@
-# Contract Gaps
+﻿# Contract Gaps
 
 Assumptions and deviations made while implementing F01 and F02.
 
@@ -102,7 +102,7 @@ The `route-blue` token (`#3B82F6`) measures 3.67:1 on the white auth surface, be
 
 **Location:** `components/features/shipments/ShipmentDetailClient.tsx`
 
-**Status: resolved (2 Nov 2026).** `POST /shipments/{id}/prediction` supports reruns and the mock appends a history row. Per the product decision, the result page has no rerun control — only a "Back to shipment" link. Rerun lives on the shipment detail page ("Latest prediction" card) and, when built, the F07 dashboard. Both use the same `RunPredictionButton` so the Idempotency-Key rules stay in one place.
+**Status: resolved (2 Nov 2026).** `POST /shipments/{id}/prediction` supports reruns and the mock appends a history row. Per the product decision, the result page has no rerun control â€” only a "Back to shipment" link. Rerun lives on the shipment detail page ("Latest prediction" card) and, when built, the F07 dashboard. Both use the same `RunPredictionButton` so the Idempotency-Key rules stay in one place.
 
 ## GAP-018: Run error mock flag
 
@@ -185,7 +185,7 @@ The shipment table's arrival window is independent of the overview date range: c
 
 **Location:** `lib/mocks/handlers.ts`, `lib/mocks/fixtures/operator.ts`
 
-Operator table rows are generated from the importer fixtures (`ops_ship_001`…`ops_ship_040`) and are not in `mockShipmentDetails`. The mock `GET /shipments/:id` now falls back to the operator row and synthesises its events, so row links resolve in the demo. The real backend must return operator-visible shipments from `GET /shipments/{id}` for the same links to work; otherwise the detail page shows its not-found state.
+Operator table rows are generated from the importer fixtures (`ops_ship_001`â€¦`ops_ship_040`) and are not in `mockShipmentDetails`. The mock `GET /shipments/:id` now falls back to the operator row and synthesises its events, so row links resolve in the demo. The real backend must return operator-visible shipments from `GET /shipments/{id}` for the same links to work; otherwise the detail page shows its not-found state.
 
 ## GAP-031: Created shipments in the mock detail lookup
 
@@ -198,3 +198,15 @@ Operator table rows are generated from the importer fixtures (`ops_ship_001`…`
 **Location:** `app/(app)/admin/tariffs/page.tsx`, `components/features/admin/tariffs/TariffsClient.tsx`, `lib/tariffs/api.ts`, `lib/tariffs/schema.ts`, `lib/mocks/handlers.ts`, `lib/mocks/fixtures/tariffs.ts`, `lib/mocks/fixtures/audit.ts`
 
 F09 implements the admin tariffs page per `PortIQ_Frontend_Master_Spec_v1.md` F09. Rules and audit records come from the already-mocked `GET /admin/tariffs` and `GET /admin/audit-logs` endpoints. The mock `POST /admin/tariffs` returns 409 `TARIFF_CONFLICT` when a rule shares the same `rule_type`, scope (`port_id`, `hs_code_prefix`, `shipping_line`, `cargo_type`, `container_size_ft`) and `version`, and stores created rules in `mockTariffs` (in-memory) so they appear in the table. The mock `PATCH /admin/tariffs/:ruleId` mutates the stored rule so Deactivate flips `is_active` without deleting it. The UI enforces the spec rules (`valid_to` after `valid_from`, non-negative decimal `rate_value`, required `source_note`, `tier_config` only as a JSON object when `rate_type=tiered`), has no delete control, offers **Create new version** (prefills the form, posts a new rule only, leaves the old rule active) and **Deactivate** with confirm dialogs, and shows a 409 conflict dialog with the matched rule and request id. The audit tab paginates `before` and `after`. An importer gets the permission page; mock endpoints require `platform_admin`.
+
+The 409 dialog can only show the conflicting rule if it is on the page the client has loaded: `ApiErrorBody.details[]` carries `{ field, issue }` only, with no rule payload. The client matches on `version` + `rule_type` within the current page and otherwise says the rule is not on this page. A `conflicting_rule_id` in `details[]` would remove that limitation.
+
+The HS code prefix filter is debounced by 300 ms through the existing `lib/hooks/useDebouncedValue` so typing does not issue one request per keystroke. Tab, filters and pagination are component state, not query parameters, so a filtered view is not deep-linkable; that was not required by F09.
+
+## GAP-033: Request body for `PATCH /me` - RESOLVED
+
+**Spec:** `docs/FRONTEND_SPEC.md` F10 describes settings as "display name editable, role read-only" and lists `PATCH /me` as the endpoint, but it does not name the request body type or say which fields the endpoint accepts.
+
+**Resolved:** The backend confirmed the contract on 2026-11-03. `PATCH /me` accepts `{ "display_name": string }`, trimmed, 1-80 characters, and nothing else. Success returns 200 with the updated `Me` in the usual envelope. A blank or over-long name returns 422 `VALIDATION_ERROR` with `details: [{ "field": "display_name", "issue": "..." }]` (`must not be empty` when blank, otherwise the length message). The client sends `MeUpdate` from `lib/api/me.ts` (trimmed, `DISPLAY_NAME_MAX_LENGTH = 80`), and the inline field error renders `details[].issue`. The `// CONTRACT-GAP: GAP-033` marker is removed because nothing is assumed any more.
+
+**Mock behaviour:** The mock `PATCH /me` mirrors the confirmed contract (trim, 1-80 chars, 422 with the same detail shape) and stores the accepted name in an in-memory map (`mockDisplayNames`) so a follow-up `GET /me` returns it. That map is process memory only and is cleared on reload; that is the agreed behaviour for the demo. `resetMockDisplayNames()` is exported for tests and called from `tests/setup.ts`.

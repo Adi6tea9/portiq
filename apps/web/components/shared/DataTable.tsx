@@ -6,10 +6,24 @@ import {
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
+  type ColumnMeta,
+  type RowData,
 } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** `right` right-aligns the column and uses tabular numerals. */
+    align?: "left" | "right";
+  }
+}
+
+function cellAlignment(meta: ColumnMeta<unknown, unknown> | undefined): string {
+  return meta?.align === "right" ? "text-right tabular-nums" : "";
+}
+
 
 export interface Pagination {
   page: number;
@@ -70,7 +84,14 @@ export function DataTable<TData>({
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} scope="col" className="px-4 py-3 font-medium">
+                  <th
+                    key={header.id}
+                    scope="col"
+                    className={cn(
+                      "px-4 py-3 font-medium",
+                      cellAlignment(header.column.columnDef.meta),
+                    )}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -96,7 +117,13 @@ export function DataTable<TData>({
               rows.map((row) => (
                 <tr key={row.id} className="border-t border-border">
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-3">
+                    <td
+                      key={cell.id}
+                      className={cn(
+                        "px-4 py-3",
+                        cellAlignment(cell.column.columnDef.meta),
+                      )}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   ))}
