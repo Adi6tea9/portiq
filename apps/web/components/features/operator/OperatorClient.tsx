@@ -346,6 +346,7 @@ export function OperatorClient() {
     },
     {
       header: "Predicted dwell",
+      meta: { align: "right" },
       cell: ({ row }) =>
         formatDwell(
           row.original.shipment.latest_prediction?.predicted_dwell_days ?? null,

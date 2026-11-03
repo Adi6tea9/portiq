@@ -26,6 +26,7 @@ import { SelectControl } from "@/components/features/shipments/SelectControl";
 import { useAuditLogs } from "@/lib/api/hooks/useAuditLogs";
 import { usePorts } from "@/lib/api/hooks/usePorts";
 import { useTariffs } from "@/lib/api/hooks/useTariffs";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 import { ApiError } from "@/lib/api/client";
 import type { AuditLogItem, TariffRule } from "@/lib/api/types";
 import { createTariff, deactivateTariff } from "@/lib/tariffs/api";
@@ -35,6 +36,7 @@ import {
   toTariffCreate,
   type TariffFormValues,
 } from "@/lib/tariffs/schema";
+import { DemoBadge } from "@/components/shared/DemoBadge";
 import {
   CARGO_TYPE_OPTIONS,
   CONTAINER_SIZE_OPTIONS,
@@ -116,6 +118,7 @@ export function TariffsClient() {
   const [shippingLine, setShippingLine] = React.useState("");
   const [isActive, setIsActive] = React.useState("");
   const [validOn, setValidOn] = React.useState("");
+  const debouncedHsPrefix = useDebouncedValue(hsPrefix, 300);
 
   const [prefill, setPrefill] = React.useState<Partial<TariffFormValues> | null>(
     null,
@@ -138,7 +141,7 @@ export function TariffsClient() {
   const tariffsQuery = useTariffs({
     ruleType: ruleType || undefined,
     portId: portId || undefined,
-    hsCodePrefix: hsPrefix || undefined,
+    hsCodePrefix: debouncedHsPrefix || undefined,
     shippingLine: shippingLine || undefined,
     isActive: isActive || undefined,
     validOn: validOn || undefined,
@@ -153,7 +156,7 @@ export function TariffsClient() {
 
   React.useEffect(() => {
     setPage(1);
-  }, [ruleType, portId, hsPrefix, shippingLine, isActive, validOn]);
+  }, [ruleType, portId, debouncedHsPrefix, shippingLine, isActive, validOn]);
 
   const form = useForm<TariffFormValues>({
     resolver: zodResolver(tariffFormSchema),
@@ -294,9 +297,11 @@ export function TariffsClient() {
     },
     {
       header: "Rate",
+      meta: { align: "right" },
       cell: ({ row }) => (
         <span>
-          {row.original.rate_value} {row.original.currency}
+          <span className="tabular-nums">{row.original.rate_value}</span>{" "}
+          {row.original.currency}
           <span className="block text-xs text-muted">
             {humanizeOption(row.original.rate_type)}
             {row.original.free_days === null
@@ -406,9 +411,7 @@ export function TariffsClient() {
             Manage tariff rules and review the change trail.
           </p>
         </div>
-        <Badge className="border-transparent bg-light-teal text-harbor-navy">
-          Demo tariff data
-        </Badge>
+        <DemoBadge>Demo tariff data</DemoBadge>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -462,6 +465,8 @@ export function TariffsClient() {
                   error={errors.hs_code_prefix?.message}
                 >
                   <Input
+                    inputMode="numeric"
+                    spellCheck={false}
                     placeholder="85"
                     {...form.register("hs_code_prefix")}
                   />
@@ -532,6 +537,7 @@ export function TariffsClient() {
                   error={errors.version?.message}
                 >
                   <Input
+                    spellCheck={false}
                     placeholder="tariff-v2.4"
                     {...form.register("version")}
                   />
@@ -612,6 +618,8 @@ export function TariffsClient() {
                 </Field>
                 <Field id="filter-hs-prefix" label="Filter HS prefix">
                   <Input
+                    inputMode="numeric"
+                    spellCheck={false}
                     value={hsPrefix}
                     placeholder="85"
                     onChange={(event) => setHsPrefix(event.target.value)}
@@ -739,15 +747,12 @@ export function TariffsClient() {
             <DialogTitle>Deactivate tariff rule</DialogTitle>
             <DialogDescription>
               Deactivate {deactivateTarget?.version}? The rule stays in the
-              table and its history is kept; there is no delete action.
+              table and its history is kept; there is no delete action. Earlier
+              predictions keep the version they used.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDeactivateTarget(null)}
-            >
+            <Button type="button" variant="outline" onClick={() => setDeactivateTarget(null)}>
               Cancel
             </Button>
             <Button type="button" onClick={() => void handleDeactivate()}>
@@ -766,7 +771,8 @@ export function TariffsClient() {
             <DialogTitle>Create new version</DialogTitle>
             <DialogDescription>
               Start a new version based on {newVersionTarget?.version}. The
-              current rule stays active until you deactivate it yourself.
+              current rule stays active until you deactivate it yourself, and
+              nothing is deleted.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

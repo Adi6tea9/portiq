@@ -18,6 +18,7 @@ import type {
   TariffRuleCreate,
   WarningCode,
 } from "../api/types";
+import { DISPLAY_NAME_MAX_LENGTH } from "../api/types";
 import { getMockRole } from "./role";
 import { mockConfig } from "./fixtures/config";
 import { mockPorts } from "./fixtures/ports";
@@ -149,8 +150,18 @@ function validationError(field: string, issue: string): Response {
   return HttpResponse.json(body, { status: 422 });
 }
 
+const mockDisplayNames = new Map<string, string>();
+
+/** Test-only reset so stored names do not leak between specs. */
+export function resetMockDisplayNames(): void {
+  mockDisplayNames.clear();
+}
+
 function currentUser(): Me {
-  return mockUsersByRole[getMockRole()];
+  const user = mockUsersByRole[getMockRole()];
+  const override = mockDisplayNames.get(user.user_id);
+
+  return override === undefined ? user : { ...user, display_name: override };
 }
 
 function hasRole(...roles: Role[]): boolean {
@@ -250,12 +261,22 @@ export const handlers = [
     }
 
     const body = (await request.json()) as { display_name?: string };
-    const user: Me = {
-      ...currentUser(),
-      display_name: body.display_name ?? currentUser().display_name,
-    };
+    const displayName = body.display_name?.trim();
 
-    return HttpResponse.json(envelope(user));
+    if (!displayName) {
+      return validationError("display_name", "must not be empty");
+    }
+
+    if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
+      return validationError(
+        "display_name",
+        `must be ${DISPLAY_NAME_MAX_LENGTH} characters or fewer`,
+      );
+    }
+
+    mockDisplayNames.set(currentUser().user_id, displayName);
+
+    return HttpResponse.json(envelope(currentUser()));
   }),
 
   http.get(`${API_BASE}/config`, ({ request }) => {

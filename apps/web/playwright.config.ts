@@ -8,6 +8,11 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"]],
   outputDir: "test-results",
+  // The webServer runs `next dev`, which compiles each route on first visit.
+  // Parallel workers hitting cold routes can take longer than the 5s expect
+  // default, which is a dev-server cost rather than a product failure.
+  timeout: 60_000,
+  expect: { timeout: 15_000 },
   use: {
     baseURL: "http://localhost:3000",
     trace: "on-first-retry",

@@ -158,7 +158,8 @@ test("renders later-feature placeholders and delivered pages", async ({
 }) => {
   await authenticate(page, "importer_exporter", "/settings");
   await expect(page.getByRole("heading", { name: "Settings" })).toBeVisible();
-  await expect(page.getByText("Coming in F10")).toBeVisible();
+  await expect(page.getByLabel(/^Display name/)).toBeVisible();
+  await expect(page.getByText("Coming in F10")).toHaveCount(0);
 
   await page.goto("/shipments/new");
   await expect(page.getByRole("heading", { name: "New shipment" })).toBeVisible();
@@ -302,8 +303,8 @@ test("captures F02 screenshots", async ({ page }, testInfo) => {
   await page.screenshot({ path: `${dir}/f02-permission.png`, fullPage: true });
 
   await page.goto("/settings");
-  await expect(page.getByText("Coming in F10")).toBeVisible();
-  await page.screenshot({ path: `${dir}/f02-coming-soon.png`, fullPage: true });
+  await expect(page.getByLabel(/^Display name/)).toBeVisible();
+  await page.screenshot({ path: `${dir}/f02-settings.png`, fullPage: true });
 
   await page.goto("/operator");
   await expect(
