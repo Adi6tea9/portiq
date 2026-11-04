@@ -107,6 +107,23 @@ describe("TariffsClient - F09", () => {
     expect(screen.getByText(/Request ID:/)).toBeTruthy();
   });
 
+  it("shows the conflicting rule when it is not on the loaded page", async () => {
+    setMockRole("platform_admin");
+    renderWithClient(<TariffsClient />);
+    await waitForRulesTable();
+
+    fireEvent.change(screen.getByLabelText("Filter port"), {
+      target: { value: "port_sin" },
+    });
+    await waitFor(() => expect(screen.queryByText("tariff-v2.3")).toBeNull());
+
+    submitConflictForm();
+
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText("tariff-v2.3")).toBeTruthy();
+    expect(within(dialog).getByText(/10\.00 INR/)).toBeTruthy();
+  });
+
   it("creates a new version without a delete control", async () => {
     setMockRole("platform_admin");
     renderWithClient(<TariffsClient />);
@@ -127,6 +144,15 @@ describe("TariffsClient - F09", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create version" }));
 
     expect(await screen.findByText("Tariff version tariff-v9.9 created.")).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Audit" }));
+    const auditTable = await screen.findByRole("table", { name: "Audit logs" });
+    await waitFor(() =>
+      expect(within(auditTable).getAllByRole("row").length).toBeGreaterThan(1),
+    );
+    const newest = within(auditTable).getAllByRole("row")[1];
+    expect(within(newest).getByText("tariff.created")).toBeTruthy();
+    expect(within(newest).getByText(/tariff-v9\.9/)).toBeTruthy();
   });
 
   it("confirms create-new-version and prefills the form", async () => {
@@ -180,6 +206,15 @@ describe("TariffsClient - F09", () => {
     expect(
       await screen.findByText("Tariff version tariff-v2.3 deactivated."),
     ).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Audit" }));
+    const auditTable = await screen.findByRole("table", { name: "Audit logs" });
+    await waitFor(() =>
+      expect(within(auditTable).getAllByRole("row").length).toBeGreaterThan(1),
+    );
+    const newest = within(auditTable).getAllByRole("row")[1];
+    expect(within(newest).getByText("tariff.deactivated")).toBeTruthy();
+    expect(within(newest).getAllByText(/rule_001/).length).toBeGreaterThan(0);
   });
 
   it("shows the audit tab with who, when, action, before and after", async () => {

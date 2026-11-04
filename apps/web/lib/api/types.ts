@@ -19,7 +19,8 @@ export interface Pagination { page: number; page_size: number; total: number }
 export interface Meta { request_id: string; generated_at?: string; pagination?: Pagination }
 export interface Envelope<T> { data: T; meta: Meta }
 export interface ApiErrorBody { error: { code: string; message: string;
-  details?: { field: string; issue: string }[]; request_id: string } }
+  details?: { field: string; issue: string }[];
+  conflicting_rule?: TariffRule; request_id: string } }
 export interface Warning { code: WarningCode; message: string }
 
 export interface Me { user_id: string; email: string; display_name: string | null;

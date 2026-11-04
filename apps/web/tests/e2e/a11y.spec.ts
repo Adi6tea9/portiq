@@ -37,7 +37,7 @@ const PAGES: PageUnderTest[] = [
     path: "/",
     name: "landing",
     role: null,
-    ready: async (page) => waitForHeading(page, "PortIQ"),
+    ready: async (page) => waitForHeading(page, "Predict. Plan. Ship."),
   },
   {
     path: "/login",

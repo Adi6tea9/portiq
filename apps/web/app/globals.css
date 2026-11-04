@@ -36,7 +36,10 @@
     --accent-foreground: 16 42 67;
     --destructive: 194 65 58;
     --destructive-foreground: 255 255 255;
-    --input: 217 226 236;
+    /* --input is the form-control outline (inputs, selects, textareas).
+       #627D98 clears 3:1 non-text contrast (4.28:1 on surface, 3.99:1 on
+       canvas); --border stays light for dividers and card edges. */
+    --input: 98 125 152;
     --ring: 13 148 136;
     --radius: 8px;
   }

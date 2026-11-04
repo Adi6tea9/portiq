@@ -171,6 +171,18 @@ test.describe("F09 - Admin tariffs and audit trail", () => {
       page.getByText("Tariff version tariff-v2.3 deactivated."),
     ).toBeVisible();
     await expect(page.getByRole("cell", { name: "tariff-v2.3", exact: true })).toBeVisible();
+
+    await page.getByRole("tab", { name: "Audit" }).click();
+    const firstAuditRow = page
+      .getByRole("table", { name: "Audit logs" })
+      .getByRole("row")
+      .nth(1);
+    await expect(
+      firstAuditRow.getByRole("cell", { name: "tariff.deactivated" }),
+    ).toBeVisible();
+    await expect(
+      firstAuditRow.getByRole("cell", { name: "tariff_rule / rule_001" }),
+    ).toBeVisible();
   });
 
   test("audit tab shows who, when, action, before and after", async ({
