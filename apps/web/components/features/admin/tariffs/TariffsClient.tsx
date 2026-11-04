@@ -235,11 +235,13 @@ export function TariffsClient() {
 
       if (error.code === "TARIFF_CONFLICT") {
         const matched =
+          error.conflictingRule ??
           rules.find(
             (rule) =>
               rule.version === values.version.trim() &&
               rule.rule_type === values.rule_type,
-          ) ?? null;
+          ) ??
+          null;
 
         setConflict({
           rule: matched,

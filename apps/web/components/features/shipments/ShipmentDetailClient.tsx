@@ -544,8 +544,8 @@ export function ShipmentDetailClient({
       <Callout variant="info" className="text-xs">
         PortIQ provides planning estimates based on the shipment information, model
         version, capacity assumptions and tariff rules available at the time of
-        calculation. Estimates are not an official customs assessment or a guaranteed
-        operational outcome.
+        calculation. Estimates are not an official customs assessment and do not
+        promise an operational outcome.
       </Callout>
     </div>
   );

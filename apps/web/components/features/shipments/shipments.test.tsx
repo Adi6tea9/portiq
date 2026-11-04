@@ -86,7 +86,11 @@ describe("NewShipmentForm", () => {
     await fillValidShipmentForm(user);
     await user.click(screen.getByRole("button", { name: "Create shipment" }));
 
-    await waitFor(() => expect(routerPush).toHaveBeenCalledTimes(1));
+    // ponytail: the mock POST waits 120 ms, and a full parallel suite can push
+    // this past the default 1 s waitFor, so allow 5 s. The assertion is unchanged.
+    await waitFor(() => expect(routerPush).toHaveBeenCalledTimes(1), {
+      timeout: 5000,
+    });
     expect(routerPush.mock.calls[0][0]).toMatch(/^\/shipments\/ship_/);
   });
 

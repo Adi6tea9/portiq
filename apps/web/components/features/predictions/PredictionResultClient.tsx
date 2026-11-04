@@ -33,7 +33,7 @@ interface PredictionResultClientProps {
 }
 
 const DISCLAIMER_TEXT =
-  "PortIQ provides planning estimates based on the shipment information, model version, capacity assumptions and tariff rules available at the time of calculation. Estimates are not an official customs assessment or a guaranteed operational outcome.";
+  "PortIQ provides planning estimates based on the shipment information, model version, capacity assumptions and tariff rules available at the time of calculation. Estimates are not an official customs assessment and do not promise an operational outcome.";
 
 const COST_NOTE =
   "Indicative total; verify against applicable tariffs and carrier terms.";

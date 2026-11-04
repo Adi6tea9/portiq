@@ -125,7 +125,7 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
               }}
             />
             <ReferenceLine x={0} stroke="#D9E2EC" />
-            <Bar dataKey="contribution" radius={[0, 4, 4, 0]}>
+            <Bar dataKey="contribution" radius={[0, 4, 4, 0]} isAnimationActive={false}>
               {data.map((entry) => (
                 <Cell
                   key={entry.label}

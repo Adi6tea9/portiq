@@ -168,6 +168,25 @@ function hasRole(...roles: Role[]): boolean {
   return roles.includes(getMockRole());
 }
 
+function recordTariffAudit(
+  action: "tariff.created" | "tariff.updated" | "tariff.deactivated",
+  entityId: string,
+  before: unknown | null,
+  after: unknown | null,
+): void {
+  mockAuditLogs.unshift({
+    id: `audit_${crypto.randomUUID().slice(0, 8)}`,
+    actor_display_name: currentUser().display_name,
+    action,
+    entity_type: "tariff_rule",
+    entity_id: entityId,
+    before,
+    after,
+    created_at: new Date().toISOString(),
+    request_id: `req_mock_audit_${crypto.randomUUID().slice(0, 8)}`,
+  });
+}
+
 function isShipmentStatus(value: string | null): value is ShipmentStatus {
   return value !== null && (STATUSES as readonly string[]).includes(value);
 }
@@ -823,9 +842,15 @@ export const handlers = [
         );
 
     if (conflict) {
-      return HttpResponse.json(mockErrorByCode.TARIFF_CONFLICT.body, {
-        status: 409,
-      });
+      return HttpResponse.json(
+        {
+          error: {
+            ...mockErrorByCode.TARIFF_CONFLICT.body.error,
+            conflicting_rule: conflict,
+          },
+        },
+        { status: 409 },
+      );
     }
 
     const rule: TariffRule = {
@@ -834,6 +859,7 @@ export const handlers = [
       is_active: true,
     };
     mockTariffs.unshift(rule);
+    recordTariffAudit("tariff.created", rule.id, null, rule);
 
     return HttpResponse.json(envelope(rule), { status: 201 });
   }),
@@ -857,12 +883,18 @@ export const handlers = [
       return notFound();
     }
 
-    const patch = (await request.json()) as Partial<TariffRuleCreate>;
+    const patch = (await request.json()) as Partial<TariffRule>;
     const updated: TariffRule = { ...existing, ...patch };
     const stored = mockTariffs.findIndex(
       (rule) => rule.id === String(params.ruleId),
     );
     mockTariffs[stored] = updated;
+    recordTariffAudit(
+      patch.is_active === false ? "tariff.deactivated" : "tariff.updated",
+      updated.id,
+      existing,
+      updated,
+    );
 
     return HttpResponse.json(envelope(updated));
   }),

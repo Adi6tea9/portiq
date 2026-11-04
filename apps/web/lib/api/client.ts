@@ -1,5 +1,5 @@
 import { getAccessToken } from "../auth/client";
-import type { ApiErrorBody, Envelope } from "./types";
+import type { ApiErrorBody, Envelope, TariffRule } from "./types";
 
 const DEFAULT_BASE_URL = "http://localhost:8000/api/v1";
 
@@ -10,6 +10,7 @@ export class ApiError extends Error {
     message: string,
     public requestId: string,
     public details?: { field: string; issue: string }[],
+    public conflictingRule?: TariffRule,
   ) {
     super(message);
     this.name = "ApiError";
@@ -163,6 +164,7 @@ export async function apiClient<T>(
         errorBody.error.message,
         requestId,
         errorBody.error.details,
+        errorBody.error.conflicting_rule,
       );
     }
 
