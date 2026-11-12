@@ -1,0 +1,15 @@
+# Direct dependencies only, versions verified with `pip index versions` and installed.
+# Transitive pins (starlette, anyio, cryptography, ...) are resolved by pip at install time.
+alembic==1.20.1
+fastapi==0.162.0
+httpx==0.28.1
+mypy==2.4.1
+psycopg[binary]==3.3.8
+pydantic==2.14.1
+PyJWT[crypto]==2.15.1
+pytest==9.2.0
+pytest-cov==7.1.0
+ruff==0.17.4
+SQLAlchemy==2.1.8
+uvicorn==0.54.0
+PyJWT==2.8.0
