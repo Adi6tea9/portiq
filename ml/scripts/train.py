@@ -289,7 +289,7 @@ def main(version: str) -> None:
         "interval_margin_days": margin,  # API: lo = max(0, q10 - margin), hi = q90 + margin
         "baseline": {"keys": keys, "stat": "median", "table": baseline_table, "global": float(train[TARGET].median())},
     }
-    model_path = artifacts_dir / f"dwell_model_{version}.joblib"
+    model_path = artifacts_dir / f"dwell_model_v2.joblib"
     joblib.dump(bundle, model_path)
     meta = {
         "version": version,

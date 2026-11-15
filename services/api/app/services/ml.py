@@ -37,7 +37,7 @@ class DwellTimeModel:
         if not self.is_loaded or self.model is None:
             raise RuntimeError("Model is not loaded. Cannot generate prediction.")
 
-        return float(self.model.predict(self.model_frame(features))[0])
+        return float(self.model['point_model'].predict(self.model_frame(features))[0])
 
     def model_frame(self, features: dict[str, Any]) -> pd.DataFrame:
         """Build the frame exactly as the artifact expects it.
@@ -47,8 +47,18 @@ class DwellTimeModel:
         an unknown category. The trained ``ColumnTransformer`` is the source of truth.
         """
         row = dict(features)
+        v2_defaults = {
+            'exam_queue_len': 0.0,
+            'cargo_priority': 'Standard',
+            'customs_channel': 'Green',
+            'is_holiday': 0,
+            'importer_type': 'Standard'
+        }
+        for col, default_val in v2_defaults.items():
+            if col not in row:
+                row[col] = default_val
 
-        preprocessor = getattr(self.model, "named_steps", {}).get("preprocessor")
+        preprocessor = getattr(self.model['point_model'], "named_steps", {}).get("preprocessor")
         expected_cols = list(getattr(preprocessor, "feature_names_in_", row.keys()))
 
         for col in expected_cols:
