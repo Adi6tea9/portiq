@@ -9,10 +9,15 @@ from __future__ import annotations
 import os
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Final, Literal
 
 DEFAULT_DATABASE_URL = "postgresql+psycopg://portiq:portiq@localhost:5432/portiq"
 DEFAULT_ALLOWED_ORIGINS = "http://localhost:3000"
+
+# CONTRACT-GAP: CG-017 - section 18 says "put the server values into the API .env",
+# but section 3 defines environment variables only.
+ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
 
 # Frozen by backend spec section 4; reused by /config, capacity and at-risk code.
 CAPACITY_MODERATE_PCT = 60
@@ -54,6 +59,22 @@ def parse_origins(raw: str) -> tuple[str, ...]:
     if "*" in origins:
         raise RuntimeError("ALLOWED_ORIGINS must not contain '*': credentials are allowed")
     return origins
+
+
+def load_env_file(path: Path = ENV_FILE) -> None:
+    """Load ``services/api/.env`` as defaults (CONTRACT-GAP: CG-017).
+
+    Real environment variables always win, no interpolation, and tests never read the
+    file so a developer's local Supabase settings cannot change the suite.
+    """
+    if os.environ.get("APP_ENV") == "test" or not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, separator, value = line.partition("=")
+        name = name.strip()
+        if not separator or not name or name.startswith("#"):
+            continue
+        os.environ.setdefault(name, value.strip().strip('"').strip("'"))
 
 
 def _optional(source: Mapping[str, str], name: str) -> str | None:
@@ -115,4 +136,5 @@ def load_settings(source: Mapping[str, str] | None = None) -> Settings:
     )
 
 
+load_env_file()
 settings = load_settings()

@@ -1,4 +1,7 @@
-"""``GET /capacity/forecast``: daily yard/berth utilization forecast (backend spec sections 8 and 9)."""
+"""``GET /capacity/forecast``: daily yard/berth utilization forecast.
+
+Backend spec sections 8 and 9.
+"""
 
 from __future__ import annotations
 

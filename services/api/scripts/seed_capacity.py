@@ -1,18 +1,19 @@
 import argparse
-import sys
 import os
-from datetime import date, timedelta, datetime, timezone
+import sys
+from datetime import UTC, date, datetime, timedelta
 
 # Add app to path if running from root
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from app.db import engine
-from app.models import Port, CapacityForecast
+from app.models import CapacityForecast, Port
 from app.services.capacity_sim import capacity_sim_for_date
+
 
 def run_seed(start_date: date, days: int):
     with Session(engine) as db:
@@ -23,7 +24,7 @@ def run_seed(start_date: date, days: int):
 
         resources = ["yard", "berth"]
         version = "sim-1.0"
-        generated_at = datetime.now(timezone.utc)
+        generated_at = datetime.now(UTC)
         inserted_count = 0
 
         for port in ports:
@@ -36,10 +37,11 @@ def run_seed(start_date: date, days: int):
                     if not sim_result.get("is_valid"):
                         continue
                         
-                    bucket_start = datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc)
+                    bucket_start = datetime.combine(target_date, datetime.min.time(), tzinfo=UTC)
                     bucket_end = bucket_start + timedelta(days=1)
                     
-                    # Upsert query mapping to section 6 constraint: Unique (port_id, resource_type, bucket_start, model_or_rule_version)
+                    # Upsert query mapping to section 6 constraint:
+                    # Unique (port_id, resource_type, bucket_start, model_or_rule_version)
                     stmt = insert(CapacityForecast).values(
                         port_id=port.id,
                         resource_type=resource,
@@ -52,18 +54,31 @@ def run_seed(start_date: date, days: int):
                         model_or_rule_version=version,
                         generated_at=generated_at
                     ).on_conflict_do_nothing(
-                        index_elements=['port_id', 'resource_type', 'bucket_start', 'model_or_rule_version']
+                        index_elements=[
+                            "port_id",
+                            "resource_type",
+                            "bucket_start",
+                            "model_or_rule_version",
+                        ]
                     )
                     
                     db.execute(stmt)
                     inserted_count += 1
                     
         db.commit()
-        print(f"Capacity seed complete. Processed/Skipped {inserted_count} valid buckets over {days} days.")
+        print(
+            f"Capacity seed complete. Processed/Skipped {inserted_count} valid buckets "
+            f"over {days} days."
+        )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=str, help="YYYY-MM-DD format", default=date.today().isoformat())
+    parser.add_argument(
+        "--start",
+        type=str,
+        help="YYYY-MM-DD format",
+        default=date.today().isoformat(),
+    )
     parser.add_argument("--days", type=int, default=120)
     args = parser.parse_args()
     

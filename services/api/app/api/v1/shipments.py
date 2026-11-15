@@ -6,16 +6,15 @@ from datetime import UTC, date, datetime, time, timedelta
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, Header
+from fastapi import APIRouter, Depends, Header, Query, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
-from fastapi.encoders import jsonable_encoder
 
 from app.core.deps import DbSession, require_role
 from app.core.errors import AppError, request_id_of
 from app.models import Profile, Shipment
 from app.models.tables import PredictionRun
-from app.services.prediction import run_prediction_flow
 from app.repositories import audit_logs as audit_logs_repo
 from app.repositories import operator_ports as operator_ports_repo
 from app.repositories import ports as ports_repo
@@ -31,6 +30,7 @@ from app.schemas.shipments import (
     shipment_response,
     utc_z,
 )
+from app.services.prediction import run_prediction_flow
 
 router = APIRouter(prefix="/shipments", tags=["shipments"])
 
@@ -312,7 +312,7 @@ def create_prediction(
     try:
         UUID(idempotency_key)
     except ValueError:
-        raise _invalid("Idempotency-Key", "must be a valid UUID")
+        raise _invalid("Idempotency-Key", "must be a valid UUID") from None
 
     # 3. Check for exact duplicate to set HTTP 200 instead of 201
     existing = session.query(PredictionRun).filter_by(
@@ -327,10 +327,12 @@ def create_prediction(
         "prediction_id": str(run.id),
         "shipment_id": str(run.shipment_id),
         "predicted_dwell_days": float(run.predicted_dwell_days),
-        "predicted_clearance_at": run.predicted_clearance_at.isoformat() + "Z",
+        "predicted_clearance_at": utc_z(run.predicted_clearance_at),
         "currency": run.currency.value if hasattr(run.currency, 'value') else run.currency,
         "cost_breakdown": run.cost_breakdown,
-        "total_estimated_cost": str(run.total_estimated_cost) if run.total_estimated_cost is not None else None,
+        "total_estimated_cost": (
+            str(run.total_estimated_cost) if run.total_estimated_cost is not None else None
+        ),
         "total_is_partial": run.total_is_partial,
         "capacity_snapshot": run.capacity_snapshot,
         "explanation": run.explanation,
@@ -339,15 +341,21 @@ def create_prediction(
             "model_version": run.model_version,
             "dataset_version": run.dataset_version,
             "tariff_rule_versions": list(run.tariff_rule_versions.values()),
-            "generated_at": run.created_at.isoformat() + "Z",
-            "data_source": run.data_source.value if hasattr(run.data_source, 'value') else run.data_source,
+            "generated_at": utc_z(run.created_at),
+            "data_source": (
+                run.data_source.value
+                if hasattr(run.data_source, "value")
+                else run.data_source
+            ),
             "is_demo_data": run.is_demo_data
         }
     }
     
     return JSONResponse(
         status_code=status_code,
-        content=jsonable_encoder({"data": response_data, "meta": {"request_id": request_id_of(request)}}),
+        content=jsonable_encoder(
+            {"data": response_data, "meta": {"request_id": request_id_of(request)}}
+        ),
     )
 
 @router.get("/{shipment_id}/predictions")
@@ -361,16 +369,22 @@ def list_predictions(
 ) -> dict[str, Any]:
     shipment = _visible_shipment(session, user, shipment_id)
         
-    query = session.query(PredictionRun).filter(PredictionRun.shipment_id == shipment.id).order_by(PredictionRun.created_at.desc())
+    query = (
+        session.query(PredictionRun)
+        .filter(PredictionRun.shipment_id == shipment.id)
+        .order_by(PredictionRun.created_at.desc())
+    )
     total = query.count()
     items = query.offset((page - 1) * page_size).limit(page_size).all()
     
     data = [{
         "prediction_id": str(item.id),
-        "created_at": item.created_at.isoformat() + "Z",
+        "created_at": utc_z(item.created_at),
         "model_version": item.model_version,
         "predicted_dwell_days": float(item.predicted_dwell_days),
-        "total_estimated_cost": str(item.total_estimated_cost) if item.total_estimated_cost else None,
+        "total_estimated_cost": (
+            str(item.total_estimated_cost) if item.total_estimated_cost is not None else None
+        ),
         "total_is_partial": item.total_is_partial,
         "is_demo_data": item.is_demo_data
     } for item in items]

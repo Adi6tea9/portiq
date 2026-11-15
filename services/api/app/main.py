@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import logging
 import time
+
+# from app.api.v1 import capacity
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, FastAPI, Request
@@ -12,17 +15,13 @@ from fastapi.responses import JSONResponse
 from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-# from app.api.v1 import capacity
-from pathlib import Path
-from app.services.ml import dwell_model
-
-from app.api.v1 import api_router
-from app.api.v1 import admin , predict , shipments , operator
+from app.api.v1 import admin, api_router, capacity, operator
 from app.core.config import settings
 from app.core.errors import error_response, register_exception_handlers, request_id_of
 from app.core.logging import configure_logging, new_request_id
 from app.db import check_database
 from app.schemas.envelope import ErrorDetail, envelope
+from app.services.ml import dwell_model
 
 logger = logging.getLogger("portiq.request")
 
@@ -143,8 +142,11 @@ def create_app() -> FastAPI:
     
     # --- B07: LOAD THE ML MODEL ---
     # __file__ is app/main.py. parents[3] dynamically finds the root 'portiq' folder.
-    root_dir = Path(__file__).resolve().parents[3]
-    model_path = root_dir / "ml" / "artifacts" / "dwell_model_v1.joblib"
+    if settings.model_path:
+        model_path = Path(settings.model_path)
+    else:
+        root_dir = Path(__file__).resolve().parents[3]
+        model_path = root_dir / "ml" / "artifacts" / "dwell_model_v1.joblib"
     dwell_model.load(model_path)
     
     app = FastAPI(title="PortIQ API", version="0.1.0")
@@ -162,7 +164,7 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix="/api/v1")
     app.include_router(admin.router, prefix="/api/v1")
     app.include_router(operator.router, prefix="/api/v1")
-  #  app.include_router(capacity.router, prefix="/api/v1/capacity", tags=["capacity"])
+    app.include_router(capacity.router, prefix="/api/v1")
     return app
 
 

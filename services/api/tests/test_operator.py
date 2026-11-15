@@ -1,16 +1,19 @@
 """Tests for B10 Operator Views and Scope Isolation."""
 from __future__ import annotations
+
 import uuid
-from datetime import datetime, UTC
 from collections.abc import Iterator
+from datetime import UTC, datetime
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
-from app.models.tables import Profile, Shipment, OperatorPort, Port
+from app.models.tables import OperatorPort, Port, Profile, Shipment
 from scripts.seed_dev import seed_demo
+
 
 @pytest.fixture
 def api(app: FastAPI, client: TestClient, db_session: Session) -> Iterator[TestClient]:
@@ -29,25 +32,48 @@ def demo(db_session: Session) -> Session:
     # 1. Ensure Operator 1 exists
     op1 = db_session.query(Profile).filter(Profile.email == "operator1@portiq.demo").first()
     if not op1:
-        op1 = Profile(id=str(uuid.uuid4()), email="operator1@portiq.demo", role="port_operator", is_active=True, created_at=datetime.now(UTC))
+        op1 = Profile(
+            id=str(uuid.uuid4()),
+            email="operator1@portiq.demo",
+            role="port_operator",
+            is_active=True,
+            created_at=datetime.now(UTC),
+        )
         db_session.add(op1)
     
     # 2. Ensure Operator 2 exists
     op2 = db_session.query(Profile).filter(Profile.email == "operator2@portiq.demo").first()
     if not op2:
-        op2 = Profile(id=str(uuid.uuid4()), email="operator2@portiq.demo", role="port_operator", is_active=True, created_at=datetime.now(UTC))
+        op2 = Profile(
+            id=str(uuid.uuid4()),
+            email="operator2@portiq.demo",
+            role="port_operator",
+            is_active=True,
+            created_at=datetime.now(UTC),
+        )
         db_session.add(op2)
         
     # 3. Ensure a specific port exists for Operator 1
     port = db_session.query(Port).filter(Port.port_code == "TOP1").first()
     if not port:
-        port = Port(id=str(uuid.uuid4()), name="Test Op Port", port_code="TOP1", country="IN", timezone="UTC", created_at=datetime.now(UTC))
+        port = Port(
+            id=str(uuid.uuid4()),
+            name="Test Op Port",
+            port_code="TOP1",
+            country="IN",
+            timezone="UTC",
+            created_at=datetime.now(UTC),
+        )
         db_session.add(port)
         
     db_session.commit()
     
     # 4. Assign the port to Operator 1
-    op_port = db_session.query(OperatorPort).filter(OperatorPort.user_id == op1.id, OperatorPort.port_id == port.id).first()
+    op_port = (
+        db_session.query(OperatorPort)
+        .filter(OperatorPort.user_id == op1.id, OperatorPort.port_id == port.id)
+        .first()
+    )
     if not op_port:
         db_session.add(OperatorPort(user_id=op1.id, port_id=port.id))
         
@@ -56,11 +82,23 @@ def demo(db_session: Session) -> Session:
     if not shipment:
         importer = db_session.query(Profile).filter(Profile.role == "importer_exporter").first()
         shipment = Shipment(
-            id=str(uuid.uuid4()), owner_user_id=importer.id, port_id=port.id, reference="SNEAKY-TEST",
-            direction="import", cargo_type="general_container", container_size_ft=20, hs_code="123456",
-            weight_kg=100, declared_value=100, currency="INR", shipping_line="other", vessel_size_band="small",
-            expected_arrival_at=datetime.now(UTC), documentation_status="complete", status="submitted",
-            created_at=datetime.now(UTC)
+            id=str(uuid.uuid4()),
+            owner_user_id=importer.id,
+            port_id=port.id,
+            reference="SNEAKY-TEST",
+            direction="import",
+            cargo_type="general_container",
+            container_size_ft=20,
+            hs_code="123456",
+            weight_kg=100,
+            declared_value=100,
+            currency="INR",
+            shipping_line="other",
+            vessel_size_band="small",
+            expected_arrival_at=datetime.now(UTC),
+            documentation_status="complete",
+            status="submitted",
+            created_at=datetime.now(UTC),
         )
         db_session.add(shipment)
         

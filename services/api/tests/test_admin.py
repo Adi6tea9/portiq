@@ -1,48 +1,75 @@
+"""B08: tariff admin access, conflict handling and authorization."""
+
+from __future__ import annotations
+
 import uuid
-from datetime import datetime
+from collections.abc import Iterator
+from datetime import UTC, datetime
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from app.core.deps import get_db
+from app.db import get_db as admin_get_db
 from app.models.tables import Profile
-from app.db import get_db
 
-def ensure_test_user(email: str, role: str):
-    """Inserts a real profile into the empty test DB so auth and foreign keys pass natively."""
-    db = next(get_db())
-    existing = db.query(Profile).filter(Profile.email == email).first()
-    if not existing:
-        user = Profile(
-            id=str(uuid.uuid4()),
-            email=email,
-            display_name="Test User",
-            role=role,
-            is_active=True,
-            created_at=datetime.utcnow()
+
+@pytest.fixture
+def api(app: FastAPI, client: TestClient, db_session: Session) -> Iterator[TestClient]:
+    """HTTP client whose requests share the rolled-back test transaction.
+
+    ``admin.py`` still depends on ``app.db.get_db``, so both providers are overridden.
+    """
+    app.dependency_overrides[get_db] = lambda: db_session
+    app.dependency_overrides[admin_get_db] = lambda: db_session
+    try:
+        yield client
+    finally:
+        app.dependency_overrides.clear()
+
+
+def ensure_test_user(db: Session, email: str, role: str) -> None:
+    """Create the profile inside the test transaction so it never leaks into another test."""
+    if db.query(Profile).filter(Profile.email == email).first() is None:
+        db.add(
+            Profile(
+                id=uuid.uuid4(),
+                email=email,
+                display_name="Test User",
+                role=role,
+                is_active=True,
+                created_at=datetime.now(UTC),
+            )
         )
-        db.add(user)
-        db.commit()
-    db.close()
+        db.flush()
 
-def test_admin_create_tariff_and_conflict(client):
-    ensure_test_user("admin@portiq.demo", "platform_admin")
-    
+
+def test_admin_create_tariff_and_conflict(api: TestClient, db_session: Session) -> None:
+    ensure_test_user(db_session, "admin@portiq.demo", "platform_admin")
+
     payload = {
         "rule_type": "customs_duty",
         "rate_type": "percent_of_value",
         "rate_value": "10.00",
         "valid_from": "2026-01-01",
         "source_note": "Test rule",
-        "currency": "INR"
+        "currency": "INR",
     }
     headers = {"Authorization": "Bearer dev:admin@portiq.demo"}
-    
-    res1 = client.post("/api/v1/admin/tariffs", json=payload, headers=headers)
+
+    res1 = api.post("/api/v1/admin/tariffs", json=payload, headers=headers)
     assert res1.status_code == 201
-    
-    res2 = client.post("/api/v1/admin/tariffs", json=payload, headers=headers)
+
+    res2 = api.post("/api/v1/admin/tariffs", json=payload, headers=headers)
     assert res2.status_code == 409
     assert res2.json()["error"]["code"] == "TARIFF_CONFLICT"
 
-def test_importer_refused_admin_access(client):
-    ensure_test_user("importer@portiq.demo", "importer_exporter")
-    
+
+def test_importer_refused_admin_access(api: TestClient, db_session: Session) -> None:
+    ensure_test_user(db_session, "importer@portiq.demo", "importer_exporter")
+
     headers = {"Authorization": "Bearer dev:importer@portiq.demo"}
-    res = client.get("/api/v1/admin/tariffs", headers=headers)
+    res = api.get("/api/v1/admin/tariffs", headers=headers)
     assert res.status_code == 403

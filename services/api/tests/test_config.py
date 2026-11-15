@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pytest
 
-from app.core.config import DEFAULT_DATABASE_URL, load_settings
+from app.core.config import DEFAULT_DATABASE_URL, load_env_file, load_settings
 
 JWKS_URL = "https://project.supabase.co/auth/v1/.well-known/jwks.json"
 ISSUER = "https://project.supabase.co/auth/v1"
@@ -93,3 +96,34 @@ def test_supabase_mode_requires_jwt_settings() -> None:
 def test_invalid_values_fail_fast(env: dict[str, str], message: str) -> None:
     with pytest.raises(RuntimeError, match=message):
         load_settings(env)
+
+
+def test_env_file_only_fills_missing_values(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        '# comment\n\nAUTH_MODE="supabase"\nSUPABASE_URL=https://project.supabase.co\n'
+        "SUPABASE_JWT_AUDIENCE=stale\n",
+        encoding="utf-8",
+    )
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("AUTH_MODE", raising=False)
+    monkeypatch.setenv("SUPABASE_JWT_AUDIENCE", "authenticated")
+
+    load_env_file(env_file)
+
+    assert os.environ["AUTH_MODE"] == "supabase"
+    assert os.environ["SUPABASE_URL"] == "https://project.supabase.co"
+    assert os.environ["SUPABASE_JWT_AUDIENCE"] == "authenticated"
+
+
+def test_env_file_is_ignored_in_tests(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text("AUTH_MODE=supabase\n", encoding="utf-8")
+    monkeypatch.setenv("APP_ENV", "test")
+    monkeypatch.delenv("AUTH_MODE", raising=False)
+
+    load_env_file(env_file)
+
+    assert "AUTH_MODE" not in os.environ

@@ -1,4 +1,5 @@
 from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import func
 

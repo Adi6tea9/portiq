@@ -1,8 +1,9 @@
-import math
 import hashlib
-import numpy as np
+import math
 from datetime import date, timedelta
-from typing import Dict, Any, Optional
+from typing import Any
+
+import numpy as np
 
 # Anchor date for day 0 calculations
 EPOCH_DATE = date(2025, 1, 1)
@@ -22,7 +23,7 @@ def _get_base_arrivals(port_code: str, resource_type: str) -> float:
     mean_dwell = 2.0 if resource_type == "yard" else 1.0
     return (target_pct * cap) / mean_dwell
 
-def capacity_sim_for_date(port_code: str, resource_type: str, target_date: date) -> Dict[str, Any]:
+def capacity_sim_for_date(port_code: str, resource_type: str, target_date: date) -> dict[str, Any]:
     if target_date < EPOCH_DATE:
         raise ValueError("Cannot simulate dates before epoch (2025-01-01)")
 
@@ -71,7 +72,7 @@ def capacity_sim_for_date(port_code: str, resource_type: str, target_date: date)
         "is_valid": is_valid
     }
 
-def utilization_for(port_code: str, resource_type: str, target_date: date) -> Optional[float]:
+def utilization_for(port_code: str, resource_type: str, target_date: date) -> float | None:
     """Returns just the utilization percentage for the ML generator and prediction orchestrator."""
     res = capacity_sim_for_date(port_code, resource_type, target_date)
     if not res.get("is_valid"):

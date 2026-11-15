@@ -3,11 +3,12 @@
 FastAPI backend for the PortIQ planning prototype. Every response is synthetic or demo data;
 nothing here is an official customs assessment or a guarantee.
 
-Scope of this commit: **B01 scaffold + B02 database + B03 auth + B04 shipments** — configuration,
-structured logging, request ids, error envelopes, CORS, `/health`, `/ready`, every table from
-backend spec section 6 as SQLAlchemy models and one Alembic revision (enums, constraints, indexes,
-RLS enabled with no policies), repositories, the idempotent dev seed, both auth modes, `GET /me`,
-`PATCH /me`, `GET /config`, `GET /ports`, and every shipment/event endpoint from sections 7 and 8.
+Scope of the code: **B01 scaffold, B02 database, B03 auth, B04 shipments, B05 capacity, B06
+synthetic data/training, B07 model service and SHAP, B08 cost engine and tariff admin, B09
+prediction orchestration**, plus the B11 documentation and Supabase smoke test. **B10 is
+incomplete**: `/operator/overview`, `/operator/shipments`, `/admin/audit-logs`, a single-prediction
+GET and the frontend contract tests are not implemented. See `docs/architecture.md` for the exact
+limitation list.
 
 ## Requirements
 
@@ -23,8 +24,8 @@ python -m venv .venv
 pip install -r services\api\requirements.txt
 
 cd services\api
-# No .env loading: export the variables, or use the defaults in app/core/config.py.
-# .env.example lists every variable with its local-development value.
+# Copy .env.example to .env and edit it: the file is loaded automatically as a fallback,
+# and exported environment variables always win (CONTRACT-GAP CG-017).
 ```
 
 ## Run
@@ -38,7 +39,8 @@ uvicorn app.main:app --reload
 - `http://localhost:8000/ready` → 200 when Postgres is reachable **and** the model is loaded; 503 otherwise
 - `http://localhost:8000/docs` → OpenAPI UI
 
-`/ready` reports `503` until B07 loads a model. That is expected, not a bug.
+`/ready` returns 503 and predictions return 503 until `ml/artifacts/dwell_model_v1.joblib` exists
+(build it with `generate_synthetic.py`, `prepare_data.py`, `train.py`; see the repository README).
 
 ## Authentication
 
@@ -76,14 +78,42 @@ All under `/api/v1/shipments` (backend spec sections 7 and 8, frontend contract 
   Sets the actual timestamp, appends the event and an `audit_logs` row. Anything else is `409`.
   An optional note is trimmed and limited to 500 characters (`422` above that).
 
+## Prediction and capacity
 
+- `POST /shipments/{id}/prediction` — owner or scoped operator; requires an `Idempotency-Key`
+  UUID header. 201 for a new run, 200 for an exact replay, 409 `IDEMPOTENCY_CONFLICT` when the
+  shipment inputs changed, 429 `RATE_LIMITED` after 10 requests per minute per user, 503
+  `MODEL_UNAVAILABLE` when the model cannot produce a trustworthy number. Returns the predicted
+  dwell days, clearance time, cost breakdown, capacity snapshot, SHAP explanation, warnings and
+  provenance. The run row is immutable.
+- `GET /shipments/{id}/predictions` — paginated history, newest first.
+- `GET /capacity/forecast` — daily yard/berth buckets for a port and date range (max 31 days), with
+  invalid buckets excluded. Operators are limited to their `operator_ports`.
+- `POST /predict/dwell` — direct model inference for a full 12-feature payload. This endpoint is
+  outside the frozen frontend contract; treat it as a diagnostic.
+- `GET /operator/dashboard/summary` is the only operator route today; `/operator/overview` and
+  `/operator/shipments` from spec section 14 are B10 work and are not implemented.
+- `/admin/tariffs` implements list/create/deactivate only; `GET /admin/audit-logs` is B10 work and is
+  not implemented.
+
+## Quality gates
 
 ```powershell
 cd services\api
-ruff check .
-mypy .
-pytest
+..\..\.venv\Scripts\python.exe -m ruff check .
+..\..\.venv\Scripts\python.exe -m mypy .
+..\..\.venv\Scripts\python.exe -m pytest
 ```
+
+Current state: `pytest` 113 passed, `ruff check .` clean, `mypy .` 25 pre-existing errors in six
+older modules (annotation gaps only). Tests need a local Postgres; `conftest.py` refuses any
+database that is not a local `*_test` database.
+
+## Supabase smoke test
+
+`scripts/smoke_supabase.py` signs in with a real user, calls `/me`, creates a shipment and runs a
+prediction. Credentials are arguments (the password is prompted), the script reads no API setting
+and prints no token. See the repository README for the exact command.
 
 ## Database
 
@@ -156,20 +186,23 @@ As a second line of defence the schema reset refuses to run unless the database 
 ```
 services/api/
   app/main.py            app factory, request-id middleware, CORS, /health, /ready
-  app/api/v1/            me.py, config.py, ports.py, shipments.py (mounted at /api/v1)
-  app/core/config.py     environment variables (backend spec section 3) and startup validation
+  app/api/v1/            me.py, config.py, ports.py, shipments.py, capacity.py, predict.py, operator.py, admin.py
+  app/core/config.py     environment variables (backend spec section 3), .env fallback, startup validation
   app/core/security.py   dev-token parsing and JWKS JWT verification (cached key set)
   app/core/deps.py       get_db, get_current_user, require_role
   app/core/logging.py    JSON logging + request-id generation
   app/core/errors.py     error envelope, exception handlers, status -> error code mapping
   app/schemas/envelope.py  envelope Pydantic models and helpers
   app/schemas/enums.py   the single enum source (mirrored by the Postgres enum types)
-  app/schemas/me.py, app_config.py, ports.py, shipments.py  response/request shapes
+  app/schemas/           request/response shapes per area
   app/models/tables.py   all nine tables (backend spec section 6)
   app/repositories/      one module per entity: profiles, ports, operator_ports, shipments, tariffs, audit_logs
+  app/services/          capacity_sim.py, cost_engine.py, prediction.py, model_service.py, explain.py, ml.py
   app/db.py              SQLAlchemy engine, declarative Base, session_scope, readiness probe
   migrations/versions/0001_initial.py  enums, tables, checks, indexes, RLS
   scripts/seed_dev.py    idempotent demo seed (ports, users, tariffs, 12 shipments)
+  scripts/seed_capacity.py   fills capacity_forecasts with simulator output
+  scripts/smoke_supabase.py  real sign-in + /me + shipment + prediction smoke test
   tests/                 pytest suite (test DB: portiq_test)
   tests/support/probe_app.py  test-only app used to exercise 422/500 over real HTTP
 ```

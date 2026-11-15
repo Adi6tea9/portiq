@@ -1,0 +1,42 @@
+
+services:
+# the database container
+  db:
+    image: postgres:15
+    container_name: portiq-db
+    restart: always
+    environment:
+      POSTGRES_USER: portiq
+      POSTGRES_PASSWORD: portiq
+      POSTGRES_DB: portiq
+    ports:
+      - "5432:5432"
+    volumes:
+      - portiq-pgdata:/var/lib/postgresql/data
+
+      # The FastAPI Container
+  api:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # This points SQLAlchemy to the internal 'db' container, not localhost
+      - DATABASE_URL=postgresql+psycopg://portiq:portiq@db:5432/portiq
+      - APP_ENV=local
+      - MODEL_PATH=/models/dwell_model_v2.joblib
+    volumes:
+      - ../../ml/artifacts:/models:ro
+
+    env_file:
+      - .env  # Injects your SUPABASE_JWT_SECRET securely
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portiq -d portiq"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  portiq-pgdata:
