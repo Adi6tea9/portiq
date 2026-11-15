@@ -37,6 +37,15 @@ class DwellTimeModel:
         if not self.is_loaded or self.model is None:
             raise RuntimeError("Model is not loaded. Cannot generate prediction.")
 
+        return float(self.model.predict(self.model_frame(features))[0])
+
+    def model_frame(self, features: dict[str, Any]) -> pd.DataFrame:
+        """Build the frame exactly as the artifact expects it.
+
+        The artifact's ``hs_chapter`` categories are integers (the prepared CSV loses
+        the zero padding on reload), so a ``"84"`` string would be silently encoded as
+        an unknown category. The trained ``ColumnTransformer`` is the source of truth.
+        """
         row = dict(features)
 
         preprocessor = getattr(self.model, "named_steps", {}).get("preprocessor")
@@ -54,7 +63,10 @@ class DwellTimeModel:
                     m_val = row.get("arrival_month", "November")
                     row[col] = months.index(m_val) + 1 if m_val in months else 11
                 elif col in ("day_of_week", "arrival_dow"):
-                    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                    days = [
+                        "Monday", "Tuesday", "Wednesday", "Thursday",
+                        "Friday", "Saturday", "Sunday",
+                    ]
                     d_val = row.get("arrival_day_of_week", "Tuesday")
                     row[col] = days.index(d_val) if d_val in days else 1
                 else:
@@ -63,7 +75,7 @@ class DwellTimeModel:
         if preprocessor is not None and hasattr(preprocessor, "transformers_"):
             for name, trans, cols in preprocessor.transformers_:
                 if name == "cat" and hasattr(trans, "categories_"):
-                    for col, cats in zip(cols, trans.categories_):
+                    for col, cats in zip(cols, trans.categories_, strict=True):
                         if col in row and len(cats) > 0:
                             if np.issubdtype(cats.dtype, np.number):
                                 try:
@@ -71,15 +83,18 @@ class DwellTimeModel:
                                 except (ValueError, TypeError):
                                     pass
                             else:
-                                row[col] = str(row[col]).zfill(2) if col == "hs_chapter" else str(row[col])
+                                row[col] = (
+                                    str(row[col]).zfill(2)
+                                    if col == "hs_chapter"
+                                    else str(row[col])
+                                )
                 elif name == "num":
                     for col in cols:
                         if col in row:
                             row[col] = float(row[col])
 
         df = pd.DataFrame([[row[c] for c in expected_cols]], columns=expected_cols)
-        prediction = self.model.predict(df)[0]
-        return float(prediction)
+        return df
 
 
 dwell_model = DwellTimeModel()

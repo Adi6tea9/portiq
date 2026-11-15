@@ -1,22 +1,32 @@
+from datetime import date
+from typing import Any
+
 from pydantic import BaseModel, field_validator
-from typing import Optional, Any
-from datetime import date, datetime
-from app.schemas.enums import CostComponent, ShippingLine, CargoType, ContainerSizeFt, RateType, Currency
+
+from app.schemas.enums import (
+    CargoType,
+    ContainerSizeFt,
+    CostComponent,
+    Currency,
+    RateType,
+    ShippingLine,
+)
+
 
 class TariffRuleBase(BaseModel):
     rule_type: CostComponent
-    port_id: Optional[str] = None
-    hs_code_prefix: Optional[str] = None
-    shipping_line: Optional[ShippingLine] = None
-    cargo_type: Optional[CargoType] = None
-    container_size_ft: Optional[ContainerSizeFt] = None
+    port_id: str | None = None
+    hs_code_prefix: str | None = None
+    shipping_line: ShippingLine | None = None
+    cargo_type: CargoType | None = None
+    container_size_ft: ContainerSizeFt | None = None
     rate_type: RateType
     rate_value: str
     currency: Currency = Currency.INR
-    free_days: Optional[int] = None
-    tier_config: Optional[Any] = None
+    free_days: int | None = None
+    tier_config: Any | None = None
     valid_from: date
-    valid_to: Optional[date] = None
+    valid_to: date | None = None
     source_note: str
 
 class TariffRuleCreate(TariffRuleBase):

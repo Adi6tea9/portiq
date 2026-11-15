@@ -1,7 +1,7 @@
-from decimal import Decimal, ROUND_HALF_UP
-from typing import List, Optional, Tuple, Any
 import math
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
+from typing import Any
 
 CORE_COMPONENTS = ["customs_duty", "port_storage", "demurrage"]
 
@@ -36,8 +36,11 @@ def _matches_scope(rule: Any, shipment: Any, effective_date: date) -> bool:
         
     return True
 
-def _select_rule(rules: List[Any], component: str, shipment: Any) -> Tuple[Optional[Any], Optional[str]]:
-    """Finds the most specific active rule for a component, handling ambiguity and currency mismatches."""
+def _select_rule(rules: list[Any], component: str, shipment: Any) -> tuple[Any | None, str | None]:
+    """Finds the most specific active rule for a component.
+
+    Handles ambiguity and currency mismatches.
+    """
     effective_date = shipment.expected_arrival_at.date()
     
     matching_rules = [
@@ -60,7 +63,10 @@ def _select_rule(rules: List[Any], component: str, shipment: Any) -> Tuple[Optio
     selected_rule = top_rules[0]
     
     if selected_rule.currency != shipment.currency:
-        return None, f"Currency mismatch: rule is {selected_rule.currency}, shipment is {shipment.currency}"
+        return None, (
+            f"Currency mismatch: rule is {selected_rule.currency}, "
+            f"shipment is {shipment.currency}"
+        )
         
     return selected_rule, None
 
@@ -80,7 +86,9 @@ def _calculate_line_amount(rule: Any, shipment: Any, predicted_dwell_days: float
     chargeable_days = math.ceil(max(0.0, predicted_dwell_days - free_days))
     
     if rule.rate_type == "per_day":
-        return (Decimal(str(chargeable_days)) * rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return (Decimal(str(chargeable_days)) * rate).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
         
     elif rule.rate_type == "tiered":
         total_amount = Decimal("0.00")
@@ -110,7 +118,9 @@ def _calculate_line_amount(rule: Any, shipment: Any, predicted_dwell_days: float
         
     return Decimal("0.00")
 
-def calculate_costs(shipment: Any, predicted_dwell_days: float, available_rules: List[Any]) -> Tuple[List[dict], bool, Optional[Decimal]]:
+def calculate_costs(
+    shipment: Any, predicted_dwell_days: float, available_rules: list[Any]
+) -> tuple[list[dict], bool, Decimal | None]:
     """
     Evaluates all components. 
     Returns: (list of cost lines, total_is_partial boolean, total_estimated_cost Decimal)

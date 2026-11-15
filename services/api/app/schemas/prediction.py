@@ -1,23 +1,26 @@
-from pydantic import BaseModel
-from typing import List, Optional, Any
 from datetime import datetime
-from app.schemas.enums import Currency, CostComponent, ResourceType, SourceType, WarningCode
+from typing import Any
+
+from pydantic import BaseModel
+
+from app.schemas.enums import CostComponent, Currency, ResourceType, SourceType, WarningCode
+
 
 class CostLine(BaseModel):
     component: CostComponent
-    amount: Optional[str]
+    amount: str | None
     status: str
-    reason: Optional[str]
-    rule_version: Optional[str]
+    reason: str | None
+    rule_version: str | None
 
 class CapacitySnapshot(BaseModel):
     status: str
-    reason: Optional[str]
-    resource_type: Optional[ResourceType] = None
-    utilization_pct: Optional[float] = None
-    source_type: Optional[SourceType] = None
-    bucket_start: Optional[datetime] = None
-    bucket_end: Optional[datetime] = None
+    reason: str | None
+    resource_type: ResourceType | None = None
+    utilization_pct: float | None = None
+    source_type: SourceType | None = None
+    bucket_start: datetime | None = None
+    bucket_end: datetime | None = None
 
 class ExplanationFeature(BaseModel):
     name: str
@@ -26,11 +29,11 @@ class ExplanationFeature(BaseModel):
 
 class Explanation(BaseModel):
     status: str
-    reason: Optional[str]
-    method: Optional[str] = None
-    base_value_days: Optional[float] = None
-    unit: Optional[str] = None
-    features: List[ExplanationFeature] = []
+    reason: str | None
+    method: str | None = None
+    base_value_days: float | None = None
+    unit: str | None = None
+    features: list[ExplanationFeature] = []
 
 class WarningDetail(BaseModel):
     code: WarningCode
@@ -39,7 +42,7 @@ class WarningDetail(BaseModel):
 class Provenance(BaseModel):
     model_version: str
     dataset_version: str
-    tariff_rule_versions: List[str]
+    tariff_rule_versions: list[str]
     generated_at: datetime
     data_source: SourceType
     is_demo_data: bool
@@ -50,11 +53,11 @@ class PredictionResponse(BaseModel):
     predicted_dwell_days: float
     predicted_clearance_at: datetime
     currency: Currency
-    cost_breakdown: List[CostLine]
-    total_estimated_cost: Optional[str]
+    cost_breakdown: list[CostLine]
+    total_estimated_cost: str | None
     total_is_partial: bool
-    capacity_snapshot: Optional[CapacitySnapshot]
-    explanation: Optional[Explanation]
-    warnings: List[WarningDetail]
+    capacity_snapshot: CapacitySnapshot | None
+    explanation: Explanation | None
+    warnings: list[WarningDetail]
     provenance: Provenance
     

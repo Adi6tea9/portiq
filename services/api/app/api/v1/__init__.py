@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.v1 import capacity, config, me, ports, predict , shipments
+from app.api.v1 import capacity, config, me, ports, predict, shipments
 
 api_router = APIRouter()
 api_router.include_router(me.router)
