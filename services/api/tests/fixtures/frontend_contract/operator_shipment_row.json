@@ -1,0 +1,42 @@
+{
+  "shipment": {
+    "id": "ops_ship_002",
+    "port_id": "port_sin",
+    "reference": "OPS-2026-002",
+    "direction": "import",
+    "cargo_type": "reefer",
+    "container_size_ft": 20,
+    "hs_code": "030613",
+    "weight_kg": 8500,
+    "declared_value": "750000.00",
+    "currency": "INR",
+    "shipping_line": "Line B",
+    "vessel_size_band": "medium",
+    "expected_arrival_at": "2026-11-18T08:00:00Z",
+    "documentation_status": "incomplete",
+    "status": "submitted",
+    "actual_arrival_at": null,
+    "actual_cleared_at": null,
+    "actual_dwell_days": null,
+    "created_at": "2026-10-21T09:15:00Z",
+    "updated_at": "2026-10-28T16:15:00Z",
+    "latest_prediction": {
+      "prediction_id": "pred_002",
+      "created_at": "2026-10-28T16:15:00Z",
+      "predicted_dwell_days": 9.4,
+      "total_estimated_cost": "93000.00",
+      "total_is_partial": true,
+      "model_version": "demo-model-0.8.2",
+      "is_demo_data": true
+    }
+  },
+  "at_risk_reasons": [
+    {
+      "code": "DOCUMENTATION_INCOMPLETE",
+      "message": "Documentation is incomplete."
+    }
+  ],
+  "warning_codes": [
+    "TARIFF_MISSING"
+  ]
+}

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { PageState } from "@/components/shared/PageState";
 import { Callout } from "@/components/shared/Callout";
 import { DemoBadge } from "@/components/shared/DemoBadge";
+import { ContainerArt } from "@/components/shared/ContainerArt";
 import { Money } from "@/components/shared/Money";
 import { DateTime } from "@/components/shared/DateTime";
 import { usePrediction } from "@/lib/api/hooks/usePrediction";
@@ -38,8 +39,7 @@ const DISCLAIMER_TEXT =
 const COST_NOTE =
   "Indicative total; verify against applicable tariffs and carrier terms.";
 
-const PARTIAL_TOTAL_NOTE =
-  "Indicative total. Some components could not be calculated.";
+const PARTIAL_TOTAL_NOTE = "Indicative total. Some components could not be calculated.";
 
 const COST_COMPONENT_LABELS: Record<CostLine["component"], string> = {
   customs_duty: "Customs duty",
@@ -83,27 +83,26 @@ function HeadlineCard({
           Estimate
         </Badge>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-2xl font-semibold text-harbor-navy">
-          Estimated dwell time: {formatDays(prediction.predicted_dwell_days)}
-        </p>
-        <p className="text-base">
-          <span className="text-muted">Estimated clearance: </span>
-          <DateTime
-            isoTimestamp={prediction.predicted_clearance_at}
-            timezone={timezone}
-          />
-        </p>
+      <CardContent className="flex items-center justify-between gap-6">
+        <div className="space-y-4">
+          <p className="text-2xl font-semibold text-harbor-navy">
+            Estimated dwell time: {formatDays(prediction.predicted_dwell_days)}
+          </p>
+          <p className="text-base">
+            <span className="text-muted">Estimated clearance: </span>
+            <DateTime
+              isoTimestamp={prediction.predicted_clearance_at}
+              timezone={timezone}
+            />
+          </p>
+        </div>
+        <ContainerArt className="w-40 shrink-0 sm:w-52" />
       </CardContent>
     </Card>
   );
 }
 
-function CostCard({
-  prediction,
-}: {
-  prediction: Prediction;
-}) {
+function CostCard({ prediction }: { prediction: Prediction }) {
   return (
     <Card>
       <CardHeader>
@@ -126,9 +125,7 @@ function CostCard({
                   </span>
                 )}
                 {line.status === "unavailable" && line.reason && (
-                  <span className="block text-xs text-muted">
-                    {line.reason}
-                  </span>
+                  <span className="block text-xs text-muted">{line.reason}</span>
                 )}
               </div>
               <span className="text-right">
@@ -201,9 +198,7 @@ function CapacityCard({
           <div className="flex items-start justify-between gap-4">
             <dt className="text-muted">Resource</dt>
             <dd className="text-right font-medium">
-              {snapshot.resource_type
-                ? humanize(snapshot.resource_type)
-                : "Unavailable"}
+              {snapshot.resource_type ? humanize(snapshot.resource_type) : "Unavailable"}
             </dd>
           </div>
           <div className="flex items-start justify-between gap-4">
@@ -224,9 +219,7 @@ function CapacityCard({
                 <>
                   <span className="text-muted">Unavailable</span>
                   {snapshot.reason && (
-                    <span className="block text-xs text-muted">
-                      {snapshot.reason}
-                    </span>
+                    <span className="block text-xs text-muted">{snapshot.reason}</span>
                   )}
                 </>
               )}
@@ -235,34 +228,24 @@ function CapacityCard({
           <div className="flex items-start justify-between gap-4">
             <dt className="text-muted">Data source</dt>
             <dd className="text-right font-medium">
-              {snapshot.source_type
-                ? humanize(snapshot.source_type)
-                : "Unavailable"}
+              {snapshot.source_type ? humanize(snapshot.source_type) : "Unavailable"}
             </dd>
           </div>
           {snapshot.bucket_start && snapshot.bucket_end && (
             <div className="flex items-start justify-between gap-4">
               <dt className="text-muted">Forecast bucket</dt>
               <dd className="text-right">
-                <DateTime
-                  isoTimestamp={snapshot.bucket_start}
-                  timezone={timezone}
-                />
+                <DateTime isoTimestamp={snapshot.bucket_start} timezone={timezone} />
                 <span aria-hidden="true"> – </span>
                 <span className="sr-only">to</span>
-                <DateTime
-                  isoTimestamp={snapshot.bucket_end}
-                  timezone={timezone}
-                />
+                <DateTime isoTimestamp={snapshot.bucket_end} timezone={timezone} />
               </dd>
             </div>
           )}
         </dl>
 
         {snapshot.source_type === "synthetic" && (
-          <p className="text-xs text-muted">
-            Forecast based on synthetic demo data
-          </p>
+          <p className="text-xs text-muted">Forecast based on synthetic demo data</p>
         )}
 
         <p className="text-xs text-muted">
@@ -274,13 +257,8 @@ function CapacityCard({
   );
 }
 
-function ExplanationCard({
-  explanation,
-}: {
-  explanation: Prediction["explanation"];
-}) {
-  const unavailableReason =
-    explanation?.reason ?? "Explanation unavailable.";
+function ExplanationCard({ explanation }: { explanation: Prediction["explanation"] }) {
+  const unavailableReason = explanation?.reason ?? "Explanation unavailable.";
 
   if (
     !explanation ||
@@ -290,9 +268,7 @@ function ExplanationCard({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">
-            What influenced this prediction
-          </CardTitle>
+          <CardTitle className="text-base">What influenced this prediction</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm font-medium">Unavailable</p>
@@ -305,9 +281,7 @@ function ExplanationCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">
-          What influenced this prediction
-        </CardTitle>
+        <CardTitle className="text-base">What influenced this prediction</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {explanation.base_value_days !== undefined && (
@@ -319,9 +293,7 @@ function ExplanationCard({
         <ExplanationChart features={explanation.features} />
         <ExplanationTable features={explanation.features} />
 
-        <p className="text-xs text-muted">
-          These are model effects, not proof of cause.
-        </p>
+        <p className="text-xs text-muted">These are model effects, not proof of cause.</p>
       </CardContent>
     </Card>
   );
@@ -335,11 +307,7 @@ function WarningsSection({ warnings }: { warnings: Warning[] }) {
   return (
     <div className="space-y-3">
       {warnings.map((warning, index) => (
-        <Callout
-          key={`${warning.code}-${index}`}
-          variant="warning"
-          className="text-sm"
-        >
+        <Callout key={`${warning.code}-${index}`} variant="warning" className="text-sm">
           {warning.message}
         </Callout>
       ))}
@@ -364,10 +332,7 @@ function ProvenanceFooter({
           <span>Dataset: {provenance.dataset_version}</span>
           <span>
             Generated:{" "}
-            <DateTime
-              isoTimestamp={provenance.generated_at}
-              timezone={timezone}
-            />
+            <DateTime isoTimestamp={provenance.generated_at} timezone={timezone} />
           </span>
           <span>Source: {humanize(provenance.data_source)}</span>
           {provenance.is_demo_data && <DemoBadge />}
@@ -397,9 +362,7 @@ export function PredictionResultClient({
   const configQuery = useConfig();
 
   const isLoading =
-    predictionQuery.isLoading ||
-    shipmentQuery.isLoading ||
-    portsQuery.isLoading;
+    predictionQuery.isLoading || shipmentQuery.isLoading || portsQuery.isLoading;
 
   if (isLoading) {
     return <PageState state="loading" />;
@@ -450,17 +413,13 @@ export function PredictionResultClient({
     return null;
   }
 
-  const port = portsQuery.data?.find(
-    (item) => item.id === shipmentQuery.data?.port_id,
-  );
+  const port = portsQuery.data?.find((item) => item.id === shipmentQuery.data?.port_id);
   const timezone = port?.timezone ?? "UTC";
 
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-harbor-navy">
-          Prediction result
-        </h1>
+        <h1 className="text-2xl font-semibold text-harbor-navy">Prediction result</h1>
         <Button variant="outline" asChild>
           <Link href={`/shipments/${shipmentId}`}>Back to shipment</Link>
         </Button>

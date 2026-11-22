@@ -1,0 +1,222 @@
+{
+  "reference_20ft": "..\\..\\container_20ft_standard\\container_20ft_standard.glb",
+  "passed": true,
+  "checks": [
+    {
+      "check": "1 GLB structure (runtime)",
+      "pass": true,
+      "detail": "20 meshes, 11 materials, 17 images OK"
+    },
+    {
+      "check": "1 GLB structure (master)",
+      "pass": true,
+      "detail": "20 meshes, 11 materials, 17 images OK"
+    },
+    {
+      "check": "2 hierarchy identical to 20 FT",
+      "pass": true,
+      "detail": {
+        "nodes": 25,
+        "missing": [],
+        "extra": [],
+        "reparented": []
+      }
+    },
+    {
+      "check": "2 all 11 materials identical to 20 FT (factors, maps, samplers)",
+      "pass": true,
+      "detail": "only the 40 FT marking artwork (42G1 / ID / weights / CSC id) differs, as intended"
+    },
+    {
+      "check": "3 runtime wood images byte-identical to 20 FT",
+      "pass": true,
+      "detail": {
+        "wood_albedo": true,
+        "wood_mr": true,
+        "wood_normal": true,
+        "wood_ao": true
+      }
+    },
+    {
+      "check": "3 master wood PNGs byte-identical to 20 FT",
+      "pass": true,
+      "detail": {
+        "wood_floor_albedo_2k.png": true,
+        "wood_floor_normal_2k.png": true,
+        "wood_floor_mr_2k.png": true,
+        "wood_floor_ao_2k.png": true
+      }
+    },
+    {
+      "check": "3 floor texture not stretched (same metres-per-UV as 20 FT) and spans full length",
+      "pass": true,
+      "detail": {
+        "40ft_m_per_uv_xz": [
+          2.94118,
+          2.38095
+        ],
+        "20ft_m_per_uv_xz": [
+          2.94118,
+          2.38095
+        ],
+        "floor_top_min": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "floor_top_max": [
+          12.03,
+          0.0,
+          2.35
+        ]
+      }
+    },
+    {
+      "check": "4 paint / interior / hardware / wood maps byte-identical to 20 FT",
+      "pass": true,
+      "detail": "13 runtime maps identical"
+    },
+    {
+      "check": "5 dimensions measured from geometry",
+      "pass": true,
+      "detail": {
+        "internal_LxWxH": [
+          12.03,
+          2.35,
+          2.39
+        ],
+        "volume_m3": 67.566,
+        "external_LxWxH": [
+          12.19,
+          2.44,
+          2.59
+        ],
+        "door_opening_WxH": [
+          2.34,
+          2.28
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "check": "5 standard height, not high cube",
+      "pass": true,
+      "detail": "external height 2.59 m (high cube would be 2.896 m), internal 2.39 m"
+    },
+    {
+      "check": "6 door assembly geometry byte-identical to 20 FT (doors open 200 deg, same pivots)",
+      "pass": true,
+      "detail": {
+        "Rear_Door_Left": true,
+        "Rear_Door_Right": true,
+        "Locking_Rods": true,
+        "Hinges": true,
+        "Rear_Door_Marking": true,
+        "CSC_Plate_Geometry": true,
+        "CSC_Plate_Marking": true
+      }
+    },
+    {
+      "check": "6 cross-section (Y/Z extents) identical to 20 FT, mm",
+      "pass": true,
+      "detail": {
+        "Left_Side_Wall": 0.0,
+        "Right_Side_Wall": 0.0,
+        "Roof_Panel": 0.0,
+        "Front_End_Wall": 0.0,
+        "Corner_Posts": 0.0,
+        "Corner_Castings": 0.0,
+        "Base_Floor": 0.0
+      }
+    },
+    {
+      "check": "7 side corrugation pitch/depth match 20 FT (ribs added, not stretched)",
+      "pass": true,
+      "detail": {
+        "40ft": {
+          "cycles": 43,
+          "pitch_m": 0.2798,
+          "depth_m": 0.04
+        },
+        "20ft": {
+          "cycles": 21,
+          "pitch_m": 0.281,
+          "depth_m": 0.04
+        }
+      }
+    },
+    {
+      "check": "7 continuous UVs, 1.6 m/tile like the 20 FT",
+      "pass": true,
+      "detail": {
+        "Left_Side_Wall/Mat_Exterior_Green": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Left_Side_Wall/Mat_Interior_Wall": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Right_Side_Wall/Mat_Exterior_Green": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Right_Side_Wall/Mat_Interior_Wall": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Roof_Panel/Mat_Exterior_Green": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Roof_Panel/Mat_Interior_Wall": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Front_End_Wall/Mat_Exterior_Green": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        },
+        "Front_End_Wall/Mat_Interior_Wall": {
+          "max_uv_jump": 0.0,
+          "m_per_uv": 1.6,
+          "density_spread_pct": 0.0
+        }
+      }
+    },
+    {
+      "check": "8 rear-door markings clear of rods/brackets/handles/hinges/CSC plate",
+      "pass": true,
+      "detail": "78 hardware footprints (+5 mm) tested at runtime & master resolution, all transparent"
+    },
+    {
+      "check": "8 side panel and owner decals never overlap on either wall",
+      "pass": true,
+      "detail": {
+        "max_alpha_product": {
+          "left": 0.0,
+          "right": 0.0
+        },
+        "side_decal_x_left": [
+          0.22,
+          5.68
+        ],
+        "owner_decal_x_left": [
+          2.05,
+          7.51
+        ]
+      }
+    }
+  ]
+}

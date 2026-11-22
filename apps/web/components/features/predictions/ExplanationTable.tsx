@@ -41,7 +41,7 @@ export function ExplanationTable({ features }: ExplanationTableProps) {
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="app-table-grid w-full text-sm">
         <caption className="sr-only">
           Feature contributions to the estimated dwell time, shown as a text
           alternative to the chart.

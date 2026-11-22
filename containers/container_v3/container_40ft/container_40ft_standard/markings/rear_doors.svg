@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="4096" viewBox="0 0 2048 2048">
+  <!-- LEFT REAR DOOR CENTER BAY (x: 210..810, 100% clear of locking rods) -->
+  <g id="Left_Door_Markings">
+    <text x="510" y="255" font-family="bold" font-size="108" font-weight="bold" fill="#E6ECE9" text-anchor="middle" letter-spacing="8">PORTIQ</text>
+    <rect x="260" y="286" width="500" height="8" fill="#CDAA7B"/>
+    <text x="510" y="346" font-family="condensed" font-size="33" font-weight="bold" fill="#E6ECE9" text-anchor="middle" opacity="0.90" letter-spacing="2">DEMO ASSET — FICTIONAL MARKINGS</text>
+
+    <!-- Handling & Warning Triangle (Yellow/Black Industrial Caution) -->
+    <polygon points="320,650 420,825 220,825" fill="#E2B93B" stroke="#141A18" stroke-width="8"/>
+    <rect x="311" y="705" width="18" height="66" fill="#141A18"/>
+    <rect x="311" y="784" width="18" height="19" fill="#141A18"/>
+
+    <text x="455" y="715" font-family="condensed" font-size="44" font-weight="bold" fill="#E2B93B" letter-spacing="2">CAUTION</text>
+    <text x="455" y="768" font-family="condensed" font-size="32" font-weight="bold" fill="#E6ECE9">CHECK LOCKING RODS</text>
+    <text x="455" y="814" font-family="condensed" font-size="32" font-weight="bold" fill="#E6ECE9">BEFORE OPENING</text>
+  </g>
+
+  <!-- RIGHT REAR DOOR CENTER BAY (x: 1235..1835, 100% clear of locking rods) -->
+  <g id="Right_Door_ISO_Header">
+    <text x="1235" y="215" font-family="condensed" font-size="68" font-weight="bold" fill="#E6ECE9" letter-spacing="2">PRTQU  000401</text>
+    <rect x="1745" y="148" width="76" height="82" fill="none" stroke="#E6ECE9" stroke-width="6"/>
+    <text x="1783" y="214" font-family="condensed" font-size="68" font-weight="bold" fill="#E6ECE9" text-anchor="middle">1</text>
+
+    <text x="1235" y="320" font-family="condensed" font-size="72" font-weight="bold" fill="#E6ECE9" letter-spacing="4">42G1</text>
+    <rect x="1480" y="264" width="175" height="52" fill="none" stroke="#CDAA7B" stroke-width="5"/>
+    <text x="1568" y="302" font-family="mono" font-size="30" font-weight="bold" fill="#CDAA7B" text-anchor="middle">DEMO ID</text>
+    <line x1="1235" y1="365" x2="1825" y2="365" stroke="#E6ECE9" stroke-width="4" opacity="0.65"/>
+  </g>
+
+  <g id="Right_Door_Specifications">
+    <text x="1235" y="460" font-family="condensed" font-size="38" font-weight="bold" fill="#CDAA7B" letter-spacing="1">MAX. GROSS</text>
+    <text x="1515" y="460" font-family="mono" font-size="38" font-weight="bold" fill="#E6ECE9">30,480 KG</text>
+    <text x="1515" y="512" font-family="mono" font-size="35" font-weight="bold" fill="#E6ECE9" opacity="0.90">67,200 LB</text>
+
+    <text x="1235" y="625" font-family="condensed" font-size="38" font-weight="bold" fill="#CDAA7B" letter-spacing="1">TARE</text>
+    <text x="1515" y="625" font-family="mono" font-size="38" font-weight="bold" fill="#E6ECE9">3,750 KG</text>
+    <text x="1515" y="677" font-family="mono" font-size="35" font-weight="bold" fill="#E6ECE9" opacity="0.90">8,270 LB</text>
+
+    <text x="1235" y="790" font-family="condensed" font-size="38" font-weight="bold" fill="#CDAA7B" letter-spacing="1">NET / PAYLOAD</text>
+    <text x="1515" y="790" font-family="mono" font-size="38" font-weight="bold" fill="#E6ECE9">26,730 KG</text>
+    <text x="1515" y="842" font-family="mono" font-size="35" font-weight="bold" fill="#E6ECE9" opacity="0.90">58,930 LB</text>
+
+    <text x="1235" y="955" font-family="condensed" font-size="38" font-weight="bold" fill="#CDAA7B" letter-spacing="1">CU. CAP.</text>
+    <text x="1515" y="955" font-family="mono" font-size="38" font-weight="bold" fill="#E6ECE9">67.6 CU.M</text>
+    <text x="1515" y="1007" font-family="mono" font-size="35" font-weight="bold" fill="#E6ECE9" opacity="0.90">2,386 CU.FT</text>
+
+    <line x1="1235" y1="1065" x2="1825" y2="1065" stroke="#E6ECE9" stroke-width="4" opacity="0.5"/>
+    <text x="1530" y="1122" font-family="mono" font-size="25" font-weight="bold" fill="#E6ECE9" text-anchor="middle" opacity="0.78">CONFIGURABLE DEMO WEIGHTS</text>
+  </g>
+</svg>

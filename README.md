@@ -10,15 +10,21 @@ on it. Nothing in this project is a customs assessment, a carrier quote or a gua
 
 ## Status
 
+**Stage (22 Nov 2026): B01–B10 complete; next is B11 (live Supabase integration). About 91%
+complete.** Full breakdown and pending list: `docs/PROJECT_STATUS.md`.
+
 | Area | State |
 | --- | --- |
-| Backend B01–B09 (config, database, auth, shipments, capacity simulator, model, cost engine, prediction) | Implemented, tests pass |
-| Backend B10 (operator/admin completion, hardening, contract tests) | **Incomplete** — `/operator/overview`, `/operator/shipments`, `/admin/audit-logs`, `GET /shipments/{id}/predictions/{id}` and the contract tests are missing |
-| Backend B11 (Supabase integration, docs, smoke test) | Docs and smoke script written; the real-project check needs the section 18 values |
+| Backend B01–B09 (config, database, auth, shipments, capacity simulator, model, cost engine, prediction) | Implemented, tests pass. B06 note: reference data source/licence not recorded |
+| Backend B10 (operator/admin completion, hardening, contract tests) | **Done** — section 14 endpoints, audit logs, single-prediction GET, 1 MiB body cap, date-range rules, `docs/openapi.json` (`scripts/export_openapi.py`), contract tests against the frontend mocks, full section 7 auth matrix |
+| Backend B11 (Supabase integration, docs, smoke test) | Code, `.env` templates, docs and smoke script ready; only the project URL and publishable key are needed to run it |
 | Frontend F01–F10 | Complete in mock mode (`NEXT_PUBLIC_USE_MOCKS=true`); live mode needs Supabase + this API |
+| Frontend extras | PortIQ theme restyle and the 3D Load planner tab (`PORTIQ_THEME_CHANGES.md`) |
+| ML | v2 model trained and served (test MAE 0.611 with all inputs, ~0.73 as served; synthetic data). Model card `docs/model-card.md`, data dictionary `docs/data-dictionary.md`, per-year calibration within 15% (2020–2022), 19 ML tests |
 
-Exactly what works and what does not is in `docs/architecture.md` (known limitations) and
-`docs/PROJECT_REVIEW.md`.
+Exactly what works and what does not is in `docs/PROJECT_STATUS.md` and `docs/architecture.md`
+(known limitations). Change reports: `PORTIQ_THEME_CHANGES.md` (frontend), `BACKEND_FIXES_REPORT.md`
+(backend and ML).
 
 ## Layout
 
@@ -26,18 +32,31 @@ Exactly what works and what does not is in `docs/architecture.md` (known limitat
 apps/web/        Next.js 14 app (App Router, Supabase SSR, React Query, MSW mocks, Playwright)
 services/api/    FastAPI service, Alembic migrations, seed and smoke scripts, pytest suite
 ml/              synthetic data generator, training scripts, artifact and reports
-docs/            backend + frontend specs, architecture, security checklist, project review
-docker-compose.yml   local PostgreSQL 15
+docs/            backend + frontend specs, architecture, security checklist, project status
+services/api/docker-compose.yml   PostgreSQL 15 + the API
 requirements.txt     full pinned pip freeze for the Python environment
 ```
 
 ## Quickstart (local, no Supabase)
 
-Prerequisites: Python 3.11+, Node 20+, PostgreSQL 15+ (Docker or a local install).
+Prerequisites: Node 20+, and either Docker or Python 3.11+ with PostgreSQL 15+.
+
+**With Docker (how it runs today):**
+
+```powershell
+cd services\api
+docker compose up -d --build        # Postgres 15 + API on :8000, model mounted from ml\artifacts
+docker exec -w /app api-api-1 python scripts/seed_dev.py
+docker exec -w /app api-api-1 python scripts/seed_capacity.py
+```
+
+`services/api/.env` is optional (dev auth by default); copy `.env.example` to add local settings.
+
+**Without Docker:**
 
 ```powershell
 # 1. Database
-docker compose up -d db
+# start PostgreSQL 15 locally (or only the db service: cd services\api; docker compose up -d db)
 
 # 2. Python environment (from the repo root)
 python -m venv .venv
@@ -60,20 +79,23 @@ uvicorn app.main:app --reload
 
 - `http://localhost:8000/health` → `{"data":{"status":"ok"},...}`
 - `http://localhost:8000/ready` → 200 only when Postgres is reachable **and** the model is loaded
-- `http://localhost:8000/docs` → OpenAPI UI
+- `http://localhost:8000/docs` → OpenAPI UI (a static copy is in `docs/openapi.json`; regenerate with
+  `python scripts/export_openapi.py`)
 
-The model artifact is git-ignored. A clean clone has no `ml/artifacts/dwell_model_v1.joblib`, so
-`/ready` is 503 and predictions return 503 until you build one:
+The trained model (`ml/artifacts/dwell_model_v2.joblib` + `model_metadata_v2.json`, 1.7 MB) is
+committed, so a fresh clone serves predictions straight away. To rebuild it (same result, fixed
+seed), train inside the API image so the scikit-learn version matches the server (the generator
+imports the API's capacity simulator):
 
 ```powershell
-cd ml\scripts
-..\..\.venv\Scripts\python.exe generate_synthetic.py
-..\..\.venv\Scripts\python.exe prepare_data.py
-..\..\.venv\Scripts\python.exe train.py
+# from the repo root
+docker run --rm -v "${PWD}\ml:/repo/ml" -v "${PWD}\services\api:/repo/services/api:ro" `
+  -w /repo/ml/scripts api-api sh -c "python generate_synthetic_v2.py && python prepare_data.py --version v2 && python train.py --version v2"
 ```
 
-That writes `ml/artifacts/dwell_model_v1.joblib` and `ml/reports/metrics.json`. The committed
-numbers are test MAE 1.03 days and stress MAE 1.49 days — synthetic data, not real-world accuracy.
+That writes `ml/artifacts/dwell_model_v2.joblib` and `ml/reports/metrics_v2.json`: test MAE 0.611
+days and stress MAE 1.327 days (best baseline 0.942 / 2.030) — synthetic data, not real-world
+accuracy. The run is reproducible.
 
 ### Dev accounts (`AUTH_MODE=dev` only)
 
@@ -117,11 +139,12 @@ The suite drops and recreates the `public` schema of `portiq_test`, runs every m
 empty, and rolls each test back. It refuses any database whose name does not end in `_test` on a
 non-local host, so it can never touch Supabase.
 
-Current state: `pytest` **113 passed**, `ruff check .` **clean**. `mypy .` still reports **25
-pre-existing errors in 6 older modules** (`app/api/v1/admin.py`, `app/api/v1/capacity.py`,
-`app/schemas/admin.py`, `scripts/seed_capacity.py`, `tests/test_cost_engine.py`,
-`tests/test_operator.py`). They are type-annotation gaps, not runtime defects; every file added or
-rewritten for this work type-checks clean.
+Current state (22 Nov): `pytest` **176 passed** (plus **19** in `ml/tests`), `ruff check .` **clean**. `mypy .` still reports
+**11 pre-existing errors in 5 older modules** (`app/schemas/capacity.py`, `app/services/ml.py`,
+`scripts/seed_capacity.py`, `tests/test_cost_engine.py`, `tests/test_operator.py`). They are type-annotation gaps,
+not runtime defects; code added since 22 Nov type-checks clean. Without a local Python, run the suite
+in Docker (command in `BACKEND_FIXES_REPORT.md`). Frontend: 191 Vitest tests and 85 Playwright tests
+pass in mock mode.
 
 ```powershell
 cd apps\web
@@ -132,10 +155,11 @@ npm test
 
 ## Supabase integration (B11)
 
-1. Follow backend spec section 18: create the project, note the JWKS URL/issuer/audience, copy the
-   pooled `DATABASE_URL`, create the users.
-2. Put the server values in `services/api/.env` (`AUTH_MODE=supabase`) and the public values in
-   `apps/web/.env.local` (`NEXT_PUBLIC_USE_MOCKS=false`). Never commit either file.
+1. Follow backend spec section 18: create the project (asymmetric JWT signing keys, the default),
+   copy the pooled `DATABASE_URL` if you host the database there, create the users.
+2. In `services/api/.env` set `AUTH_MODE=supabase` and `SUPABASE_URL` — the JWKS URL, issuer and
+   audience are derived from it. In `apps/web/.env.local` set the URL, the publishable key and
+   `NEXT_PUBLIC_USE_MOCKS=false`. Both files already exist and are git-ignored; never commit them.
 3. Run `alembic upgrade head` against the project, then create operator/admin profiles by signing
    up and updating `profiles.role` + `operator_ports` with SQL.
 4. Add the frontend origin to `ALLOWED_ORIGINS`.
@@ -170,13 +194,16 @@ details?, request_id}}`. Full shapes: `docs/FRONTEND_SPEC.md` section 5.
 | PATCH | `/shipments/{id}` | importer (owner, `submitted` only) |
 | POST | `/shipments/{id}/events` | operator (scoped) |
 | POST | `/shipments/{id}/prediction` | importer (own), operator (scoped) |
-| GET | `/shipments/{id}/predictions` | importer (own), operator (scoped) |
+| GET | `/shipments/{id}/predictions`, `/shipments/{id}/predictions/{prediction_id}` | importer (own), operator (scoped) |
 | GET | `/capacity/forecast` | all (operators scoped) |
 | GET | `/admin/tariffs`, POST, PATCH `/{id}` | admin |
-| GET | `/operator/dashboard/summary` | operator |
+| GET | `/admin/audit-logs` | admin |
+| GET | `/operator/overview`, `/operator/shipments` | operator (scoped), admin (all ports) |
+| GET | `/operator/dashboard/summary` | operator — older route outside the frozen contract |
 | POST | `/predict/dwell` | any authenticated user — diagnostic, outside the frozen contract |
 
-Missing endpoints and why they matter are listed in `docs/architecture.md`.
+Every endpoint the frontend calls now exists. Remaining backend gaps are listed in
+`docs/PROJECT_STATUS.md` and `docs/architecture.md`.
 
 ## Documentation
 
@@ -185,5 +212,7 @@ Missing endpoints and why they matter are listed in `docs/architecture.md`.
 - `docs/architecture.md` — how the pieces fit, auth, RLS, prediction pipeline, limitations
 - `docs/security-checklist.md` — control-by-control status
 - `services/api/CONTRACT_GAPS.md` — every undefined corner and the one function that owns it
-- `docs/PROJECT_REVIEW.md` — independent review of the repository state
+- `docs/PROJECT_STATUS.md` — current stage, completion, pending work and architecture reference
+- `docs/load-planner-integration.md` — the 3D Load planner and how to feed it real cargo
+- `PORTIQ_THEME_CHANGES.md`, `BACKEND_FIXES_REPORT.md` — change reports
 - `services/api/README.md` — API-specific setup, migrations, database notes

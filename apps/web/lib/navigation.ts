@@ -10,10 +10,12 @@ const NAVIGATION: Record<Role, readonly NavItem[]> = {
     { label: "Dashboard", href: "/dashboard" },
     { label: "Shipments", href: "/shipments" },
     { label: "Capacity", href: "/capacity" },
+    { label: "Load planner", href: "/load-planner" },
   ],
   port_operator: [
     { label: "Operator overview", href: "/operator" },
     { label: "Capacity", href: "/capacity" },
+    { label: "Load planner", href: "/load-planner" },
   ],
   platform_admin: [
     { label: "Operator overview", href: "/operator" },

@@ -1,0 +1,2173 @@
+{
+  "components": {
+    "schemas": {
+      "CargoType": {
+        "enum": [
+          "general_container",
+          "reefer",
+          "hazardous",
+          "oversized"
+        ],
+        "title": "CargoType",
+        "type": "string"
+      },
+      "CostComponent": {
+        "enum": [
+          "customs_duty",
+          "port_storage",
+          "demurrage",
+          "other_charge"
+        ],
+        "title": "CostComponent",
+        "type": "string"
+      },
+      "Currency": {
+        "enum": [
+          "INR"
+        ],
+        "title": "Currency",
+        "type": "string"
+      },
+      "Direction": {
+        "enum": [
+          "import",
+          "export"
+        ],
+        "title": "Direction",
+        "type": "string"
+      },
+      "DocumentationStatus": {
+        "enum": [
+          "complete",
+          "incomplete",
+          "unknown"
+        ],
+        "title": "DocumentationStatus",
+        "type": "string"
+      },
+      "DwellPredictionRequest": {
+        "example": {
+          "arrival_day_of_week": "Tuesday",
+          "arrival_month": "November",
+          "cargo_type": "general_container",
+          "container_size_ft": 40,
+          "direction": "import",
+          "documentation_status": "complete",
+          "forecast_capacity_utilization_pct": 78.5,
+          "hs_chapter": "85",
+          "port_code": "INNSA",
+          "shipping_line": "Line A",
+          "vessel_size_band": "medium",
+          "weight_kg": 15500.0
+        },
+        "properties": {
+          "arrival_day_of_week": {
+            "title": "Arrival Day Of Week",
+            "type": "string"
+          },
+          "arrival_month": {
+            "title": "Arrival Month",
+            "type": "string"
+          },
+          "cargo_type": {
+            "title": "Cargo Type",
+            "type": "string"
+          },
+          "container_size_ft": {
+            "title": "Container Size Ft",
+            "type": "integer"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "documentation_status": {
+            "title": "Documentation Status",
+            "type": "string"
+          },
+          "forecast_capacity_utilization_pct": {
+            "title": "Forecast Capacity Utilization Pct",
+            "type": "number"
+          },
+          "hs_chapter": {
+            "maxLength": 2,
+            "minLength": 2,
+            "title": "Hs Chapter",
+            "type": "string"
+          },
+          "port_code": {
+            "title": "Port Code",
+            "type": "string"
+          },
+          "shipping_line": {
+            "title": "Shipping Line",
+            "type": "string"
+          },
+          "vessel_size_band": {
+            "title": "Vessel Size Band",
+            "type": "string"
+          },
+          "weight_kg": {
+            "title": "Weight Kg",
+            "type": "number"
+          }
+        },
+        "required": [
+          "direction",
+          "port_code",
+          "cargo_type",
+          "container_size_ft",
+          "hs_chapter",
+          "weight_kg",
+          "shipping_line",
+          "vessel_size_band",
+          "documentation_status",
+          "arrival_month",
+          "arrival_day_of_week",
+          "forecast_capacity_utilization_pct"
+        ],
+        "title": "DwellPredictionRequest",
+        "type": "object"
+      },
+      "EventCreate": {
+        "additionalProperties": false,
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/ShipmentStatus"
+          }
+        },
+        "required": [
+          "to_status",
+          "occurred_at"
+        ],
+        "title": "EventCreate",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "MePatch": {
+        "description": "Only ``display_name`` is writable; extra fields (role, owner) are ignored.",
+        "properties": {
+          "display_name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Display Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "display_name"
+        ],
+        "title": "MePatch",
+        "type": "object"
+      },
+      "RateType": {
+        "enum": [
+          "per_day",
+          "percent_of_value",
+          "flat",
+          "tiered"
+        ],
+        "title": "RateType",
+        "type": "string"
+      },
+      "ResourceType": {
+        "enum": [
+          "yard",
+          "berth"
+        ],
+        "title": "ResourceType",
+        "type": "string"
+      },
+      "RuleType": {
+        "enum": [
+          "customs_duty",
+          "port_storage",
+          "demurrage",
+          "other_charge"
+        ],
+        "title": "RuleType",
+        "type": "string"
+      },
+      "ShipmentCreate": {
+        "additionalProperties": false,
+        "description": "Body accepted by ``POST /shipments``; owner and status are never read from it.",
+        "properties": {
+          "cargo_type": {
+            "$ref": "#/components/schemas/CargoType"
+          },
+          "container_size_ft": {
+            "enum": [
+              20,
+              40
+            ],
+            "title": "Container Size Ft",
+            "type": "integer"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency"
+          },
+          "declared_value": {
+            "anyOf": [
+              {
+                "maximum": 1000000000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Declared Value"
+          },
+          "direction": {
+            "$ref": "#/components/schemas/Direction"
+          },
+          "documentation_status": {
+            "$ref": "#/components/schemas/DocumentationStatus"
+          },
+          "expected_arrival_at": {
+            "format": "date-time",
+            "title": "Expected Arrival At",
+            "type": "string"
+          },
+          "hs_code": {
+            "pattern": "^[0-9]{6}$",
+            "title": "Hs Code",
+            "type": "string"
+          },
+          "port_id": {
+            "format": "uuid",
+            "title": "Port Id",
+            "type": "string"
+          },
+          "reference": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Reference",
+            "type": "string"
+          },
+          "shipping_line": {
+            "$ref": "#/components/schemas/ShippingLine"
+          },
+          "vessel_size_band": {
+            "$ref": "#/components/schemas/VesselSizeBand"
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 60000.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Weight Kg"
+          }
+        },
+        "required": [
+          "port_id",
+          "reference",
+          "direction",
+          "cargo_type",
+          "container_size_ft",
+          "hs_code",
+          "weight_kg",
+          "declared_value",
+          "currency",
+          "shipping_line",
+          "vessel_size_band",
+          "expected_arrival_at",
+          "documentation_status"
+        ],
+        "title": "ShipmentCreate",
+        "type": "object"
+      },
+      "ShipmentPatch": {
+        "additionalProperties": false,
+        "description": "Allowlist from frontend contract 5.4 (CONTRACT-GAP: CG-014).",
+        "properties": {
+          "cargo_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CargoType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "container_size_ft": {
+            "anyOf": [
+              {
+                "enum": [
+                  20,
+                  40
+                ],
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Container Size Ft"
+          },
+          "declared_value": {
+            "anyOf": [
+              {
+                "maximum": 1000000000000.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Declared Value"
+          },
+          "documentation_status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentationStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expected_arrival_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Arrival At"
+          },
+          "hs_code": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hs Code"
+          },
+          "shipping_line": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShippingLine"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "vessel_size_band": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VesselSizeBand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "weight_kg": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 60000.0,
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weight Kg"
+          }
+        },
+        "title": "ShipmentPatch",
+        "type": "object"
+      },
+      "ShipmentStatus": {
+        "enum": [
+          "submitted",
+          "arrived",
+          "cleared"
+        ],
+        "title": "ShipmentStatus",
+        "type": "string"
+      },
+      "ShippingLine": {
+        "enum": [
+          "Line A",
+          "Line B",
+          "Line C",
+          "Line D",
+          "other"
+        ],
+        "title": "ShippingLine",
+        "type": "string"
+      },
+      "TariffRuleCreate": {
+        "properties": {
+          "cargo_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CargoType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "container_size_ft": {
+            "anyOf": [
+              {
+                "enum": [
+                  20,
+                  40
+                ],
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Container Size Ft"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/Currency",
+            "default": "INR"
+          },
+          "free_days": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Free Days"
+          },
+          "hs_code_prefix": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9]{1,6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hs Code Prefix"
+          },
+          "port_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Port Id"
+          },
+          "rate_type": {
+            "$ref": "#/components/schemas/RateType"
+          },
+          "rate_value": {
+            "title": "Rate Value",
+            "type": "string"
+          },
+          "rule_type": {
+            "$ref": "#/components/schemas/CostComponent"
+          },
+          "shipping_line": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShippingLine"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_note": {
+            "minLength": 1,
+            "title": "Source Note",
+            "type": "string"
+          },
+          "tier_config": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier Config"
+          },
+          "valid_from": {
+            "format": "date",
+            "title": "Valid From",
+            "type": "string"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "version": {
+            "default": "1.0",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule_type",
+          "rate_type",
+          "rate_value",
+          "valid_from",
+          "source_note"
+        ],
+        "title": "TariffRuleCreate",
+        "type": "object"
+      },
+      "TariffRulePatch": {
+        "additionalProperties": false,
+        "properties": {
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_active"
+        ],
+        "title": "TariffRulePatch",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VesselSizeBand": {
+        "enum": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "title": "VesselSizeBand",
+        "type": "string"
+      },
+      "WarningCode": {
+        "enum": [
+          "DEMO_DATA",
+          "CAPACITY_UNAVAILABLE",
+          "EXPLANATION_UNAVAILABLE",
+          "TARIFF_MISSING",
+          "OUT_OF_RANGE_INPUT"
+        ],
+        "title": "WarningCode",
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "PortIQ API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "description": "Append-only audit trail, newest first (backend spec section 8).",
+        "operationId": "list_audit_logs_api_v1_admin_audit_logs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Audit Logs Api V1 Admin Audit Logs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Audit Logs",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/tariffs": {
+      "get": {
+        "description": "Every filter from spec section 12; ``valid_on`` keeps rules valid that day (inclusive).",
+        "operationId": "list_tariffs_api_v1_admin_tariffs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rule_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/RuleType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rule Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "port_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Port Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "hs_code_prefix",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Hs Code Prefix"
+            }
+          },
+          {
+            "in": "query",
+            "name": "shipping_line",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShippingLine"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Shipping Line"
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Active"
+            }
+          },
+          {
+            "in": "query",
+            "name": "valid_on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Valid On"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Tariffs Api V1 Admin Tariffs Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Tariffs",
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "description": "New rule version; 409 ``TARIFF_CONFLICT`` if an active same-scope rule overlaps.",
+        "operationId": "create_tariff_api_v1_admin_tariffs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TariffRuleCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Tariff",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/tariffs/{rule_id}": {
+      "patch": {
+        "description": "``{\"is_active\": false}`` only; rules are never deleted.",
+        "operationId": "deactivate_tariff_api_v1_admin_tariffs__rule_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "rule_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Rule Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TariffRulePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Deactivate Tariff Api V1 Admin Tariffs  Rule Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Deactivate Tariff",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/capacity/forecast": {
+      "get": {
+        "operationId": "get_capacity_forecast_api_v1_capacity_forecast_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "port_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Port Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "resource_type",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ResourceType"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "To",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Capacity Forecast Api V1 Capacity Forecast Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Capacity Forecast",
+        "tags": [
+          "capacity"
+        ]
+      }
+    },
+    "/api/v1/config": {
+      "get": {
+        "operationId": "read_config_api_v1_config_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Config Api V1 Config Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Config",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "read_me_api_v1_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Me Api V1 Me Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Me",
+        "tags": [
+          "me"
+        ]
+      },
+      "patch": {
+        "operationId": "update_me_api_v1_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Me Api V1 Me Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Me",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/v1/operator/dashboard/summary": {
+      "get": {
+        "description": "Returns aggregated metrics for the ports assigned to this operator.",
+        "operationId": "read_operator_summary_api_v1_operator_dashboard_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Operator Summary Api V1 Operator Dashboard Summary Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Operator Summary",
+        "tags": [
+          "operator"
+        ]
+      }
+    },
+    "/api/v1/operator/overview": {
+      "get": {
+        "description": "KPIs for shipments expected in [from, to) at the ports in scope (section 14).",
+        "operationId": "read_operator_overview_api_v1_operator_overview_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "port_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Port Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Operator Overview Api V1 Operator Overview Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Operator Overview",
+        "tags": [
+          "operator"
+        ]
+      }
+    },
+    "/api/v1/operator/shipments": {
+      "get": {
+        "description": "Shipments in scope with their at-risk reasons and latest warning codes (section 14).\n\n``arrival_to`` is inclusive, matching the end-of-day timestamp the frontend sends.",
+        "operationId": "list_operator_shipments_api_v1_operator_shipments_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShipmentStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "arrival_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Arrival From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "arrival_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Arrival To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "min_predicted_dwell_days",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Predicted Dwell Days"
+            }
+          },
+          {
+            "in": "query",
+            "name": "warning_code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/WarningCode"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Warning Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "at_risk",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "At Risk"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Operator Shipments Api V1 Operator Shipments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Operator Shipments",
+        "tags": [
+          "operator"
+        ]
+      }
+    },
+    "/api/v1/ports": {
+      "get": {
+        "operationId": "list_ports_api_v1_ports_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Ports Api V1 Ports Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Ports",
+        "tags": [
+          "ports"
+        ]
+      }
+    },
+    "/api/v1/predict/dwell": {
+      "post": {
+        "operationId": "predict_dwell_time_api_v1_predict_dwell_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DwellPredictionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Predict Dwell Time Api V1 Predict Dwell Post"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Predict Dwell Time",
+        "tags": [
+          "ml-predict"
+        ]
+      }
+    },
+    "/api/v1/shipments": {
+      "get": {
+        "operationId": "list_shipments_api_v1_shipments_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ShipmentStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "arrival_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Arrival From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "arrival_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Arrival To"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Shipments Api V1 Shipments Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Shipments",
+        "tags": [
+          "shipments"
+        ]
+      },
+      "post": {
+        "operationId": "create_shipment_api_v1_shipments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Shipment Api V1 Shipments Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Shipment",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/summary": {
+      "get": {
+        "operationId": "read_shipment_summary_api_v1_shipments_summary_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Shipment Summary Api V1 Shipments Summary Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Shipment Summary",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/{shipment_id}": {
+      "get": {
+        "operationId": "read_shipment_api_v1_shipments__shipment_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Shipment Api V1 Shipments  Shipment Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Shipment",
+        "tags": [
+          "shipments"
+        ]
+      },
+      "patch": {
+        "operationId": "update_shipment_api_v1_shipments__shipment_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShipmentPatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Update Shipment Api V1 Shipments  Shipment Id  Patch",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Shipment",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/events": {
+      "post": {
+        "operationId": "record_event_api_v1_shipments__shipment_id__events_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Record Event Api V1 Shipments  Shipment Id  Events Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Event",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/prediction": {
+      "post": {
+        "operationId": "create_prediction_api_v1_shipments__shipment_id__prediction_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "title": "Idempotency-Key",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Prediction",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/predictions": {
+      "get": {
+        "operationId": "list_predictions_api_v1_shipments__shipment_id__predictions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Predictions Api V1 Shipments  Shipment Id  Predictions Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Predictions",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/api/v1/shipments/{shipment_id}/predictions/{prediction_id}": {
+      "get": {
+        "description": "One stored prediction. Another shipment's prediction id is a 404, like any unseen row.",
+        "operationId": "read_prediction_api_v1_shipments__shipment_id__predictions__prediction_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "shipment_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Shipment Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "prediction_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Prediction Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Read Prediction Api V1 Shipments  Shipment Id  Predictions  Prediction Id  Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Read Prediction",
+        "tags": [
+          "shipments"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/ready": {
+      "get": {
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Ready",
+        "tags": [
+          "ops"
+        ]
+      }
+    }
+  }
+}

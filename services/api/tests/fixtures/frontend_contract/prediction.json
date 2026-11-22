@@ -1,0 +1,106 @@
+{
+  "prediction_id": "pred_001",
+  "shipment_id": "ship_001",
+  "predicted_dwell_days": 6.2,
+  "predicted_clearance_at": "2026-11-11T14:42:00Z",
+  "currency": "INR",
+  "cost_breakdown": [
+    {
+      "component": "customs_duty",
+      "amount": "250000.00",
+      "status": "estimated",
+      "reason": null,
+      "rule_version": "tariff-v2.3"
+    },
+    {
+      "component": "port_storage",
+      "amount": "18500.00",
+      "status": "estimated",
+      "reason": null,
+      "rule_version": "tariff-v1.8"
+    },
+    {
+      "component": "demurrage",
+      "amount": "12000.00",
+      "status": "estimated",
+      "reason": null,
+      "rule_version": "tariff-v1.5"
+    },
+    {
+      "component": "other_charge",
+      "amount": "5200.00",
+      "status": "estimated",
+      "reason": null,
+      "rule_version": "tariff-v1.2"
+    }
+  ],
+  "total_estimated_cost": "285700.00",
+  "total_is_partial": false,
+  "capacity_snapshot": {
+    "status": "available",
+    "reason": null,
+    "resource_type": "yard",
+    "utilization_pct": 72,
+    "source_type": "synthetic",
+    "bucket_start": "2026-11-05T00:00:00Z",
+    "bucket_end": "2026-11-06T00:00:00Z"
+  },
+  "explanation": {
+    "status": "available",
+    "reason": null,
+    "method": "SHAP",
+    "base_value_days": 5,
+    "unit": "days",
+    "features": [
+      {
+        "name": "documentation_status",
+        "value": "complete",
+        "contribution": -0.8
+      },
+      {
+        "name": "vessel_size_band",
+        "value": "large",
+        "contribution": 0.5
+      },
+      {
+        "name": "cargo_type",
+        "value": "general_container",
+        "contribution": -0.2
+      },
+      {
+        "name": "shipping_line",
+        "value": "Line A",
+        "contribution": 0.3
+      },
+      {
+        "name": "weight_kg",
+        "value": 18000,
+        "contribution": 0.4
+      },
+      {
+        "name": "hs_code_category",
+        "value": "85",
+        "contribution": 1
+      }
+    ]
+  },
+  "warnings": [
+    {
+      "code": "DEMO_DATA",
+      "message": "This prediction uses synthetic demo data. Do not use it for operational decisions."
+    }
+  ],
+  "provenance": {
+    "model_version": "demo-model-0.8.2",
+    "dataset_version": "2026-10-15",
+    "tariff_rule_versions": [
+      "tariff-v2.3",
+      "tariff-v1.8",
+      "tariff-v1.5",
+      "tariff-v1.2"
+    ],
+    "generated_at": "2026-10-28T14:30:00Z",
+    "data_source": "synthetic",
+    "is_demo_data": true
+  }
+}

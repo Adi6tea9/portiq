@@ -215,10 +215,10 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
             </div>
 
             <div
-              className="overflow-x-auto rounded-lg border border-border bg-surface"
+              className="app-table overflow-x-auto rounded-lg border border-border bg-surface"
               aria-busy={query.isFetching}
             >
-              <table className="w-full min-w-[720px] text-left text-sm">
+              <table className="app-table-grid w-full min-w-[720px] text-left text-sm">
                 <caption className="sr-only">Shipments</caption>
                 <thead className="border-b border-border bg-canvas text-xs uppercase tracking-wide text-text">
                   <tr>

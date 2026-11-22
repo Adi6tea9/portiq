@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import "@/themes/portiq/theme.css";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// Display serif for PortIQ theme headings only (sign-in screens).
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["700"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -19,7 +28,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    // shortcut: PortIQ theme is always on; remove data-theme to restore the default look until a Settings switch exists.
+    <html
+      lang="en"
+      data-theme="portiq"
+      className={`${inter.variable} ${playfair.variable}`}
+    >
       <body className="antialiased">{children}</body>
     </html>
   );

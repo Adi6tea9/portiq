@@ -132,6 +132,8 @@ def list_shipments(
     page: Page = 1,
     page_size: PageSize = 20,
 ) -> dict[str, Any]:
+    if arrival_from and arrival_to and arrival_to < arrival_from:
+        raise _invalid("arrival_to", "must be on or after arrival_from")
     start, end = _day_bounds(arrival_from, arrival_to)
     filters: dict[str, Any] = {
         "status": status,
@@ -295,6 +297,37 @@ def record_event(
     session.flush()
     return envelope(_detail(session, shipment).model_dump(mode="json"), request_id_of(request))
 
+def _prediction_payload(run: PredictionRun) -> dict[str, Any]:
+    """The stored prediction as the contract ``Prediction`` (never recomputed)."""
+    return {
+        "prediction_id": str(run.id),
+        "shipment_id": str(run.shipment_id),
+        "predicted_dwell_days": float(run.predicted_dwell_days),
+        "predicted_clearance_at": utc_z(run.predicted_clearance_at),
+        "currency": run.currency.value if hasattr(run.currency, 'value') else run.currency,
+        "cost_breakdown": run.cost_breakdown,
+        "total_estimated_cost": (
+            str(run.total_estimated_cost) if run.total_estimated_cost is not None else None
+        ),
+        "total_is_partial": run.total_is_partial,
+        "capacity_snapshot": run.capacity_snapshot,
+        "explanation": run.explanation,
+        "warnings": run.warnings,
+        "provenance": {
+            "model_version": run.model_version,
+            "dataset_version": run.dataset_version,
+            "tariff_rule_versions": list(run.tariff_rule_versions.values()),
+            "generated_at": utc_z(run.created_at),
+            "data_source": (
+                run.data_source.value
+                if hasattr(run.data_source, "value")
+                else run.data_source
+            ),
+            "is_demo_data": run.is_demo_data
+        }
+    }
+
+
 # --- STEP B09: PREDICTION ORCHESTRATION ---
 
 @router.post("/{shipment_id}/prediction")
@@ -323,34 +356,8 @@ def create_prediction(
     # 4. Run orchestration (handles 409 conflict, 429 rate limit, 503 fallback)
     run = run_prediction_flow(session, shipment, str(user.id), idempotency_key)
     
-    response_data = {
-        "prediction_id": str(run.id),
-        "shipment_id": str(run.shipment_id),
-        "predicted_dwell_days": float(run.predicted_dwell_days),
-        "predicted_clearance_at": utc_z(run.predicted_clearance_at),
-        "currency": run.currency.value if hasattr(run.currency, 'value') else run.currency,
-        "cost_breakdown": run.cost_breakdown,
-        "total_estimated_cost": (
-            str(run.total_estimated_cost) if run.total_estimated_cost is not None else None
-        ),
-        "total_is_partial": run.total_is_partial,
-        "capacity_snapshot": run.capacity_snapshot,
-        "explanation": run.explanation,
-        "warnings": run.warnings,
-        "provenance": {
-            "model_version": run.model_version,
-            "dataset_version": run.dataset_version,
-            "tariff_rule_versions": list(run.tariff_rule_versions.values()),
-            "generated_at": utc_z(run.created_at),
-            "data_source": (
-                run.data_source.value
-                if hasattr(run.data_source, "value")
-                else run.data_source
-            ),
-            "is_demo_data": run.is_demo_data
-        }
-    }
-    
+    response_data = _prediction_payload(run)
+
     return JSONResponse(
         status_code=status_code,
         content=jsonable_encoder(
@@ -392,3 +399,18 @@ def list_predictions(
     pagination = Pagination(page=page, page_size=page_size, total=total)
     return envelope(data, request_id_of(request), pagination)
 
+
+@router.get("/{shipment_id}/predictions/{prediction_id}")
+def read_prediction(
+    shipment_id: UUID,
+    prediction_id: UUID,
+    request: Request,
+    user: ScopedReader,
+    session: DbSession,
+) -> dict[str, Any]:
+    """One stored prediction. Another shipment's prediction id is a 404, like any unseen row."""
+    shipment = _visible_shipment(session, user, shipment_id)
+    run = session.get(PredictionRun, prediction_id)
+    if run is None or run.shipment_id != shipment.id:
+        raise _not_found()
+    return envelope(_prediction_payload(run), request_id_of(request))

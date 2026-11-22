@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="1360" viewBox="0 0 1024 680">
+  <rect x="8" y="8" width="1008" height="664" fill="#C9CFD1" stroke="#222826" stroke-width="10"/>
+  <rect x="24" y="24" width="976" height="632" fill="none" stroke="#222826" stroke-width="4"/>
+
+  <circle cx="52" cy="52" r="12" fill="#7B8385" stroke="#222826" stroke-width="3"/>
+  <circle cx="972" cy="52" r="12" fill="#7B8385" stroke="#222826" stroke-width="3"/>
+  <circle cx="52" cy="628" r="12" fill="#7B8385" stroke="#222826" stroke-width="3"/>
+  <circle cx="972" cy="628" r="12" fill="#7B8385" stroke="#222826" stroke-width="3"/>
+
+  <text x="512" y="96" font-family="bold" font-size="52" font-weight="bold" fill="#181E1C" text-anchor="middle" letter-spacing="4">CSC SAFETY APPROVAL</text>
+  <rect x="96" y="114" width="832" height="44" fill="#181E1C"/>
+  <text x="512" y="147" font-family="mono" font-size="26" font-weight="bold" fill="#E2B93B" text-anchor="middle" letter-spacing="2">DEMO / SAMPLE ONLY — NOT CERTIFIED</text>
+
+  <line x1="48" y1="180" x2="976" y2="180" stroke="#222826" stroke-width="3"/>
+
+  <text x="64" y="232" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">APPROVAL REF:</text>
+  <text x="410" y="232" font-family="mono" font-size="30" font-weight="bold" fill="#111614">DEMO / [REPLACEABLE REF]</text>
+
+  <text x="64" y="294" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">DATE MANUFACTURED:</text>
+  <text x="410" y="294" font-family="mono" font-size="30" font-weight="bold" fill="#111614">2026-11 (DEMO)</text>
+
+  <text x="64" y="356" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">IDENTIFICATION NO:</text>
+  <text x="410" y="356" font-family="mono" font-size="30" font-weight="bold" fill="#111614">PRTQ-DEMO-40FT-001</text>
+
+  <text x="64" y="418" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">MAX GROSS WEIGHT:</text>
+  <text x="410" y="418" font-family="mono" font-size="30" font-weight="bold" fill="#111614">30,480 KG   67,200 LB</text>
+
+  <text x="64" y="480" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">ALLOWABLE STACKING:</text>
+  <text x="410" y="480" font-family="mono" font-size="30" font-weight="bold" fill="#111614">192,000 KG  423,280 LB</text>
+
+  <text x="64" y="542" font-family="condensed" font-size="30" font-weight="bold" fill="#2B3330">RACKING TEST LOAD:</text>
+  <text x="410" y="542" font-family="mono" font-size="30" font-weight="bold" fill="#111614">15,240 KG   33,600 LB</text>
+
+  <line x1="48" y1="572" x2="976" y2="572" stroke="#222826" stroke-width="3"/>
+  <text x="512" y="622" font-family="mono" font-size="28" font-weight="bold" fill="#181E1C" text-anchor="middle">ACEP / DEMO-0000</text>
+</svg>

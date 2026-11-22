@@ -40,17 +40,17 @@ export function ThresholdLegend({
     {
       label: "Lower",
       range: `below ${formatPercent(thresholds.moderate_pct)}`,
-      color: "#1F8A5B",
+      color: "rgb(var(--success))",
     },
     {
       label: "Moderate",
       range: `from ${formatPercent(thresholds.moderate_pct)}`,
-      color: "#B7791F",
+      color: "rgb(var(--warning))",
     },
     {
       label: "High",
       range: `from ${formatPercent(thresholds.high_pct)}`,
-      color: "#C2413A",
+      color: "rgb(var(--danger))",
     },
   ];
 
@@ -112,7 +112,7 @@ export function CapacityChart({
             data={data}
             margin={{ top: 8, right: 24, left: 8, bottom: 28 }}
           >
-            <CartesianGrid stroke="#E5EAF0" strokeDasharray="3 3" />
+            <CartesianGrid stroke="rgb(var(--chart-grid, 229 234 240))" strokeDasharray="3 3" />
             <XAxis
               dataKey="label"
               tick={{ fontSize: 12 }}
@@ -162,19 +162,19 @@ export function CapacityChart({
             />
             <ReferenceLine
               y={thresholds.high_pct}
-              stroke="#C2413A"
+              stroke="rgb(var(--danger))"
               strokeDasharray="4 4"
             />
             <ReferenceLine
               y={thresholds.moderate_pct}
-              stroke="#B7791F"
+              stroke="rgb(var(--warning))"
               strokeDasharray="4 4"
             />
             <Line
               type="monotone"
               dataKey="utilization"
               name="Utilization"
-              stroke="#0D9488"
+              stroke="rgb(var(--ocean-teal))"
               strokeWidth={2}
               dot={{ r: 2 }}
               isAnimationActive={false}

@@ -1,0 +1,273 @@
+{
+  "model_version": "dwell-model-v2",
+  "artifact": "dwell_model_v2.joblib",
+  "dataset_version": "synthetic-v2",
+  "created_at": "2026-11-22T11:00:07Z",
+  "target_name": "dwell_days",
+  "target_units": "days",
+  "feature_schema": {
+    "weight_kg": {
+      "type": "numeric"
+    },
+    "forecast_capacity_utilization_pct": {
+      "type": "numeric"
+    },
+    "container_size_ft": {
+      "type": "numeric"
+    },
+    "exam_queue_len": {
+      "type": "numeric"
+    },
+    "is_holiday": {
+      "type": "numeric"
+    },
+    "port_code": {
+      "type": "categorical",
+      "categories": [
+        "INMUN",
+        "INNSA"
+      ]
+    },
+    "direction": {
+      "type": "categorical",
+      "categories": [
+        "export",
+        "import"
+      ]
+    },
+    "cargo_type": {
+      "type": "categorical",
+      "categories": [
+        "general_container",
+        "hazardous",
+        "oversized",
+        "reefer"
+      ]
+    },
+    "hs_chapter": {
+      "type": "categorical",
+      "categories": [
+        "02",
+        "08",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "29",
+        "84",
+        "85"
+      ]
+    },
+    "shipping_line": {
+      "type": "categorical",
+      "categories": [
+        "Line A",
+        "Line B",
+        "Line C",
+        "Line D",
+        "other"
+      ]
+    },
+    "vessel_size_band": {
+      "type": "categorical",
+      "categories": [
+        "large",
+        "medium",
+        "small"
+      ]
+    },
+    "documentation_status": {
+      "type": "categorical",
+      "categories": [
+        "complete",
+        "incomplete",
+        "unknown"
+      ]
+    },
+    "customs_channel": {
+      "type": "categorical",
+      "categories": [
+        "green",
+        "orange",
+        "red",
+        "unknown"
+      ]
+    },
+    "importer_type": {
+      "type": "categorical",
+      "categories": [
+        "AEO",
+        "new",
+        "regular"
+      ]
+    },
+    "cargo_priority": {
+      "type": "categorical",
+      "categories": [
+        "expedited",
+        "government",
+        "standard"
+      ]
+    },
+    "arrival_day_of_week": {
+      "type": "categorical",
+      "categories": [
+        "Friday",
+        "Monday",
+        "Saturday",
+        "Sunday",
+        "Thursday",
+        "Tuesday",
+        "Wednesday"
+      ]
+    },
+    "arrival_month": {
+      "type": "categorical",
+      "categories": [
+        "April",
+        "August",
+        "December",
+        "February",
+        "January",
+        "July",
+        "June",
+        "March",
+        "May",
+        "November",
+        "October",
+        "September"
+      ]
+    }
+  },
+  "preprocessing": {
+    "numeric": "passthrough",
+    "categorical": "OneHotEncoder(handle_unknown='ignore')",
+    "target_transform": "log1p / expm1",
+    "split": "time-ordered 70/15/15; stress is a separate holdout",
+    "fitted_on": "training rows only"
+  },
+  "model": {
+    "kind": "hgb",
+    "log": true,
+    "params": {
+      "learning_rate": 0.05,
+      "max_leaf_nodes": 15,
+      "max_iter": 300,
+      "l2_regularization": 1.0
+    }
+  },
+  "numeric_training_ranges": {
+    "weight_kg": {
+      "min": 500.0,
+      "max": 40000.0
+    },
+    "forecast_capacity_utilization_pct": {
+      "min": 50.6,
+      "max": 97.98
+    },
+    "container_size_ft": {
+      "min": 20.0,
+      "max": 40.0
+    },
+    "exam_queue_len": {
+      "min": 0.0,
+      "max": 73.0
+    },
+    "is_holiday": {
+      "min": 0.0,
+      "max": 1.0
+    }
+  },
+  "evaluation_metrics": {
+    "test": {
+      "mae": 0.6107234213689554,
+      "rmse": 1.1828113607685322,
+      "r2": 0.7492870616474843
+    },
+    "stress": {
+      "mae": 1.3270210780155416,
+      "rmse": 2.4429723618020325,
+      "r2": 0.6214048830796659
+    }
+  },
+  "baseline_metrics": {
+    "mean": {
+      "val": {
+        "mae": 1.1083133753879355,
+        "rmse": 2.1050483674578664,
+        "r2": 0.40904316897862114
+      },
+      "test": {
+        "mae": 1.0537207234990777,
+        "rmse": 1.8393370774200914,
+        "r2": 0.3937267268202146
+      },
+      "stress": {
+        "mae": 2.029999299676468,
+        "rmse": 3.7313963899615,
+        "r2": 0.11675604273192541
+      }
+    },
+    "median": {
+      "val": {
+        "mae": 1.0570060000000001,
+        "rmse": 2.2083522583591595,
+        "r2": 0.3496183215369445
+      },
+      "test": {
+        "mae": 0.9417023333333333,
+        "rmse": 1.8573398279528708,
+        "r2": 0.38180069043154796
+      },
+      "stress": {
+        "mae": 2.2005,
+        "rmse": 3.9737510106531166,
+        "r2": -0.001703528509600316
+      }
+    },
+    "global_median": {
+      "val": {
+        "mae": 1.5412606666666664,
+        "rmse": 2.898904491815256,
+        "r2": -0.12072591257843102
+      },
+      "test": {
+        "mae": 1.3569,
+        "rmse": 2.462729055742836,
+        "r2": -0.08687360268141386
+      },
+      "stress": {
+        "mae": 2.657783333333333,
+        "rmse": 4.641916646745537,
+        "r2": -0.36688688405406067
+      }
+    }
+  },
+  "serve": "model",
+  "interval_margin_days": 0.07510641624128803,
+  "rows": {
+    "train": 7000,
+    "val": 1500,
+    "test": 1500,
+    "stress": 1500
+  },
+  "training_source_type": "synthetic",
+  "limitations": [
+    "Trained and evaluated on synthetic data calibrated to published monthly Indian port dwell averages; performance here does not indicate real-world accuracy.",
+    "The container-level spread (lognormal noise) is an assumption, not derived from real data.",
+    "Only two ports (INNSA, INMUN) and the categories listed in feature_schema are covered.",
+    "Inputs outside numeric_training_ranges are extrapolation; the API flags them."
+  ],
+  "intended_use": "Planning demonstration: an indicative dwell estimate with an explanation, never a customs assessment, an operational guarantee or a quote."
+}

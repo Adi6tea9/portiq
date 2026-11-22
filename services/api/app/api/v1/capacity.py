@@ -15,12 +15,12 @@ from sqlalchemy import and_, func, select
 from app.core.deps import CurrentUser, DbSession
 from app.core.errors import AppError, request_id_of
 from app.models import CapacityForecast
+from app.repositories import capacity as capacity_repo
 from app.repositories import operator_ports as operator_ports_repo
 from app.repositories import ports as ports_repo
-from app.schemas.capacity import CapacityBucketResponse
+from app.schemas.capacity import bucket_payload
 from app.schemas.enums import ResourceType, Role
 from app.schemas.envelope import ErrorDetail, Pagination, envelope
-from app.schemas.shipments import utc_z
 
 router = APIRouter(prefix="/capacity", tags=["capacity"])
 
@@ -75,9 +75,7 @@ def get_capacity_forecast(
         CapacityForecast.resource_type == resource_type,
         CapacityForecast.bucket_start >= start_dt,
         CapacityForecast.bucket_start < end_dt,
-        CapacityForecast.total_capacity > 0,
-        CapacityForecast.predicted_occupied >= 0,
-        CapacityForecast.predicted_occupied <= 1.2 * CapacityForecast.total_capacity,
+        *capacity_repo.valid_bucket_conditions(),
     )
 
     total = session.scalar(select(func.count()).select_from(CapacityForecast).where(filters)) or 0
@@ -91,20 +89,7 @@ def get_capacity_forecast(
         .limit(page_size)
     ).all()
 
-    data = [
-        CapacityBucketResponse(
-            bucket_start=utc_z(row.bucket_start),
-            bucket_end=utc_z(row.bucket_end),
-            resource_type=row.resource_type,
-            predicted_occupied=round(float(row.predicted_occupied), 2),
-            total_capacity=round(float(row.total_capacity), 2),
-            utilization_pct=round(float(row.utilization_pct), 2),
-            source_type=row.source_type,
-            model_or_rule_version=row.model_or_rule_version,
-            generated_at=utc_z(row.generated_at),
-        ).model_dump(mode="json")
-        for row in rows
-    ]
+    data = [bucket_payload(row) for row in rows]
 
     pagination = Pagination(page=page, page_size=page_size, total=total)
     return envelope(data, request_id_of(request), pagination)

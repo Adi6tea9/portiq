@@ -142,7 +142,7 @@ function DwellDistribution({ bins }: { bins: DwellBin[] }) {
               data={data}
               margin={{ top: 8, right: 16, left: 0, bottom: 24 }}
             >
-              <CartesianGrid stroke="#E5EAF0" strokeDasharray="3 3" />
+              <CartesianGrid stroke="rgb(var(--chart-grid, 229 234 240))" strokeDasharray="3 3" />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 12 }}
@@ -182,7 +182,7 @@ function DwellDistribution({ bins }: { bins: DwellBin[] }) {
               <Bar
                 dataKey="count"
                 name="Shipments"
-                fill="#0D9488"
+                fill="rgb(var(--ocean-teal))"
                 radius={[4, 4, 0, 0]}
                 isAnimationActive={false}
               />
@@ -191,8 +191,8 @@ function DwellDistribution({ bins }: { bins: DwellBin[] }) {
         </div>
       </figure>
 
-      <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
+      <div className="app-table overflow-x-auto rounded-lg border border-border">
+        <table className="app-table-grid w-full text-sm">
           <caption className="sr-only">
             Dwell distribution table alternative
           </caption>

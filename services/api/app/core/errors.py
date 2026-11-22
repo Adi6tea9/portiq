@@ -79,13 +79,17 @@ def error_response(
     code: str,
     message: str,
     details: list[ErrorDetail] | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> JSONResponse:
+    """``extra`` adds contract fields to the error object (e.g. ``conflicting_rule``)."""
     body = ErrorResponse(
         error=ErrorBody(code=code, message=message, details=details, request_id=request_id)
     )
+    content = body.model_dump(exclude_none=True)
+    content["error"].update(extra or {})
     return JSONResponse(
         status_code=status_code,
-        content=body.model_dump(exclude_none=True),
+        content=content,
         headers={"X-Request-ID": request_id},
     )
 

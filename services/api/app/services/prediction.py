@@ -24,10 +24,11 @@ from app.services.capacity_sim import utilization_for
 from app.services.cost_engine import calculate_costs
 from app.services.explain import explain
 from app.services.model_service import (
-    DATASET_VERSION,
     as_utc,
+    dataset_version,
     feature_row,
     model_version,
+    out_of_range_inputs,
     predict_dwell,
 )
 
@@ -195,6 +196,14 @@ def run_prediction_flow(
                 "message": explanation.get("reason") or "Explanation unavailable",
             }
         )
+    outside = out_of_range_inputs(features)
+    if outside:
+        warnings.append(
+            {
+                "code": WarningCode.OUT_OF_RANGE_INPUT.value,
+                "message": f"Outside the model's training range: {', '.join(outside)}.",
+            }
+        )
     if any(line["status"] == "unavailable" for line in cost_lines):
         warnings.append(
             {
@@ -225,7 +234,7 @@ def run_prediction_flow(
             "capacity_feature_utilization_pct": capacity_utilization,
         },
         model_version=model_version(),
-        dataset_version=DATASET_VERSION,
+        dataset_version=dataset_version(),
         tariff_rule_versions={
             line["component"]: line["rule_version"]
             for line in cost_lines

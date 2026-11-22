@@ -19,7 +19,7 @@ export function CapacityTable({ buckets, timezone }: CapacityTableProps) {
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="app-table-grid w-full text-sm">
         <caption className="sr-only">
           Daily capacity buckets as a text alternative to the chart.
         </caption>

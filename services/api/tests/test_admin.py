@@ -12,18 +12,13 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_db
-from app.db import get_db as admin_get_db
 from app.models.tables import Profile
 
 
 @pytest.fixture
 def api(app: FastAPI, client: TestClient, db_session: Session) -> Iterator[TestClient]:
-    """HTTP client whose requests share the rolled-back test transaction.
-
-    ``admin.py`` still depends on ``app.db.get_db``, so both providers are overridden.
-    """
+    """HTTP client whose requests share the rolled-back test transaction."""
     app.dependency_overrides[get_db] = lambda: db_session
-    app.dependency_overrides[admin_get_db] = lambda: db_session
     try:
         yield client
     finally:

@@ -244,7 +244,7 @@ function PredictionHistoryTable({
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="app-table-grid w-full text-sm">
         <thead>
           <tr className="border-b">
             <th className="text-left py-2 font-medium">Date</th>

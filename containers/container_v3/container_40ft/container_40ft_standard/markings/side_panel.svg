@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="2048" viewBox="0 0 2048 1024">
+  <!-- Transparent background; all text elements remain directly editable -->
+  <g id="ISO_Identification_Block">
+    <text x="1220" y="185" font-family="condensed" font-size="96" font-weight="bold" fill="#E6ECE9" letter-spacing="3">PRTQU  000401</text>
+    <rect x="1875" y="102" width="92" height="102" fill="none" stroke="#E6ECE9" stroke-width="7"/>
+    <text x="1921" y="184" font-family="condensed" font-size="92" font-weight="bold" fill="#E6ECE9" text-anchor="middle">1</text>
+
+    <text x="1220" y="305" font-family="condensed" font-size="92" font-weight="bold" fill="#E6ECE9" letter-spacing="5">42G1</text>
+    <rect x="1500" y="236" width="210" height="64" fill="none" stroke="#CDAA7B" stroke-width="5"/>
+    <text x="1605" y="282" font-family="mono" font-size="36" font-weight="bold" fill="#CDAA7B" text-anchor="middle">DEMO ID</text>
+  </g>
+
+  <g id="Custom_Side_Message">
+    <line x1="80" y1="745" x2="1968" y2="745" stroke="#CDAA7B" stroke-width="6" opacity="0.88"/>
+    <text x="80" y="852" font-family="condensed" font-size="88" font-weight="bold" fill="#E6ECE9" letter-spacing="5">PREDICT. PLAN. SHIP.</text>
+    <text x="80" y="916" font-family="mono" font-size="28" font-weight="bold" fill="#E6ECE9" opacity="0.74" letter-spacing="3">FICTIONAL DEMO ASSET  |  STANDARD 40FT DRY CARGO  |  ISO 42G1</text>
+  </g>
+</svg>

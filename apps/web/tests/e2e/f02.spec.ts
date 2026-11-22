@@ -30,7 +30,7 @@ async function authenticate(
 
 test("signs in to the role home and signs out", async ({ page }) => {
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
 
   await signIn(page);
 
@@ -43,11 +43,11 @@ test("signs in to the role home and signs out", async ({ page }) => {
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Open profile menu" }).click();
-  await expect(page.getByText("Demo Importer")).toBeVisible();
+  await expect(page.getByRole("menu").getByText("Demo Importer")).toBeVisible();
   await page.getByRole("menuitem", { name: "Sign out" }).click();
 
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
 
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login\?returnTo=%2Fdashboard/);
@@ -235,7 +235,7 @@ test("auth and protected pages have no WCAG A/AA violations", async ({
   page,
 }) => {
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
 
   let results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -255,7 +255,7 @@ test("captures F02 screenshots", async ({ page }, testInfo) => {
   const dir = testInfo.outputPath("screenshots");
 
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
   await page.screenshot({ path: `${dir}/f02-login.png`, fullPage: true });
 
   await page.getByRole("button", { name: "Sign in" }).click();

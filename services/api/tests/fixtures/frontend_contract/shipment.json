@@ -1,0 +1,31 @@
+{
+  "id": "ship_001",
+  "port_id": "port_nsa",
+  "reference": "SHIP-2026-001",
+  "direction": "import",
+  "cargo_type": "general_container",
+  "container_size_ft": 40,
+  "hs_code": "850440",
+  "weight_kg": 18000,
+  "declared_value": "2500000.00",
+  "currency": "INR",
+  "shipping_line": "Line A",
+  "vessel_size_band": "large",
+  "expected_arrival_at": "2026-11-05T08:30:00Z",
+  "documentation_status": "complete",
+  "status": "submitted",
+  "actual_arrival_at": null,
+  "actual_cleared_at": null,
+  "actual_dwell_days": null,
+  "created_at": "2026-10-20T14:22:00Z",
+  "updated_at": "2026-10-28T14:30:00Z",
+  "latest_prediction": {
+    "prediction_id": "pred_001",
+    "created_at": "2026-10-28T14:30:00Z",
+    "predicted_dwell_days": 6.2,
+    "total_estimated_cost": "285700.00",
+    "total_is_partial": false,
+    "model_version": "demo-model-0.8.2",
+    "is_demo_data": true
+  }
+}

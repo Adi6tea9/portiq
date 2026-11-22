@@ -37,6 +37,7 @@ FEATURE_NAMES: tuple[str, ...] = (
     "forecast_capacity_utilization_pct",
 )
 
+# Fallback when the artifact has no metadata file.
 DATASET_VERSION = "synthetic-v1"
 
 # shortcut: a timed-out sklearn predict keeps running in its worker thread, upgrade if
@@ -69,13 +70,30 @@ def feature_row(shipment: Shipment, port: Port, utilization_pct: float) -> dict[
 
 
 def model_version() -> str:
-    """CONTRACT-GAP: CG-015 — the artifact has no ``model_metadata_*.json``.
+    """The served model's version from its metadata (spec 11.6), else ``MODEL_VERSION``."""
+    version = dwell_model.metadata.get("model_version")
+    return str(version) if version else settings.model_version or "dwell-model-v1"
 
-    Until B06 writes the metadata file, the version comes from ``MODEL_VERSION`` or
-    the pinned artifact name. It is never a baseline label because this artifact is
-    the Random Forest pipeline.
+
+def dataset_version() -> str:
+    version = dwell_model.metadata.get("dataset_version")
+    return str(version) if version else DATASET_VERSION
+
+
+def out_of_range_inputs(features: dict[str, Any]) -> list[str]:
+    """API-supplied numeric inputs outside the training range (spec 13.7, ``OUT_OF_RANGE_INPUT``).
+
+    Inputs the API fills with fixed defaults are not checked: they are not the user's data.
     """
-    return settings.model_version or "dwell-model-v1"
+    ranges = dwell_model.metadata.get("numeric_training_ranges", {})
+    outside = []
+    for name in FEATURE_NAMES:
+        bounds, value = ranges.get(name), features.get(name)
+        if not bounds or not isinstance(value, int | float):
+            continue
+        if not bounds["min"] <= value <= bounds["max"]:
+            outside.append(name)
+    return outside
 
 
 def predict_dwell(features: dict[str, Any]) -> float:

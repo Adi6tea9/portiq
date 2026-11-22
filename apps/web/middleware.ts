@@ -5,6 +5,7 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/shipments",
   "/capacity",
+  "/load-planner",
   "/operator",
   "/admin",
   "/settings",

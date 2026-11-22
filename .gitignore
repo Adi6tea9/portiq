@@ -151,6 +151,8 @@ activemq-data/
 
 # Environments
 .env
+.env.local
+.env.*.local
 .envrc
 .venv
 env/
@@ -220,8 +222,9 @@ __marimo__/
 .streamlit/secrets.toml
 
 # ML artifacts and data
-ml/data/
-ml/artifacts/
+ml/data/*
+!ml/data/reference/
+# ml/artifacts/ is committed on purpose: the 1.7 MB model + metadata let a fresh clone run.
 
 # Frontend
 apps/web/node_modules/
@@ -231,4 +234,32 @@ apps/web/.env*.local
 apps/web/test-results/
 apps/web/playwright-report/
 apps/web/tsconfig.tsbuildinfo
-apps/web/.localstorage
+apps/web/.localstorage*
+# Blender's automatic backup copies
+*.blend1
+ 
+
+ # Environment variables and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Dependencies
+node_modules/
+
+# Build files
+.next/
+dist/
+build/
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/

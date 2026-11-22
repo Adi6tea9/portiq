@@ -1,0 +1,248 @@
+{
+  "v2_reference": "C:\\Users\\karti\\OneDrive\\Desktop\\college report file\\containers\\conatiner_v3\\container_20ft_standard\\..\\..\\container_v2\\container_20ft_standard_upgraded_pack.zip::container_20ft_standard/container_20ft_standard.glb",
+  "runtime_glb": "container_20ft_standard.glb",
+  "passed": true,
+  "checks": [
+    {
+      "check": "1 GLB structure (runtime)",
+      "pass": true,
+      "detail": "20 meshes, 11 materials, 17 images, 160 accessors OK"
+    },
+    {
+      "check": "1 GLB structure (master)",
+      "pass": true,
+      "detail": "20 meshes, 11 materials, 17 images, 160 accessors OK"
+    },
+    {
+      "check": "2 hierarchy preserved",
+      "pass": true,
+      "detail": {
+        "v2_nodes": 25,
+        "missing": [],
+        "reparented": []
+      }
+    },
+    {
+      "check": "2 independently addressable mesh nodes",
+      "pass": true,
+      "detail": "20 uniquely named mesh nodes"
+    },
+    {
+      "check": "3 Floor_Surface geometry + UV byte-identical to v2",
+      "pass": true,
+      "detail": {
+        "attributes": true,
+        "indices": true
+      }
+    },
+    {
+      "check": "3 Mat_Wood_Floor parameters identical",
+      "pass": true,
+      "detail": 0.65
+    },
+    {
+      "check": "3 runtime wood images byte-identical to v2 GLB",
+      "pass": true,
+      "detail": {
+        "wood_albedo": true,
+        "wood_mr": true,
+        "wood_normal": true,
+        "wood_ao": true
+      }
+    },
+    {
+      "check": "3 master wood PNG files byte-identical to v2 (and embedded unmodified in master GLB)",
+      "pass": true,
+      "detail": {
+        "wood_floor_albedo_2k.png": true,
+        "wood_floor_normal_2k.png": true,
+        "wood_floor_mr_2k.png": true,
+        "wood_floor_ao_2k.png": true
+      }
+    },
+    {
+      "check": "4 dimensions (measured from geometry)",
+      "pass": true,
+      "detail": {
+        "internal_LxWxH": [
+          5.9,
+          2.35,
+          2.39
+        ],
+        "external_LxWxH": [
+          6.06,
+          2.44,
+          2.59
+        ],
+        "origin": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "check": "4 structural node bounds vs v2 (mm, max abs delta)",
+      "pass": true,
+      "detail": {
+        "Base_Floor": 73.0,
+        "Floor_Surface": 0.0,
+        "Corner_Castings": 0.8,
+        "Corner_Posts": 0.0,
+        "Rear_Frame": 6.0,
+        "Left_Side_Wall": 0.0,
+        "Right_Side_Wall": 0.0,
+        "Roof_Panel": 0.0,
+        "Front_End_Wall": 0.0,
+        "Rear_Door_Left": 0.0,
+        "Rear_Door_Right": 0.0,
+        "Locking_Rods": 7.9,
+        "Hinges": 12.0,
+        "Exterior_Marking_Side_Left": 0.0,
+        "Exterior_Marking_Side_Right": 0.0,
+        "Exterior_Marking_Owner_Left": 0.0,
+        "Exterior_Marking_Owner_Right": 0.0,
+        "Rear_Door_Marking": 6.9,
+        "CSC_Plate_Geometry": 116.5,
+        "CSC_Plate_Marking": 116.5
+      }
+    },
+    {
+      "check": "4 door pivots & open angle unchanged",
+      "pass": true,
+      "detail": {
+        "left": [
+          -0.08399999886751175,
+          0.0,
+          -0.02500000037252903
+        ],
+        "right": [
+          -0.08399999886751175,
+          0.0,
+          2.375
+        ]
+      }
+    },
+    {
+      "check": "5 corrugated UVs continuous with constant texel density",
+      "pass": true,
+      "detail": {
+        "Left_Side_Wall/Mat_Exterior_Green": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.048,
+          "v2_density_spread_pct": 0.0
+        },
+        "Left_Side_Wall/Mat_Interior_Wall": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.048,
+          "v2_density_spread_pct": 0.0
+        },
+        "Right_Side_Wall/Mat_Exterior_Green": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.048,
+          "v2_density_spread_pct": 0.0
+        },
+        "Right_Side_Wall/Mat_Interior_Wall": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.048,
+          "v2_density_spread_pct": 0.0
+        },
+        "Roof_Panel/Mat_Exterior_Green": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.0379,
+          "v2_density_spread_pct": 0.0
+        },
+        "Roof_Panel/Mat_Interior_Wall": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.0379,
+          "v2_density_spread_pct": 0.0
+        },
+        "Front_End_Wall/Mat_Exterior_Green": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.0381,
+          "v2_density_spread_pct": 0.0
+        },
+        "Front_End_Wall/Mat_Interior_Wall": {
+          "v3_max_uv_jump": 0.0,
+          "v3_m_per_uv": 1.6,
+          "v3_density_spread_pct": 0.0,
+          "v2_max_uv_jump": 0.0381,
+          "v2_density_spread_pct": 0.0
+        }
+      }
+    },
+    {
+      "check": "6 rear-door markings clear of rods/brackets/handles/hinges/CSC plate",
+      "pass": true,
+      "detail": "78 hardware footprints (+5 mm) tested at runtime & master resolution, all transparent"
+    },
+    {
+      "check": "6 side panel / owner decal layers do not overlap",
+      "pass": true,
+      "detail": "max alpha product 0.000"
+    },
+    {
+      "check": "7 decal stand-off >= 0.39 mm everywhere (layers never share a plane)",
+      "pass": true,
+      "detail": {
+        "side_panel_mm_min_perpendicular": 1.18,
+        "owner_mm_min_perpendicular": 1.58,
+        "rear_door_mm": 1.2,
+        "csc_text_mm": 0.8,
+        "casting_apertures_mm": 0.8,
+        "side_vs_owner_layer_mm": 0.39
+      }
+    },
+    {
+      "check": "8 material response ranges",
+      "pass": true,
+      "detail": {
+        "exterior_paint": {
+          "roughness_p5_p95": [
+            0.573,
+            0.718
+          ],
+          "metallic_mean": 0.02,
+          "metallic_p99": 0.02
+        },
+        "interior_paint": {
+          "roughness_p5_p95": [
+            0.596,
+            0.745
+          ],
+          "metallic_mean": 0.053,
+          "metallic_p99": 0.161
+        },
+        "hardware": {
+          "roughness_p5_p95": [
+            0.247,
+            0.443
+          ],
+          "metallic_mean": 0.917,
+          "metallic_p99": 0.969
+        },
+        "v2_exterior_for_comparison": {
+          "metallic_mean": 0.279,
+          "roughness_p5_p95": [
+            0.529,
+            0.706
+          ]
+        }
+      }
+    }
+  ]
+}

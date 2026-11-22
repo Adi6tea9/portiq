@@ -43,7 +43,7 @@ const PAGES: PageUnderTest[] = [
     path: "/login",
     name: "login",
     role: null,
-    ready: async (page) => waitForHeading(page, "Sign in"),
+    ready: async (page) => waitForHeading(page, "Welcome to PortIQ"),
   },
   {
     path: "/signup",
@@ -104,6 +104,18 @@ const PAGES: PageUnderTest[] = [
     name: "capacity",
     role: "importer_exporter",
     ready: async (page) => waitForHeading(page, "Capacity forecast"),
+  },
+  {
+    path: "/load-planner",
+    name: "load planner",
+    role: "importer_exporter",
+    ready: async (page) => waitForHeading(page, "Container load planning"),
+  },
+  {
+    path: "/load-planner",
+    name: "load planner (operator)",
+    role: "port_operator",
+    ready: async (page) => waitForHeading(page, "Container load planning"),
   },
   {
     path: "/operator",

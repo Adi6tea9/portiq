@@ -18,6 +18,7 @@ Results are on synthetic data. They show the method works, not real-world accura
 import argparse
 import itertools
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import joblib
@@ -41,6 +42,19 @@ V2_ONLY = ["customs_channel", "importer_type", "is_holiday", "exam_queue_len", "
 UTIL_COLS = ["forecast_capacity_utilization_pct", "exam_queue_len"]
 BASELINE_KEYS = ["port_code", "direction"]
 UTIL_COL = "forecast_capacity_utilization_pct"
+# Spec 11.4: per-category MAE for these columns.
+CATEGORY_COLS = ["direction", "port_code", "cargo_type", "shipping_line", "documentation_status"]
+LIMITATIONS = [
+    "Trained and evaluated on synthetic data calibrated to published monthly Indian port dwell "
+    "averages; performance here does not indicate real-world accuracy.",
+    "The container-level spread (lognormal noise) is an assumption, not derived from real data.",
+    "Only two ports (INNSA, INMUN) and the categories listed in feature_schema are covered.",
+    "Inputs outside numeric_training_ranges are extrapolation; the API flags them.",
+]
+INTENDED_USE = (
+    "Planning demonstration: an indicative dwell estimate with an explanation, never a customs "
+    "assessment, an operational guarantee or a quote."
+)
 
 current_dir = Path(__file__).resolve().parent
 data_root = current_dir.parent / "data" / "processed"
@@ -136,6 +150,43 @@ def metrics(y, pred) -> dict:
     }
 
 
+def per_category(df: pd.DataFrame, pred: np.ndarray, base_pred: np.ndarray) -> dict:
+    """MAE of the model and of the served baseline for every value of each category column."""
+    y = df[TARGET].to_numpy()
+    out: dict = {}
+    for col in CATEGORY_COLS:
+        if col not in df.columns:
+            continue
+        values = df[col].astype(str).to_numpy()
+        out[col] = {
+            v: {
+                "n": int(m.sum()),
+                "model_mae": float(mean_absolute_error(y[m], pred[m])),
+                "baseline_mae": float(mean_absolute_error(y[m], base_pred[m])),
+            }
+            for v in sorted(set(values))
+            for m in [values == v]
+        }
+    return out
+
+
+def prediction_checks(df: pd.DataFrame, pred: np.ndarray, ranges: dict) -> dict:
+    """Spec 11.4: negative or extreme predictions, residual bias, and out-of-range inputs."""
+    residual = df[TARGET].to_numpy() - pred
+    return {
+        "negative_predictions": int((pred < 0).sum()),
+        "predictions_over_30_days": int((pred > 30).sum()),
+        "max_prediction_days": float(pred.max()),
+        "mean_residual_days": float(residual.mean()),
+        "p95_abs_error_days": float(np.quantile(np.abs(residual), 0.95)),
+        "rows_outside_training_range": {
+            col: int(((df[col] < r["min"]) | (df[col] > r["max"])).sum())
+            for col, r in ranges.items()
+            if col in df.columns
+        },
+    }
+
+
 def baseline_predict(train: pd.DataFrame, df: pd.DataFrame, stat: str) -> np.ndarray:
     keys = [k for k in BASELINE_KEYS if k in train.columns]
     fallback = train[TARGET].agg(stat)
@@ -170,6 +221,14 @@ def main(version: str) -> None:
             "stress": metrics(stress[TARGET], baseline_predict(train, stress, stat)),
         }
         print(f"per-port {stat:6s}: test MAE {base[stat]['test']['mae']:.3f} | stress MAE {base[stat]['stress']['mae']:.3f}")
+    # Spec 11.3 baseline: the median dwell of the whole training set.
+    global_median = float(train[TARGET].median())
+    base["global_median"] = {
+        name: metrics(df[TARGET], np.full(len(df), global_median))
+        for name, df in (("val", val), ("test", test), ("stress", stress))
+    }
+    print(f"global median: test MAE {base['global_median']['test']['mae']:.3f} | "
+          f"stress MAE {base['global_median']['stress']['mae']:.3f}")
     report["baselines"] = base
     best_base_test = min(base[s]["test"]["mae"] for s in base)
     best_base_stress = min(base[s]["stress"]["mae"] for s in base)
@@ -198,6 +257,22 @@ def main(version: str) -> None:
     for k in ("test", "stress"):
         r = report["model"][k]
         print(f"{k:6s}: MAE {r['mae']:.3f} | RMSE {r['rmse']:.3f} | R2 {r['r2']:.3f}")
+
+    # Per-category MAE and prediction checks (spec 11.4)
+    num_cols, cat_cols = split_columns(features)
+    ranges = {c: {"min": float(train[c].min()), "max": float(train[c].max())} for c in num_cols}
+    report["per_category"] = {
+        "test": per_category(test, p_test, baseline_predict(train, test, "median")),
+        "stress": per_category(stress, p_stress, baseline_predict(train, stress, "median")),
+    }
+    report["checks"] = {
+        "test": prediction_checks(test, p_test, ranges),
+        "stress": prediction_checks(stress, p_stress, ranges),
+    }
+    print("\n--- Checks ---")
+    for k, c in report["checks"].items():
+        print(f"{k:6s}: negative {c['negative_predictions']} | >30 days {c['predictions_over_30_days']} | "
+              f"bias {c['mean_residual_days']:+.3f} | out of range {c['rows_outside_training_range']}")
 
     # 4. Quantile models for the 10-90 range (HGB params from the best HGB config in the search)
     hgb_params = next(c for _, c in results if c["kind"] == "hgb")["params"]
@@ -289,18 +364,40 @@ def main(version: str) -> None:
         "interval_margin_days": margin,  # API: lo = max(0, q10 - margin), hi = q90 + margin
         "baseline": {"keys": keys, "stat": "median", "table": baseline_table, "global": float(train[TARGET].median())},
     }
-    model_path = artifacts_dir / f"dwell_model_v2.joblib"
+    model_path = artifacts_dir / f"dwell_model_{version}.joblib"
     joblib.dump(bundle, model_path)
-    meta = {
-        "version": version,
+    # Spec 11.6 metadata. The API reads model_version, dataset_version and the numeric ranges.
+    metadata = {
+        "model_version": f"dwell-model-{version}" if serve == "model" else "dwell-baseline-1.0.0",
+        "artifact": model_path.name,
+        "dataset_version": f"synthetic-{version}",
+        "created_at": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "target_name": TARGET,
+        "target_units": "days",
+        "feature_schema": {
+            **{c: {"type": "numeric"} for c in num_cols},
+            **{c: {"type": "categorical", "categories": sorted(train[c].astype(str).unique())}
+               for c in cat_cols},
+        },
+        "preprocessing": {
+            "numeric": "passthrough",
+            "categorical": "OneHotEncoder(handle_unknown='ignore')",
+            "target_transform": "log1p / expm1" if best_cfg["log"] else None,
+            "split": "time-ordered 70/15/15; stress is a separate holdout",
+            "fitted_on": "training rows only",
+        },
+        "model": report["chosen_config"],
+        "numeric_training_ranges": ranges,
+        "evaluation_metrics": report["model"],
+        "baseline_metrics": base,
         "serve": serve,
-        "features": features,
-        "chosen_config": report["chosen_config"],
         "interval_margin_days": margin,
-        "train_rows": len(train),
-        "note": "Trained on synthetic data calibrated to published Indian port dwell averages. Not real-world accuracy.",
+        "rows": {"train": len(train), "val": len(val), "test": len(test), "stress": len(stress)},
+        "training_source_type": "synthetic",
+        "limitations": LIMITATIONS,
+        "intended_use": INTENDED_USE,
     }
-    (artifacts_dir / f"dwell_model_{version}.meta.json").write_text(json.dumps(meta, indent=2))
+    (artifacts_dir / f"model_metadata_{version}.json").write_text(json.dumps(metadata, indent=2))
     metrics_path = reports_dir / f"metrics_{version}.json"
     metrics_path.write_text(json.dumps(report, indent=2))
     print(f"\nSaved model:   {model_path}")

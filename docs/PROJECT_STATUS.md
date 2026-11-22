@@ -1,22 +1,114 @@
-# PortIQ — Full Project Review
+# PortIQ — Project Status
 
-> Architecture, workflow and file relationships for the whole repo.
-> Reviewed: 13 Nov 2026. Scope: `apps/web`, `services/api`, `ml/`, `docs/`, `features/`, migrations, seeds, mocks, tests.
-> This document describes what the code **does today**, not what the specs intended. Where the two disagree it says so (§8).
+> Living status file for the whole repo: where the project stands, what is pending, and how the
+> code fits together. Last updated: **22 Nov 2026**. Scope: `apps/web`, `services/api`, `ml/`,
+> `docs/`, `features/`, migrations, seeds, mocks, tests.
+> Earlier versions of this file were a one-off review (13 Nov 2026). Everything below describes
+> what the code **does today**; where the code and the specs disagree it says so (§9).
+
+---
+
+## Status at a glance
+
+**Development stage: B01–B10 complete (B06 completed 22 Nov); next is B11 (live Supabase integration).**
+Everything is built and tested in isolation. The frontend runs on mocks, the backend runs in
+Docker with the trained model, and the two have not yet been run together against a real Supabase
+project. Against the spec timeline (B10 due 24–26 Nov, B11 27–30 Nov, buffer and report 1–4 Dec)
+the project is slightly ahead of schedule.
+
+| Area | Done | State |
+|---|---|---|
+| Frontend (`apps/web`) | ~97% | F01–F10 built with Vitest + Playwright coverage, plus the PortIQ theme and the 3D Load planner tab. Runs on MSW mocks. |
+| Backend (`services/api`) | ~97% | B01–B10 done. B11 code and docs written, never run against a real project. |
+| ML (`ml/`) | ~98% | v2 pipeline, metadata, reference data, per-year calibration, model card, data dictionary and 19 ML tests done. Reference source URL/date/licence could not be confirmed. |
+| Live integration | ~30% | Every frontend API call has a backend route; the two have never run together without mocks. |
+| Deployment / tooling | ~20% | Docker runs API + Postgres only. No frontend container, no CI, no hosting, no git repository. |
+| **Overall** | **~92%** | |
+
+Percentages are judgement against the spec deliverables, not a measured number.
+
+### Feature checklist
+
+| Spec item | State |
+|---|---|
+| F01 Setup, shell, mocks | Done |
+| F02 Auth and navigation | Done (mock mode; live mode needs Supabase keys) |
+| F03 Shipment create and list | Done |
+| F04 Shipment detail and events | Done |
+| F05 Run prediction and result page | Done |
+| F06 Capacity forecast | Done |
+| F07 Importer dashboard | Done |
+| F08 Operator overview | Done |
+| F09 Admin tariffs and audit trail | Done (backend tariff API now matches the contract) |
+| F10 Settings, landing, a11y, E2E | Done |
+| Extra: PortIQ theme restyle | Done (`PORTIQ_THEME_CHANGES.md`) |
+| Extra: Load planner (3D container) | Done, sample cargo only (`docs/load-planner-integration.md`) |
+| B01 Scaffold | Done |
+| B02 Database, migrations, seed | Done |
+| B03 Auth, profiles, config, ports | Done (dev mode tested; Supabase JWKS path unit-tested only) |
+| B04 Shipments and events | Done |
+| B05 Capacity simulator and forecast | Done |
+| B06 Synthetic data and training | Done: per-category metrics, spec baseline, full `model_metadata_v2.json`, schema validation, reference data (2020–2022, hours) with per-year calibration (all within 15%), `docs/model-card.md`, `docs/data-dictionary.md`, `ml/tests/` (19). Reference source URL/date/licence not recorded (owner could not confirm) |
+| B07 Model service and SHAP | Done (v2 bundle, log-target SHAP, metadata-driven versions, correct v2 defaults) |
+| B08 Cost engine and tariff admin | Done (tariff routes rewritten 22 Nov: all filters, envelope, `conflicting_rule`) |
+| B09 Prediction orchestration | Done (real model, SHAP, capacity snapshot) |
+| B10 Operator, hardening, contract tests | Done: section 14 endpoints, audit logs, single-prediction GET, rate limit, 1 MiB body cap, date-range rules, `export_openapi.py` → `docs/openapi.json`, contract tests against the frontend mocks, full section 7 auth matrix |
+| B11 Supabase integration | Partial: code, `.env` templates, docs and smoke script done; real-project run blocked on keys |
+
+### Quality gates (22 Nov 2026)
+
+| Check | Result |
+|---|---|
+| Backend `pytest` (Docker, Postgres 15) | **176 passed** |
+| ML `pytest ml/tests` | **19 passed** |
+| Backend `ruff check .` | clean |
+| Backend `mypy .` | 11 pre-existing errors in 5 older modules (none in new code; was 26) |
+| Frontend typecheck / lint | clean |
+| Frontend Vitest | 23 files, 191 tests passing (one known timing flake under load) |
+| Frontend Playwright (mock mode, local Chrome) | 85 passed |
+| Frontend production build | passes |
+| Live API | `/ready` = ready (database ok, model loaded); live prediction with SHAP explanation verified |
+
+### Pending work, in priority order
+
+1. **Live integration (B11).** Paste the Supabase project URL and publishable key into
+   `apps/web/.env.local` and `services/api/.env` (`AUTH_MODE=supabase`), run one full manual pass
+   with mocks off, create operator/admin accounts with SQL, run `scripts/smoke_supabase.py`.
+2. **Reference data provenance.** The source URL, download date and licence of
+   `ml/data/reference/*.csv` are not recorded; confirm them before any public release.
+3. **Robustness.** `capacity_sim` replays from 2025-01-01 on every call (§9.6).
+4. **Housekeeping.** Rename the mislabelled `features/` files (F01 lives in `00_READ_FIRST`, etc.)
+   and add the missing F04 spec file; remove the unused `ComingSoon.tsx`; align one partial-total
+   message with the spec wording; drop the duplicate `PyJWT` pin.
+5. **Deployment and delivery.** Initialise git, add CI, a frontend container and hosting; then
+   the 1–4 Dec slot: demo script, report, slides.
+
+### Change log since the 13 Nov review
+
+| Date | Change | Record |
+|---|---|---|
+| 21–22 Nov | PortIQ theme restyle across the app, photo sign-in, account-type toggle | `PORTIQ_THEME_CHANGES.md` |
+| 22 Nov | 3D Load planner tab (importers and operators), compressed container models | `PORTIQ_THEME_CHANGES.md` stage 7, `docs/load-planner-integration.md` |
+| 22 Nov | Backend fixes: model trained (v2), v2 SHAP explanations, start-up path crash, compose health check, `train.py` file name, Docker now runs this copy | `BACKEND_FIXES_REPORT.md` part 1 |
+| 22 Nov | Supabase boilerplate: JWKS/issuer/audience derived from `SUPABASE_URL`, `.env` templates, `.env.local` git-ignored | `BACKEND_FIXES_REPORT.md` part 1 |
+| 22 Nov | B10 endpoints: operator overview, operator shipments, audit logs, single-prediction GET; demo capacity seeded | `BACKEND_FIXES_REPORT.md` part 2 |
+| 22 Nov | B10 completed: body cap, date-range rules, OpenAPI export, contract tests, auth matrix; tariff routes rewritten; duplicate capacity router removed | `BACKEND_FIXES_REPORT.md` part 3 |
+| 22 Nov | B06 completed: metadata, per-category metrics, calibration report, model card, data dictionary, ML tests; CG-015 resolved; API defaults for the v2-only inputs fixed (they biased predictions by −0.42 days) | `BACKEND_FIXES_REPORT.md` part 4 |
 
 ---
 
 ## Contents
 
+0. [Status at a glance](#status-at-a-glance)
 1. [What the product is](#1-what-the-product-is)
-2. [Repo layout (and the double nesting)](#2-repo-layout-and-the-double-nesting)
+2. [Repo layout](#2-repo-layout)
 3. [The four tiers](#3-the-four-tiers)
 4. [How the two apps relate — the envelope contract](#4-how-the-two-apps-relate--the-envelope-contract)
 5. [Request lifecycle — frontend](#5-request-lifecycle--frontend)
 6. [Request lifecycle — backend](#6-request-lifecycle--backend)
 7. [Data model and file relationships](#7-data-model-and-file-relationships)
 8. [The five workflows worth tracing](#8-the-five-workflows-worth-tracing)
-9. [Where the code and the docs disagree](#9-where-the-code-and-the-docs-disagree)
+9. [Review findings — status](#9-review-findings--status)
 10. [Testing layout](#10-testing-layout)
 11. [Environment, run, seed](#11-environment-run-seed)
 12. [Mental model to keep](#12-mental-model-to-keep)
@@ -53,36 +145,39 @@ Honesty constraints from the spec (and honoured in the UI copy):
 
 ---
 
-## 2. Repo layout (and the double nesting)
+## 2. Repo layout
 
-There are two levels of `portiq`:
+The working copy is a plain folder (not a git repository):
 
 ```
-Desktop\portiq\                    ← workspace root (not a git repo)
-├── .agents\skills\                ← design/frontend skills
-├── skills-lock.json               ← skill lockfile
-├── supabase\
-│   └── config.toml                ← Supabase CLI config (outside the git repo!)
-└── portiq\                        ← THE GIT REPO
-    ├── README.md                  ← 1 line
-    ├── docker-compose.yml         ← Postgres 15
-    ├── requirements.txt           ← ML-only deps (pandas/sklearn/shap)
-    ├── PortIQ_Frontend_Master_Spec_v1.md
-    ├── docs\
-    │   ├── FRONTEND_SPEC.md       ← the JSON contract (§5 is law)
-    │   ├── BACKEND_SPEC.md        ← behaviour, data, decisions
-    │   ├── architecture.md        ← short B02-era note (stub)
-    │   └── superpowers\plans\     ← dated implementation plan
-    ├── features\                  ← the F01–F10 prompt files used to build the UI
-    ├── apps\web\                  ← Next.js frontend
-    ├── services\api\              ← FastAPI backend
-    └── ml\                        ← offline ML pipeline
+college report file\portiq-main\          ← project root (all paths below are relative to it)
+├── README.md                          ← quickstart, status table, endpoints
+├── PORTIQ_THEME_CHANGES.md            ← frontend theme + Load planner change report
+├── BACKEND_FIXES_REPORT.md            ← backend/ML fixes and B10 endpoint report
+├── PortIQ_Frontend_Master_Spec_v1.md
+├── requirements.txt                   ← full pinned pip freeze
+├── docs\
+│   ├── FRONTEND_SPEC.md               ← the JSON contract (§5 is law)
+│   ├── BACKEND_SPEC.md                ← behaviour, data, decisions
+│   ├── architecture.md                ← how the pieces fit, known limitations
+│   ├── security-checklist.md          ← control-by-control status
+│   ├── load-planner-integration.md    ← 3D load planner notes
+│   ├── PROJECT_STATUS.md              ← this file
+│   └── superpowers\plans\             ← dated implementation plan
+├── features\                          ← the F01–F10 prompt files (file names do not match contents)
+├── apps\web\                          ← Next.js frontend
+├── services\api\                      ← FastAPI backend + docker-compose.yml (API + Postgres 15)
+└── ml\                                ← offline ML pipeline
 ```
 
-Consequences of the nesting worth remembering:
+Things worth remembering:
 
-- Any path in this document is relative to `Desktop\portiq\portiq\`.
-- `supabase\config.toml` is outside the repo, and it points at `./seed.sql` which does not exist. Running the Supabase CLI from the workspace root will not behave like the committed project.
+- `docker-compose.yml` lives in `services/api/`, not at the root. It runs Postgres 15 and the API,
+  mounts `ml/artifacts` read-only at `/models`, and starts the API only once Postgres is healthy.
+- An older copy of the project exists at `D:\portiq\portiq-main`. Docker used to run it; since
+  22 Nov both containers are built from this copy and the D: copy is unused.
+- There is no Supabase CLI config in this copy. Supabase will be a hosted project; its values go in
+  `services/api/.env` and `apps/web/.env.local` (both git-ignored).
 
 ---
 
@@ -118,6 +213,7 @@ Consequences of the nesting worth remembering:
 | Auth | `@supabase/ssr` for session only — the API authorises |
 | Mock API | MSW 2 (`lib/mocks/`) |
 | Tests | Vitest + Testing Library; Playwright + axe |
+| 3D | three.js + React Three Fiber + drei, lazy-loaded on `/load-planner` only |
 
 ### Backend — `services/api`
 
@@ -126,20 +222,22 @@ Consequences of the nesting worth remembering:
 | Framework | FastAPI, Pydantic v2 |
 | DB | SQLAlchemy 2.x **sync** + psycopg 3 |
 | Migrations | Alembic, one hand-written initial revision |
-| Auth | PyJWT |
-| ML | scikit-learn pipeline loaded with joblib at startup |
+| Auth | PyJWT (dev tokens locally, Supabase JWKS in production) |
+| ML | scikit-learn bundle loaded with joblib at startup, SHAP for explanations |
+| Runtime | Docker Compose: API + Postgres 15 |
 | Quality | ruff, mypy, pytest (+ coverage) |
 
 ### ML — `ml/`
 
 | Folder | Contents |
 |---|---|
-| `data/raw/` | `synthetic_v1.csv` (10 000 rows), `synthetic_v1_stress.csv` (1 500) |
-| `data/processed/` | `train / val / test / stress` splits |
-| `data/reference/` | published India port-dwell CSVs (2020, 2021) used to calibrate means |
-| `scripts/` | `generate_synthetic.py`, `prepare_data.py`, `train.py` |
-| `artifacts/` | `dwell_model_v1.joblib` |
-| `reports/` | `metrics.json` |
+| `data/raw/` | `synthetic_v2.csv` and `synthetic_v2_stress.csv` (regenerated, git-ignored); v1 files when built |
+| `data/processed/v2/` | `train / val / test / stress` splits (7 000 training rows) |
+| `scripts/` | `generate_synthetic.py` (v1), `generate_synthetic_v2.py`, `prepare_data.py`, `train.py` |
+| `artifacts/` | `dwell_model_v2.joblib` + `model_metadata_v2.json` (committed so a fresh clone runs; rebuilt 22 Nov) |
+| `reports/` | `metrics.json` (v1), `metrics_v2.json` (baselines, search, chosen model, per-category MAE, checks, intervals, ablations), `calibration_v2.json` |
+| `tests/` | `test_pipeline.py` (19 tests: reproducibility, validation, time split, train-only fitting, calibration incl. per reference year, artifact + metadata) |
+| `data/reference/` | real monthly port dwell averages 2020–2022 in hours (committed; source not recorded) |
 
 ### Database
 
@@ -233,6 +331,7 @@ QueryClientProvider        caching, retry 1, staleTime 30s, no refetch on focus
 | `/shipments/[id]/edit` | `(app)` | `EditShipmentPageClient` | importer |
 | `/shipments/[id]/prediction/[predictionId]` | `(app)` | `PredictionResultClient` | importer, operator |
 | `/capacity` | `(app)` | `CapacityClient` | importer, operator |
+| `/load-planner` | `(app)` | `LoadPlannerClient` (3D, client-side only, sample cargo) | importer, operator |
 | `/operator` | `(app)` | `OperatorClient` | operator, admin |
 | `/admin/tariffs` | `(app)` | `TariffsClient` | admin |
 | `/settings` | `(app)` | `SettingsForm` | all |
@@ -280,7 +379,7 @@ Plus deterministic failure injection, all mock-only and gated by `lib/mocks/flag
 
 Fixtures: 12 shipments, 5 prediction variants (full / partial / no explanation / no capacity / all unavailable), 60 capacity buckets, 40 operator rows, 6 tariffs, 15 audit logs, and an error payload for every status.
 
-**2. Supabase session** — in real mode `getAccessToken()` reads the SDK session and `apiClient` attaches `Authorization: Bearer <jwt>`; `middleware.ts` refreshes cookies and redirects unauthenticated hits on six protected prefixes. Mock mode stores a session-only flag in `sessionStorage` and never stores a token.
+**2. Supabase session** — in real mode `getAccessToken()` reads the SDK session and `apiClient` attaches `Authorization: Bearer <jwt>`; `middleware.ts` refreshes cookies and redirects unauthenticated hits on seven protected prefixes (including `/load-planner`). Mock mode stores a session-only flag in `sessionStorage` and never stores a token.
 
 ### Why the pages are thin
 
@@ -305,7 +404,7 @@ export default function ShipmentsPage({ searchParams }) {
 uvicorn app.main:app
 └ create_app()
   ├ configure_logging(LOG_LEVEL)                       JSON logs
-  ├ dwell_model.load(ml/artifacts/dwell_model_v1.joblib)   path via Path(__file__).parents[3]
+  ├ dwell_model.load(MODEL_PATH or <repo>/ml/artifacts/dwell_model_v2.joblib)   never crashes on a missing file
   ├ RequestContextMiddleware                           request_id, X-Request-ID, per-request log line, 500 boundary
   ├ CORSMiddleware                                     ALLOWED_ORIGINS, credentials, expose X-Request-ID
   ├ register_exception_handlers                        AppError / HTTPException / ValidationError / Exception
@@ -314,7 +413,7 @@ uvicorn app.main:app
      ├ GET /ready           → 200 only if database AND model are up; else 503 with details [{component,state}]
      └ /api/v1
         ├ api_router: me, config, ports, shipments, capacity, predict
-        └ admin.router, operator.router
+        └ admin.router (tariffs, audit-logs), operator.router (overview, shipments, dashboard/summary)
 ```
 
 `RequestContextMiddleware` is the only place that can emit a 500 without a traceback leaking: it catches, logs `unhandled_exception`, and renders the standard error envelope.
@@ -334,7 +433,7 @@ route (app/api/v1/*.py)
        → models (app/models/tables.py)        9 tables, enums, checks, indexes
            → Postgres
 
-   → services (app/services/*.py)             prediction, cost_engine, ml, capacity_sim
+   → services (app/services/*.py)             prediction, cost_engine, ml, explain, at_risk, capacity_sim
 ```
 
 ### Authorization lives in Python, not the database
@@ -358,7 +457,7 @@ This is the single most important design decision in the backend:
 | Dependency | Behaviour |
 |---|---|
 | `get_db` | one session per request, commit on success, rollback on any raise, always close |
-| `get_current_user` | reads Bearer token, decodes, loads/provisions `profiles`, rejects inactive users with 403 |
+| `get_current_user` | reads the Bearer token through `core/security.resolve_identity` (`dev:<email>` in `AUTH_MODE=dev`, JWKS-verified JWT in `AUTH_MODE=supabase`), loads/provisions `profiles`, rejects inactive users with 403 |
 | `require_role(*roles)` | dependency factory → 403 `FORBIDDEN` if role not allowed |
 | `CurrentUser`, `DbSession` | `Annotated` aliases |
 
@@ -411,10 +510,10 @@ profiles ──┬──< shipments >── ports ──< capacity_forecasts
 | `operator_ports` | `tables.py` | `repositories/operator_ports.py` | `me.py`, `shipments.py`, `capacity.py`, `operator.py` | — |
 | `shipments` | `tables.py` | `repositories/shipments.py` | `shipments.py` | `schemas/shipments.py` |
 | `shipment_events` | `tables.py` | `repositories/shipments.py` | `shipments.py` | `schemas/shipments.py` |
-| `prediction_runs` | `tables.py` | inline query + `services/prediction.py` | `shipments.py` | `schemas/prediction.py` |
-| `capacity_forecasts` | `tables.py` | inline `select()` in `capacity.py` | `capacity.py` | `schemas/capacity.py` |
+| `prediction_runs` | `tables.py` | `repositories/shipments.latest_predictions` + `services/prediction.py` | `shipments.py`, `operator.py` | `schemas/prediction.py` |
+| `capacity_forecasts` | `tables.py` | `repositories/capacity.py` (shared validity rule) | `capacity.py`, `operator.py`, prediction snapshot | `schemas/capacity.py` (`bucket_payload`) |
 | `tariff_rules` | `tables.py` | `repositories/tariffs.py`, read by `services/cost_engine.py` | `admin.py` | `schemas/admin.py` |
-| `audit_logs` | `tables.py` | `repositories/audit_logs.py` | written by `shipments.py` | — |
+| `audit_logs` | `tables.py` | `repositories/audit_logs.py` | written by `shipments.py`, `admin.py`; read by `GET /admin/audit-logs` | — |
 
 ### Migrations and seed
 
@@ -422,7 +521,8 @@ profiles ──┬──< shipments >── ports ──< capacity_forecasts
 - `migrations/env.py` reads `DATABASE_URL` through `app.core.config`, so the URL lives in one place.
 - `scripts/seed_dev.py` is idempotent **by design**: every row gets `uuid5(SEED_NAMESPACE, "portiq:dev-seed:<natural key>")`, and ports/users/shipments/tariffs are also looked up by natural key first. A re-run inserts only what is missing and never overwrites human edits. It refuses any `APP_ENV` other than `local` or `test`.
 
-Seeded counts:
+Seeded counts from `seed_dev.py` (the local dev database also has 475 capacity buckets from
+`seed_capacity.py --start 2026-10-15`, added 22 Nov):
 
 ```json
 {"row_counts": {"profiles": 5, "ports": 2, "operator_ports": 3, "shipments": 12,
@@ -486,8 +586,9 @@ RunPredictionButton (creates a UUID Idempotency-Key per run)
       ├ check_rate_limit()                     10 requests/min/user, in-memory dict
       ├ hash inputs → existing run?  same hash → 200 replay
       │                              different → 409 IDEMPOTENCY_CONFLICT
-      ├ capacity_snapshot                      (currently a hardcoded "unavailable" block)
-      ├ predicted_dwell_days                   (currently hardcoded 6.2)
+      ├ capacity_snapshot                      stored yard bucket for the arrival day, or "unavailable"
+      ├ predicted_dwell_days                   the loaded v2 model, on a worker thread with a timeout (503 if it fails)
+      ├ explain()                              SHAP, checked for additivity, or "unavailable"
       ├ calculate_costs(shipment, dwell, active_rules)
       │    scope match → specificity ranking → ambiguity ⇒ unavailable
       │    rate math: flat / percent_of_value / per_day (free_days) / tiered (tier_config)
@@ -502,96 +603,71 @@ RunPredictionButton (creates a UUID Idempotency-Key per run)
 ### (e) Offline ML pipeline
 
 ```
-ml/scripts/generate_synthetic.py   ← calls app.services.capacity_sim.utilization_for()
-   → data/raw/synthetic_v1.csv (10k rows), synthetic_v1_stress.csv (1.5k)
+ml/scripts/generate_synthetic_v2.py   ← imports app.services.capacity_sim.utilization_for()
+   → data/raw/synthetic_v2.csv, synthetic_v2_stress.csv
 
-ml/scripts/prepare_data.py
-   → data/processed/{train,val,test,stress}.csv
+ml/scripts/prepare_data.py --version v2
+   → data/processed/v2/{train,val,test,stress}.csv
 
-ml/scripts/train.py
-   → ColumnTransformer( num: StandardScaler, cat: OneHotEncoder(handle_unknown="ignore") )
-   → RandomForestRegressor(n_estimators=100, max_depth=15)
-   → artifacts/dwell_model_v1.joblib  +  reports/metrics.json
+ml/scripts/train.py --version v2
+   → baselines (per port/direction mean and median)
+   → candidates: RandomForest and HistGradientBoosting, with and without a log target,
+     tuned on validation only; test and stress scored once
+   → chosen: HistGradientBoosting + log1p target, inside Pipeline(prep, reg)
+   → q10 / q90 quantile models + calibration margin for the range
+   → serve="model" only if it beats both baselines on test AND stress
+   → artifacts/dwell_model_v2.joblib (bundle) + .meta.json, reports/metrics_v2.json
 
 API startup
    → dwell_model.load(artifact)             is_loaded drives /ready
-POST /api/v1/predict/dwell
-   → dwell_model.predict(features)          or 503 MODEL_UNAVAILABLE
+POST /shipments/{id}/prediction
+   → model_service.predict_dwell → explain.explain (SHAP in log space, mapped to days)
 ```
 
-The synthetic generator derives dwell from documented multipliers (cargo, documentation, congestion, HS chapter, weight, weekend, shipping line) then **calibrates each port/direction back to its published mean** — 0.87 / 1.17 / 3.14 / 5.18 days. The stress file forces 75–98% utilization and a 20% import disruption with a 2–3× dwell multiplier.
+v2 results (synthetic data only): test MAE **0.611** days vs 0.942 for the best baseline, stress
+MAE **1.327** vs 2.030; the calibrated 10th–90th range covers 82% of test cases. Training is
+reproducible (fixed seed): the 22 Nov rebuild matched the committed report exactly. Train inside the
+API image so the scikit-learn version matches the one that loads the bundle.
 
 ---
 
-## 9. Where the code and the docs disagree
+## 9. Review findings — status
 
-These are real, not stylistic. Treat them as the next work items.
+The 13 Nov review listed nine places where the code and the docs disagreed. Status as of 22 Nov,
+each re-checked against the code:
 
-### 9.1 The prediction flow ignores the ML model — `services/api/app/services/prediction.py`
+| # | Finding (13 Nov) | Status | Notes |
+|---|---|---|---|
+| 9.1 | Prediction flow returned a hardcoded 6.2 days and ignored the model | **Resolved** | `prediction.py` calls `predict_dwell` and `explain`; live prediction with SHAP verified 22 Nov. |
+| 9.2 | Auth bypassed `core/security.py`; dev tokens dead; JWT secret committed | **Resolved** | `deps.get_current_user` uses `security.resolve_identity`; `AUTH_MODE` honoured; no shared secret anywhere. |
+| 9.3 | Four frontend endpoints had no backend route | **Resolved** | Operator overview, operator shipments, audit logs, single-prediction GET added 22 Nov with 19 tests. |
+| 9.4 | Frontend README called the backend a placeholder | **Resolved** | Updated 22 Nov. |
+| 9.5 | `admin.py`: non-committing session helper, naive datetimes, raw ORM dicts, `HTTPException` | **Resolved** | Tariff routes rewritten 22 Nov (standard session, envelope, `AppError`, every filter); the unused `app.db.get_db` is deleted. |
+| 9.6 | `capacity_sim` replays from 2025-01-01 on every call | **Open** | Fine for current volumes; cache or closed-form it if generation gets slow. |
+| 9.7 | `ml.py` rebuilds features heuristically | **Resolved** | The step lookup handles `prep` (v2) and `preprocessor` (v1); v2 defaults use the training vocabulary and a test pins them to the trained categories and ranges. |
+| 9.8 | Duplicate `PyJWT` pin with different versions | **Mostly resolved** | Both lines are now `2.15.1`; the duplicate line itself remains. |
+| 9.9 | Supabase CLI config outside the repo, pointing at a missing seed | **No longer applies** | No Supabase CLI config in this copy; Supabase will be hosted. |
 
-`run_prediction_flow()` returns a literal `predicted_dwell_days = 6.2`, an explanation of `status: "unavailable"`, and a capacity snapshot of `status: "unavailable"`. Meanwhile `dwell_model` *is* loaded at startup and `POST /predict/dwell` *does* call it correctly.
+New findings since the review:
 
-So the flagship feature is a stub behind a working ML endpoint. The comment in `create_app()` says "B07: LOAD THE ML MODEL", but no code path consumes it in the prediction flow.
-
-### 9.2 Authentication bypasses `core/security.py` — `services/api/app/core/deps.py`
-
-`get_current_user` decodes `HS256` inline with `settings.supabase_jwt_secret`, whose default value is `"dummy-secret-for-local-testing"`, and a real-looking secret is committed in `services/api/.env.example` (line 24).
-
-Consequences:
-
-- `AUTH_MODE=dev` (`Authorization: Bearer dev:<email>`) is documented in `services/api/README.md` but **no longer works**.
-- `core/security.py` — with JWKS, RS256/ES256, issuer/audience/expiry checks, cached key set — is **dead code**.
-- `AUTH_MODE` is effectively ignored for authentication.
-- Startup validation in `core/config.py` still enforces Supabase env vars, so config and runtime disagree about what auth mode means.
-
-### 9.3 Four frontend endpoints have no backend counterpart
-
-Verified by grep across `services/api/app`:
-
-| Frontend calls | Backend has |
+| Finding | Status |
 |---|---|
-| `GET /operator/overview` | ✗ (backend has `GET /operator/dashboard/summary`, different path and shape) |
-| `GET /operator/shipments` | ✗ |
-| `GET /admin/audit-logs` | ✗ (audit rows are only *written* by the events endpoint) |
-| `GET /shipments/{id}/predictions/{predictionId}` | ✗ (only the list and the POST exist) |
-
-The mock implements all four, so the UI is complete and the real API would 404. This is the largest real-integration gap.
-
-### 9.4 The frontend README says the backend is a placeholder
-
-`apps/web/README.md` line 167: *"The backend services in `services/` are placeholders; all UI work uses MSW."* That was true at F10, not now — the API has auth, shipments, events, predictions, the cost engine, capacity and tariffs.
-
-### 9.5 Two session helpers, two transaction policies
-
-- `app/db.py::get_db` and `app/core/deps.py::get_db` both exist; only the `deps` one commits/rolls back.
-- `app/api/v1/admin.py` uses the non-committing `db.get_db`, calls `datetime.utcnow()` (naive, while everything else is tz-aware UTC), and returns raw ORM objects inside an ad-hoc `{"data": …}` dict instead of `envelope()` + Pydantic.
-- It also raises `HTTPException` rather than `AppError` for its 404, so its `details` shape differs from the rest of the API.
-
-This is the least consistent module in the backend and the one most likely to break the contract at runtime.
-
-### 9.6 `capacity_sim.py` is O(days since epoch) per call
-
-`capacity_sim_for_date()` replays from `EPOCH_DATE = 2025-01-01` to the target date every time it is called. Fine for a single 250-day window, but `generate_synthetic.py` calls it 11 500 times at data-generation time.
-
-### 9.7 `services/api/app/services/ml.py::predict` reconstructs features heuristically
-
-It guesses `is_weekend`, `month`, `day_of_week`, zero-fills any unknown expected column, and zero-pads `hs_chapter`. It works against the current artifact but is tightly coupled to that artifact's `feature_names_in_`. A retrain with different columns could silently produce wrong predictions instead of failing loudly.
-
-### 9.8 Two requirements files, one duplicate pin
-
-- Root `requirements.txt` = ML only (pandas, numpy, scikit-learn, shap, joblib, PyJWT).
-- `services/api/requirements.txt` = API (fastapi, sqlalchemy, psycopg, alembic, pyjwt, uvicorn, ruff, mypy, pytest).
-- `PyJWT` is pinned twice in the API file (`2.15.1` and `2.8.0`) — the last line wins, and the two disagree.
-
-### 9.9 Supabase config is outside the repo
-
-`Desktop\portiq\supabase\config.toml` points at `./seed.sql`, which does not exist. `project_id = "portiq"`, DB on 54322, API on 54321, studio on 54323, `major_version = 17` (the docker-compose Postgres is 15). The CLI and the compose file describe different worlds.
+| SHAP explanations broke with the v2 bundle (log target, different step names) | Resolved 22 Nov (`explain.py`) |
+| `main.py` crashed at start-up without `MODEL_PATH` (`parents[3]`) | Resolved 22 Nov |
+| `docker-compose.yml` health check sat on the API container | Resolved 22 Nov |
+| `train.py` saved v1 under the v2 file name | Resolved 22 Nov |
+| `/load-planner` missing from the frontend middleware's protected routes | Resolved 22 Nov |
+| CG-015: no numeric training ranges in the model metadata, so `OUT_OF_RANGE_INPUT` is never emitted | Resolved 22 Nov |
+| API defaults for the v2-only inputs (`"Standard"`, `"Green"`) were unknown to the model; predictions ran 0.42 days low | Resolved 22 Nov |
+| Provenance reported `dataset_version: synthetic-v1` while v2 was served | Resolved 22 Nov |
+| Capacity router mounted twice (duplicate OpenAPI operation id) | Resolved 22 Nov |
+| `features/` file names do not match their contents; no F04 spec file | Open (housekeeping) |
 
 ---
 
 ## 10. Testing layout
 
-### Backend — `services/api/tests/` (14 modules)
+### Backend — `services/api/tests/` (18 modules, 172 tests)
 
 | Property | Detail |
 |---|---|
@@ -599,12 +675,13 @@ It guesses `is_weekend`, `month`, `day_of_week`, zero-fills any unknown expected
 | Strategy | drops `public`, runs every migration from empty, rolls back per test |
 | Safety rail | refuses to reset unless the DB name ends with `_test` and the host is local |
 | Heaviest coverage | `test_shipments.py` (~24 KB) — authorization, state machine, filters |
-| Extras | `test_auth.py`, `test_operator.py`, `test_predict.py`, `test_config.py`, `test_cors.py`, `test_database.py`, `test_errors.py`, `test_health.py`, `test_cost_engine.py`, `test_seed.py`, `test_admin.py` |
+| Extras | `test_auth.py`, `test_auth_jwks.py`, `test_operator.py`, `test_predict.py`, `test_config.py`, `test_cors.py`, `test_database.py`, `test_errors.py`, `test_health.py`, `test_cost_engine.py`, `test_seed.py`, `test_admin.py` |
+| B10 | `test_at_risk.py` (11 unit tests), `test_b10_endpoints.py` (8), `test_contract.py` (real responses vs `tests/fixtures/frontend_contract/*.json`, copied from the frontend mocks), `test_auth_matrix.py` (section 7 table, every route × role, plus hidden-resource 404s), `test_hardening.py` (body cap, date ranges, tariff API) |
 | Support | `tests/support/probe_app.py` — test-only app to exercise real 422/500 over HTTP |
 
-Runs: `ruff check .`, `mypy .`, `pytest` (needs Postgres running).
+Runs: `ruff check .`, `mypy .`, `pytest` (needs Postgres running). Without a local Python, run them in a throwaway container that shares the Postgres container's network; the command is in `BACKEND_FIXES_REPORT.md`.
 
-### Frontend unit — 10 files, colocated
+### Frontend unit — 23 files, 191 tests, colocated
 
 | File | Covers |
 |---|---|
@@ -616,12 +693,14 @@ Runs: `ruff check .`, `mypy .`, `pytest` (needs Postgres running).
 | `lib/auth/route-access.test.ts`, `return-path.test.ts`, `mock.test.ts` | guards and safe redirects |
 | `lib/mocks/flags.test.ts` | mock flags are inert without mocks |
 | `components/features/**/*.test.tsx` | shipments, detail, prediction, capacity, dashboard, operator, tariffs, settings, auth, shared |
+| `lib/auth/account-type.test.ts` | importer / operator sign-in toggle |
+| `lib/load-planner/load-planner.test.ts` | volume, weight, validation, packing, utilization matrix, camera framing |
 
 Vitest + jsdom + MSW, `tests/setup.ts` resets mock state between files.
 
 ### E2E — `apps/web/tests/e2e/`
 
-`f01…f10.spec.ts` plus `a11y.spec.ts` (axe WCAG 2.2 A/AA across 18 pages/states). Playwright boots `next dev` with `NEXT_PUBLIC_USE_MOCKS=true`, so **E2E never needs the API or a database**.
+`f01…f10.spec.ts` plus `a11y.spec.ts` (axe WCAG 2.2 A/AA across 20 pages/states, including the Load planner for both roles); 85 tests. Playwright boots `next dev` with `NEXT_PUBLIC_USE_MOCKS=true`, so **E2E never needs the API or a database**.
 
 ---
 
@@ -656,22 +735,31 @@ AUTH_MODE=dev                       # dev | supabase
 SUPABASE_URL=
 SUPABASE_JWT_JWKS_URL=
 SUPABASE_JWT_ISSUER=
-SUPABASE_JWT_AUDIENCE=authenticated
-SUPABASE_JWT_SECRET=                # committed sample value in .env.example
+SUPABASE_JWT_AUDIENCE=              # JWKS URL, issuer and audience are derived from SUPABASE_URL
 MODEL_PATH=
 MODEL_VERSION=
 PREDICTION_TIMEOUT_SECONDS=5
 ```
 
+Docker (how it runs today, from `services/api`):
+
 ```powershell
-docker compose up -d db
+docker compose up -d --build            # Postgres 15 + API on :8000, model mounted from ml/artifacts
+docker exec -w /app api-api-1 python scripts/seed_dev.py
+docker exec -w /app api-api-1 python scripts/seed_capacity.py --start 2026-10-15
+```
+
+Or locally with a Python virtualenv:
+
+```powershell
 cd services\api
-$env:DATABASE_URL = "postgresql+psycopg://portiq:portiq@localhost:5432/portiq"
-$env:APP_ENV = "local"
 alembic upgrade head
 python scripts\seed_dev.py
 uvicorn app.main:app --reload
 ```
+
+`services/api/.env` exists (git-ignored) with `AUTH_MODE=dev` and an empty Supabase section;
+switching to Supabase is `AUTH_MODE=supabase` plus `SUPABASE_URL`.
 
 Ops endpoints: `/health`, `/ready` (503 until the model artifact loads), `/docs`.
 
@@ -685,7 +773,7 @@ API       8000   uvicorn
 Web       3000   next dev
 ```
 
-To actually use the API from the browser: set `NEXT_PUBLIC_USE_MOCKS=false`, point `NEXT_PUBLIC_API_BASE_URL` at the API, and have a token the API accepts (§9.2 caveat).
+To use the API from the browser: fill `apps/web/.env.local` (Supabase URL + publishable key, `NEXT_PUBLIC_USE_MOCKS=false`) and set `AUTH_MODE=supabase` + `SUPABASE_URL` in `services/api/.env`. Dev tokens cannot be sent from the browser, so live mode needs Supabase.
 
 ---
 
@@ -722,6 +810,7 @@ app/
     dashboard/page.tsx
     shipments/{page,new,[id],[id]/edit,[id]/prediction/[predictionId]}/page.tsx
     capacity/page.tsx
+    load-planner/page.tsx        3D container load planner
     operator/page.tsx
     admin/tariffs/page.tsx
     settings/page.tsx
@@ -745,10 +834,12 @@ components/
   features/capacity/             CapacityClient, CapacityChart, CapacityTable
   features/dashboard/            DashboardClient
   features/operator/             OperatorClient
+  features/load-planner/         LoadPlannerClient, ContainerViewport, ContainerScene (lazy),
+                                 ParcelMeshes, CargoList, UtilizationMatrix, LoadSummaryPanels, ViewStrip
   features/admin/tariffs/        TariffsClient
   features/settings/             SettingsForm
   shared/                        StatusBadge, DemoBadge, Callout, Field, PageState,
-                                 Money, DateTime, Stat, DataTable, ComingSoon
+                                 Money, DateTime, Stat, DataTable, ContainerArt, ComingSoon (unused)
   ui/                            shadcn/Radix primitives
 
 lib/
@@ -767,6 +858,8 @@ lib/
   tariffs/                       api, schema, options
   capacity/api.ts                forecast query builder
   operator/api.ts                overview + shipments query builders
+  load-planner/                  types, config, calculations, packing, views (pure, tested)
+  auth/account-type.ts           importer / operator sign-in toggle rules
   mocks/handlers.ts              all 21 MSW handlers
   mocks/fixtures/*.ts            shipments, predictions, capacity, operator,
                                  tariffs, audit, ports, users, config, errors
@@ -776,6 +869,8 @@ lib/
 middleware.ts                    session refresh + protected redirects
 tests/setup.ts                   Vitest + MSW lifecycle
 tests/e2e/*.spec.ts              F01–F10 + a11y
+themes/portiq/                   theme.css (scoped tokens), content.ts
+public/models/                   container-20ft.glb, container-40ft.glb (compressed)
 ```
 
 ### `services/api`
@@ -787,23 +882,26 @@ app/api/v1/__init__.py           api_router assembly
 app/api/v1/me.py                 GET/PATCH /me
 app/api/v1/config.py             GET /config (thresholds, max range)
 app/api/v1/ports.py              GET /ports (role-scoped)
-app/api/v1/shipments.py          list, summary, create, detail, patch, events, prediction, history
+app/api/v1/shipments.py          list, summary, create, detail, patch, events, prediction, history, single prediction
 app/api/v1/capacity.py           GET /capacity/forecast (≤31 days, role-scoped)
 app/api/v1/predict.py            POST /predict/dwell (live model inference)
-app/api/v1/admin.py              tariffs list/create/deactivate
-app/api/v1/operator.py           operator dashboard summary
+app/api/v1/admin.py              tariffs list/create/deactivate, GET /admin/audit-logs
+app/api/v1/operator.py           GET /operator/overview, /operator/shipments, /operator/dashboard/summary
 app/core/config.py               env vars, frozen constants, fail-fast validation
 app/core/deps.py                 get_db, get_current_user, require_role
-app/core/security.py             dev-token + JWKS verification (currently unused, see §9.2)
+app/core/security.py             dev-token + JWKS verification
 app/core/errors.py               AppError, error envelope, exception handlers
 app/core/logging.py              JSON logging, request-id generation
 app/models/tables.py             all 9 tables
-app/repositories/                profiles, ports, operator_ports, shipments, tariffs, audit_logs
+app/repositories/                profiles, ports, operator_ports, shipments, tariffs, audit_logs, capacity
 app/schemas/                     enums (source of truth), envelope, me, config, ports,
                                  shipments, prediction, capacity, predict, admin
 app/services/prediction.py       orchestration: idempotency, rate limit, persist run
 app/services/cost_engine.py      specificity, scope match, rate math, Decimal totals
 app/services/ml.py               DwellTimeModel wrapper (load, predict, feature repair)
+app/services/model_service.py    feature row, timeout, 503 on any model failure
+app/services/explain.py          SHAP for v1 pipeline and v2 bundle (log target)
+app/services/at_risk.py          operator scope, at-risk rules, dwell distribution
 app/services/capacity_sim.py     deterministic Poisson arrival simulation (yard/berth)
 migrations/versions/0001_initial.py   tables, enums, checks, indexes, RLS
 scripts/seed_dev.py              deterministic uuid5 seed, idempotent
@@ -814,24 +912,33 @@ tests/                           pytest suite (portiq_test)
 ### `ml`
 
 ```
-scripts/generate_synthetic.py    seeded synthetic generator, calibrated to published means
-scripts/prepare_data.py          dedupe, split, seasonality features
-scripts/train.py                 sklearn Pipeline → joblib artifact + metrics
-data/                            raw / processed / reference CSVs
-artifacts/dwell_model_v1.joblib  loaded by the API at startup
-reports/metrics.json             MAE / RMSE / R2 for test and stress splits
+scripts/generate_synthetic.py      v1 generator, calibrated to published means
+scripts/generate_synthetic_v2.py   v2 generator (customs channel, importer type, holidays, exam queue, busy days)
+scripts/prepare_data.py            dedupe, split, seasonality features (--version v1|v2)
+scripts/train.py                   baselines, model search, quantile range, serve decision (--version v1|v2)
+data/                              raw / processed (git-ignored)
+artifacts/dwell_model_v2.joblib    bundle loaded by the API at startup
+artifacts/model_metadata_v2.json   versions, feature schema, training ranges, metrics (spec 11.6)
+reports/metrics_v2.json            baselines, chosen config, test/stress metrics, intervals, ablations
+scripts/evaluate.py                calibration report → reports/calibration_v2.json
+tests/test_pipeline.py             19 tests
+data/reference/port_dwell_*.csv    real monthly port averages 2020-2022 (hours)
 ```
 
 ---
 
 ## Summary judgement
 
-**Strong:** the contract-first process (specs → gap log → code), the envelope + error handling discipline, the repository/service split, the immutable snapshot pattern for predictions, the `cost_engine` Decimal math with explicit partial totals, the mock fixture coverage that lets the whole UI be demonstrated without a backend, and the test strategy (real Postgres for the backend, MSW everywhere for the frontend).
+**Strong:** the contract-first process (specs → gap log → code), the envelope and error-handling
+discipline, the repository/service split, immutable prediction snapshots, the `Decimal` cost engine
+with honest partial totals, a real model with checked SHAP explanations, scoped authorization tested
+endpoint by endpoint and as one section 7 matrix, contract tests that pin the API to the frontend
+mocks, and broad automated coverage (172 backend tests, 191 frontend unit tests, 85 browser tests).
 
 **Weak, in priority order:**
 
-1. `prediction.py` is a stub returning 6.2 days while a real model sits loaded and unused.
-2. Auth bypasses `core/security.py`, so dev tokens and JWKS verification are both dead, and a JWT secret is committed.
-3. Four endpoints the UI depends on do not exist in the backend.
-4. `admin.py` ignores the envelope, uses naive datetimes, and returns raw ORM objects.
-5. Docs lag the code (`apps/web/README.md` still calls the backend a placeholder), and the Supabase CLI config is outside the repo pointing at a missing seed file.
+1. The frontend and backend have never run together live; that needs the Supabase keys (B11).
+2. The reference data's source and licence are not recorded; the served accuracy (~0.73 days MAE) is lower than the full-input figure (0.611) because the
+   API does not collect the five v2-only inputs.
+3. The capacity simulator replays from 2025-01-01 on every call.
+4. No git, CI or deployment setup yet, and the demo/report deliverables have not started.

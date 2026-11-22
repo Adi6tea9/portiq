@@ -9,6 +9,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Circle,
+  Container,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -49,17 +50,24 @@ import {
   type NavItem,
 } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { portiqThemeContent } from "@/themes/portiq/content";
 
 const ICONS: Record<string, LucideIcon> = {
   Dashboard: LayoutDashboard,
   Shipments: Package,
   Capacity: BarChart3,
+  "Load planner": Container,
   "Operator overview": Users,
   Tariffs: Receipt,
 };
 
 function iconFor(item: NavItem): LucideIcon {
   return ICONS[item.label] ?? Circle;
+}
+
+function initialsFor(name: string | undefined): string {
+  const words = (name ?? "").split(/[\s@._-]+/).filter(Boolean);
+  return words.slice(0, 2).map((word) => word[0]!.toUpperCase()).join("") || "?";
 }
 
 interface NavLinkProps {
@@ -79,7 +87,7 @@ function NavLink({ item, active, collapsed, onNavigate }: NavLinkProps) {
       title={collapsed ? item.label : undefined}
       onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "app-nav-link flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         active
           ? "bg-light-teal text-harbor-navy"
           : "text-text hover:bg-canvas",
@@ -95,12 +103,12 @@ function NavLink({ item, active, collapsed, onNavigate }: NavLinkProps) {
 function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="flex items-center gap-2">
-      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-ocean-teal text-white">
+      <span className="app-wordmark-mark flex h-8 w-8 items-center justify-center rounded-md bg-ocean-teal text-white">
         <Ship aria-hidden="true" className="h-5 w-5" />
       </span>
       <span
         className={cn(
-          "text-lg font-semibold tracking-tight text-harbor-navy",
+          "app-wordmark text-lg font-semibold tracking-tight text-harbor-navy",
           compact && "sr-only",
         )}
       >
@@ -140,7 +148,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <aside
         className={cn(
-          "hidden flex-col border-r border-border bg-surface md:flex",
+          "app-sidebar hidden flex-col border-r border-border bg-surface md:flex",
           collapsed ? "w-16" : "w-60",
         )}
       >
@@ -159,11 +167,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             />
           ))}
         </nav>
+        {collapsed ? null : (
+          <div className="app-sidebar-extra space-y-3 px-3 pb-2">
+            <div className="app-sidebar-panel p-3">
+              <p className="text-sm font-semibold text-white">
+                {portiqThemeContent.decisionSupportTitle}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-white/75">
+                {portiqThemeContent.decisionSupportBody}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 border-t border-white/10 px-1 pt-3">
+              <span
+                aria-hidden="true"
+                className="app-avatar flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+              >
+                {initialsFor(me?.display_name ?? me?.email)}
+              </span>
+              <span className="min-w-0 leading-tight">
+                <span className="block truncate text-sm font-medium text-white">
+                  {me?.display_name ?? me?.email ?? "Signed in"}
+                </span>
+                <span className="block truncate text-xs text-white/70">
+                  {ROLE_LABELS[role]}
+                </span>
+              </span>
+            </div>
+          </div>
+        )}
         <div className={cn("p-2", collapsed && "flex justify-center")}>
           <Button
             type="button"
             variant="ghost"
             size="sm"
+            className="app-sidebar-control"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             onClick={() => setCollapsed((value) => !value)}
           >
@@ -180,7 +217,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-surface px-4">
+        <header className="app-header sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border bg-surface px-4">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button
@@ -193,8 +230,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Menu aria-hidden="true" className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <SheetHeader className="border-b border-border p-4 text-left">
+            <SheetContent side="left" className="app-drawer w-64 p-0">
+              <SheetHeader className="app-drawer-header border-b border-border p-4 text-left">
                 <SheetTitle>
                   <Wordmark />
                 </SheetTitle>

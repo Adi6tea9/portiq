@@ -54,6 +54,23 @@
         "rmse": 3.9737510106531166,
         "r2": -0.001703528509600316
       }
+    },
+    "global_median": {
+      "val": {
+        "mae": 1.5412606666666664,
+        "rmse": 2.898904491815256,
+        "r2": -0.12072591257843102
+      },
+      "test": {
+        "mae": 1.3569,
+        "rmse": 2.462729055742836,
+        "r2": -0.08687360268141386
+      },
+      "stress": {
+        "mae": 2.657783333333333,
+        "rmse": 4.641916646745537,
+        "r2": -0.36688688405406067
+      }
     }
   },
   "search": [
@@ -66,7 +83,7 @@
       "config": "hgb+log {'learning_rate': 0.1, 'max_leaf_nodes': 15, 'max_iter': 300, 'l2_regularization': 1.0}"
     },
     {
-      "val_mae": 0.7106894502035062,
+      "val_mae": 0.7106894502035063,
       "config": "hgb+log {'learning_rate': 0.05, 'max_leaf_nodes': 31, 'max_iter': 300, 'l2_regularization': 1.0}"
     },
     {
@@ -90,19 +107,19 @@
       "config": "hgb {'learning_rate': 0.1, 'max_leaf_nodes': 31, 'max_iter': 300, 'l2_regularization': 1.0}"
     },
     {
-      "val_mae": 0.7638360712987371,
+      "val_mae": 0.7638192127546769,
       "config": "rf+log {'max_depth': 12, 'min_samples_leaf': 2}"
     },
     {
-      "val_mae": 0.7650510813211331,
+      "val_mae": 0.7654836229903589,
       "config": "rf+log {'max_depth': None, 'min_samples_leaf': 2}"
     },
     {
-      "val_mae": 0.7695300878365852,
+      "val_mae": 0.7694108616986708,
       "config": "rf+log {'max_depth': None, 'min_samples_leaf': 5}"
     },
     {
-      "val_mae": 0.7700339789383346,
+      "val_mae": 0.7700121713603972,
       "config": "rf+log {'max_depth': 12, 'min_samples_leaf': 5}"
     },
     {
@@ -114,7 +131,7 @@
       "config": "rf {'max_depth': 12, 'min_samples_leaf': 2}"
     },
     {
-      "val_mae": 0.7941480511781297,
+      "val_mae": 0.7941480511781295,
       "config": "rf {'max_depth': None, 'min_samples_leaf': 5}"
     },
     {
@@ -144,28 +161,244 @@
       "r2": 0.6214048830796659
     }
   },
+  "per_category": {
+    "test": {
+      "direction": {
+        "export": {
+          "n": 592,
+          "model_mae": 1.1344743526381267,
+          "baseline_mae": 1.7470633445945947
+        },
+        "import": {
+          "n": 908,
+          "model_mae": 0.26924704327275567,
+          "baseline_mae": 0.4166211453744494
+        }
+      },
+      "port_code": {
+        "INMUN": {
+          "n": 604,
+          "model_mae": 0.7992809260133391,
+          "baseline_mae": 1.2568360927152316
+        },
+        "INNSA": {
+          "n": 896,
+          "model_mae": 0.48361546064885735,
+          "baseline_mae": 0.7292684151785715
+        }
+      },
+      "cargo_type": {
+        "general_container": {
+          "n": 1067,
+          "model_mae": 0.5730243225348304,
+          "baseline_mae": 0.8438894095595127
+        },
+        "hazardous": {
+          "n": 117,
+          "model_mae": 0.9341638345838599,
+          "baseline_mae": 1.3137948717948718
+        },
+        "oversized": {
+          "n": 106,
+          "model_mae": 0.9637833628304413,
+          "baseline_mae": 1.5648113207547167
+        },
+        "reefer": {
+          "n": 210,
+          "model_mae": 0.4438570228687179,
+          "baseline_mae": 0.9168547619047619
+        }
+      },
+      "shipping_line": {
+        "Line A": {
+          "n": 453,
+          "model_mae": 0.5547862335908571,
+          "baseline_mae": 0.8305419426048565
+        },
+        "Line B": {
+          "n": 380,
+          "model_mae": 0.5846619544407445,
+          "baseline_mae": 0.8704197368421053
+        },
+        "Line C": {
+          "n": 284,
+          "model_mae": 0.5610615114800577,
+          "baseline_mae": 0.843274647887324
+        },
+        "Line D": {
+          "n": 239,
+          "model_mae": 0.6974863337396793,
+          "baseline_mae": 1.1565146443514647
+        },
+        "other": {
+          "n": 144,
+          "model_mae": 0.8094077953136956,
+          "baseline_mae": 1.31709375
+        }
+      },
+      "documentation_status": {
+        "complete": {
+          "n": 1049,
+          "model_mae": 0.5116220945296613,
+          "baseline_mae": 0.7932993326978075
+        },
+        "incomplete": {
+          "n": 296,
+          "model_mae": 0.9366830987151794,
+          "baseline_mae": 1.5100439189189188
+        },
+        "unknown": {
+          "n": 155,
+          "model_mae": 0.6589377914330665,
+          "baseline_mae": 0.8607064516129033
+        }
+      }
+    },
+    "stress": {
+      "direction": {
+        "export": {
+          "n": 613,
+          "model_mae": 1.9253715228338586,
+          "baseline_mae": 3.3334975530179447
+        },
+        "import": {
+          "n": 887,
+          "model_mae": 0.913504930694653,
+          "baseline_mae": 1.4174926719278467
+        }
+      },
+      "port_code": {
+        "INMUN": {
+          "n": 579,
+          "model_mae": 1.7618283893188817,
+          "baseline_mae": 2.818233160621762
+        },
+        "INNSA": {
+          "n": 921,
+          "model_mae": 1.0536731591831487,
+          "baseline_mae": 1.8121530944625406
+        }
+      },
+      "cargo_type": {
+        "general_container": {
+          "n": 600,
+          "model_mae": 1.081475323764639,
+          "baseline_mae": 1.6676208333333333
+        },
+        "hazardous": {
+          "n": 229,
+          "model_mae": 1.8352678177453794,
+          "baseline_mae": 3.258065502183406
+        },
+        "oversized": {
+          "n": 329,
+          "model_mae": 1.8606013027389745,
+          "baseline_mae": 3.436718844984802
+        },
+        "reefer": {
+          "n": 342,
+          "model_mae": 0.9041879061395154,
+          "baseline_mae": 1.238011695906433
+        }
+      },
+      "shipping_line": {
+        "Line A": {
+          "n": 307,
+          "model_mae": 1.0228049768495078,
+          "baseline_mae": 1.5587068403908795
+        },
+        "Line B": {
+          "n": 257,
+          "model_mae": 1.2491187525923537,
+          "baseline_mae": 1.9692684824902722
+        },
+        "Line C": {
+          "n": 210,
+          "model_mae": 1.1346473213428419,
+          "baseline_mae": 1.8493595238095237
+        },
+        "Line D": {
+          "n": 263,
+          "model_mae": 1.5516604549595057,
+          "baseline_mae": 2.4555665399239546
+        },
+        "other": {
+          "n": 463,
+          "model_mae": 1.53162922803009,
+          "baseline_mae": 2.7687807775377964
+        }
+      },
+      "documentation_status": {
+        "complete": {
+          "n": 792,
+          "model_mae": 1.0654759636627507,
+          "baseline_mae": 1.5586603535353536
+        },
+        "incomplete": {
+          "n": 410,
+          "model_mae": 1.8205185076240618,
+          "baseline_mae": 3.4886573170731703
+        },
+        "unknown": {
+          "n": 298,
+          "model_mae": 1.3431612942166056,
+          "baseline_mae": 2.1340318791946307
+        }
+      }
+    }
+  },
+  "checks": {
+    "test": {
+      "negative_predictions": 0,
+      "predictions_over_30_days": 0,
+      "max_prediction_days": 19.097167880785335,
+      "mean_residual_days": 0.06801485990050223,
+      "p95_abs_error_days": 2.341345986793881,
+      "rows_outside_training_range": {
+        "weight_kg": 0,
+        "forecast_capacity_utilization_pct": 8,
+        "container_size_ft": 0,
+        "exam_queue_len": 0,
+        "is_holiday": 0
+      }
+    },
+    "stress": {
+      "negative_predictions": 0,
+      "predictions_over_30_days": 0,
+      "max_prediction_days": 20.782348114395838,
+      "mean_residual_days": 0.6281143218773856,
+      "p95_abs_error_days": 4.793966151515448,
+      "rows_outside_training_range": {
+        "weight_kg": 0,
+        "forecast_capacity_utilization_pct": 0,
+        "container_size_ft": 0,
+        "exam_queue_len": 1,
+        "is_holiday": 0
+      }
+    }
+  },
   "interval": {
     "test": {
       "raw": {
         "coverage": 0.7446666666666667,
-        "mean_width_days": 1.7153069887817156
+        "mean_width_days": 1.7153069887817165
       },
       "calibrated": {
         "coverage": 0.8213333333333334,
-        "mean_width_days": 1.8655070781537288
+        "mean_width_days": 1.8655070781537313
       }
     },
     "stress": {
       "raw": {
         "coverage": 0.6346666666666667,
-        "mean_width_days": 2.7649313828864313
+        "mean_width_days": 2.764931382886433
       },
       "calibrated": {
         "coverage": 0.68,
-        "mean_width_days": 2.915144215369006
+        "mean_width_days": 2.915144215369009
       }
     },
-    "margin_days": 0.07510641624128735
+    "margin_days": 0.07510641624128803
   },
   "ablations": {
     "full": {
@@ -180,14 +413,14 @@
     },
     "v1_features_only": {
       "test_mae": 0.7306089331479811,
-      "stress_mae": 1.50891105552273,
+      "stress_mae": 1.5089110555227305,
       "n_features": 12
     }
   },
   "utilization_curve": {
     "[0, 50)": {
       "actual": 1.5790000000000002,
-      "predicted": 1.1217634537108827,
+      "predicted": 1.1217634537108825,
       "n": 8
     },
     "[50, 60)": {

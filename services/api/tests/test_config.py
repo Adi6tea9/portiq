@@ -71,6 +71,32 @@ def test_database_url_is_required_outside_local() -> None:
         )
 
 
+def test_supabase_settings_are_derived_from_the_project_url() -> None:
+    settings = load_settings(
+        {"AUTH_MODE": "supabase", "SUPABASE_URL": "https://project.supabase.co/"}
+    )
+
+    assert settings.supabase_jwt_jwks_url == JWKS_URL
+    assert settings.supabase_jwt_issuer == ISSUER
+    assert settings.supabase_jwt_audience == "authenticated"
+
+
+def test_explicit_supabase_jwt_settings_win_over_derived_ones() -> None:
+    settings = load_settings(
+        {
+            "AUTH_MODE": "supabase",
+            "SUPABASE_URL": "https://project.supabase.co",
+            "SUPABASE_JWT_JWKS_URL": "https://keys.example/jwks.json",
+            "SUPABASE_JWT_ISSUER": "https://issuer.example",
+            "SUPABASE_JWT_AUDIENCE": "custom",
+        }
+    )
+
+    assert settings.supabase_jwt_jwks_url == "https://keys.example/jwks.json"
+    assert settings.supabase_jwt_issuer == "https://issuer.example"
+    assert settings.supabase_jwt_audience == "custom"
+
+
 def test_supabase_mode_requires_jwt_settings() -> None:
     with pytest.raises(RuntimeError, match="SUPABASE_JWT_JWKS_URL"):
         load_settings(

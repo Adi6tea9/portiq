@@ -1,0 +1,13 @@
+{
+  "id": "audit_001",
+  "actor_display_name": "Demo Admin",
+  "action": "shipment.created",
+  "entity_type": "shipment",
+  "entity_id": "ship_001",
+  "before": null,
+  "after": {
+    "recorded": true
+  },
+  "created_at": "2026-10-29T05:00:00.000Z",
+  "request_id": "req_audit_001"
+}

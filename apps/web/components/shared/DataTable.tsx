@@ -77,8 +77,8 @@ export function DataTable<TData>({
           Loading table data
         </p>
       ) : null}
-      <div className="w-full max-w-full overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
+      <div className="app-table w-full max-w-full overflow-x-auto rounded-lg border border-border">
+        <table className="app-table-grid w-full text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-muted">
             {table.getHeaderGroups().map((headerGroup) => (

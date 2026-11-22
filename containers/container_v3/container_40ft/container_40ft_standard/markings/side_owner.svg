@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="2048" viewBox="0 0 2048 1024">
+  <!-- Transparent background; Owner/Operator branding decal -->
+  <g id="Owner_Logo_Mark">
+    <rect x="90" y="330" width="200" height="200" fill="none" stroke="#E6ECE9" stroke-width="16"/>
+    <rect x="122" y="362" width="136" height="136" fill="none" stroke="#CDAA7B" stroke-width="9"/>
+    <line x1="156" y1="362" x2="156" y2="498" stroke="#E6ECE9" stroke-width="9"/>
+    <line x1="190" y1="362" x2="190" y2="498" stroke="#E6ECE9" stroke-width="9"/>
+    <line x1="224" y1="362" x2="224" y2="498" stroke="#E6ECE9" stroke-width="9"/>
+  </g>
+
+  <g id="Owner_Wordmark">
+    <text x="336" y="486" font-family="bold" font-size="184" font-weight="bold" fill="#E6ECE9" letter-spacing="10">PORTIQ</text>
+    <rect x="340" y="516" width="690" height="10" fill="#CDAA7B"/>
+    <text x="340" y="582" font-family="condensed" font-size="44" font-weight="bold" fill="#E6ECE9" opacity="0.90" letter-spacing="6">LOGISTICS VISUALIZATION DEMO</text>
+  </g>
+</svg>

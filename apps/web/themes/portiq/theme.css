@@ -1,0 +1,454 @@
+/*
+ * PortIQ theme (PORTIQ_THEME_AGENT_GUIDE.md).
+ * Opt-in: every rule sits under [data-theme="portiq"], so without the
+ * attribute the default design is untouched. Components expose app-* hooks.
+ * Token blocks use :root[data-theme] so they beat globals.css's :root whatever
+ * order the stylesheets load in.
+ */
+
+:root[data-theme="portiq"] {
+  /* Values sampled from the reference image (portiq -- ui1.png). */
+  --portiq-sidebar-top: #0b2c29;
+  --portiq-sidebar-bottom: #0a2926;
+  --portiq-sidebar-overlay: rgba(8, 36, 33, 0.7);
+  /* Port photo behind the lower sidebar; set to none for a plain sidebar. */
+  --portiq-sidebar-photo: url("/themes/portiq/port-login.webp");
+  --portiq-nav-active: #34705f;
+  --portiq-mint: #bee2d6;
+  --portiq-mint-soft: #d2ecdf;
+  --portiq-lilac-soft: #ece4f3;
+  --portiq-amber-soft: #f9ebd7;
+  --portiq-olive-soft: #e4ead9;
+  --portiq-card-radius: 16px;
+  --portiq-card-shadow: 0 1px 2px rgba(20, 34, 31, 0.03),
+    0 2px 10px rgba(20, 34, 31, 0.03);
+
+  /* Existing app tokens, retuned (space-separated RGB as globals.css expects). */
+  --canvas: 247 245 241;
+  --background: 247 245 241;
+  --surface: 255 255 255;
+  --card: 255 255 255;
+  --border: 230 230 225;
+  --text: 20 34 31;
+  --foreground: 20 34 31;
+  --card-foreground: 20 34 31;
+  --muted: 102 112 108;
+  --muted-foreground: 102 112 108;
+  --harbor-navy: 20 34 31;
+  --ocean-teal: 22 83 67;
+  --light-teal: 210 232 214;
+  --primary: 22 83 67;
+  --primary-foreground: 255 255 255;
+  --secondary: 242 241 237;
+  --secondary-foreground: 20 34 31;
+  --accent: 210 232 214;
+  --accent-foreground: 22 83 67;
+  --success: 22 131 74;
+  /* Darkened from the guide's #C94D5A to clear 4.5:1 on the page background. */
+  --danger: 178 58 72;
+  --destructive: 178 58 72;
+  /* Form-control outline kept at >= 3:1 on white. */
+  --input: 122 134 129;
+  --ring: 22 83 67;
+  --radius: 10px;
+}
+
+/* Sidebar: flat deep green (as in the reference) with an optional bottom photo layer. */
+[data-theme="portiq"] .app-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  isolation: isolate;
+  border-right: 0;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    var(--portiq-sidebar-top) 0%,
+    var(--portiq-sidebar-bottom) 100%
+  );
+}
+
+[data-theme="portiq"] .app-sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      180deg,
+      var(--portiq-sidebar-top) 0%,
+      rgba(11, 44, 41, 0.45) 40%,
+      var(--portiq-sidebar-overlay) 100%
+    ),
+    var(--portiq-sidebar-photo) 60% center / cover no-repeat;
+}
+
+[data-theme="portiq"] .app-sidebar .app-wordmark {
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-sidebar .app-wordmark-mark {
+  background: var(--portiq-mint);
+  color: var(--portiq-sidebar-top);
+}
+
+[data-theme="portiq"] .app-sidebar .app-nav-link {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+[data-theme="portiq"] .app-sidebar .app-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-sidebar .app-nav-link[aria-current="page"] {
+  background: var(--portiq-nav-active);
+  color: #fff;
+  font-weight: 600;
+}
+
+[data-theme="portiq"] .app-sidebar .app-sidebar-control {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+[data-theme="portiq"] .app-sidebar .app-sidebar-control:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+/* Theme-only sidebar extras (decision-support panel, identity). */
+.app-sidebar-extra {
+  display: none;
+}
+
+[data-theme="portiq"] .app-sidebar-extra {
+  display: block;
+}
+
+[data-theme="portiq"] .app-sidebar-panel {
+  border: 1px solid rgba(169, 210, 193, 0.35);
+  background: rgba(7, 58, 53, 0.55);
+  border-radius: 12px;
+}
+
+[data-theme="portiq"] .app-avatar {
+  background: var(--portiq-mint);
+  color: var(--portiq-sidebar-top);
+}
+
+/* Workspace header blends into the page. */
+[data-theme="portiq"] .app-header {
+  background: rgb(var(--canvas) / 0.92);
+  backdrop-filter: blur(6px);
+}
+
+/* Cards and badges. */
+[data-theme="portiq"] .app-card {
+  border-radius: var(--portiq-card-radius);
+  border-color: rgb(var(--border));
+  box-shadow: var(--portiq-card-shadow);
+}
+
+[data-theme="portiq"] .app-badge {
+  border-radius: 9999px;
+}
+
+/* Dashboard feature tiles: theme-only, so the default dashboard is unchanged. */
+.app-quick-actions {
+  display: none;
+}
+
+[data-theme="portiq"] .app-quick-actions {
+  display: grid;
+}
+
+[data-theme="portiq"] .app-tile {
+  border-radius: var(--portiq-card-radius);
+  border: 1px solid rgba(20, 34, 31, 0.06);
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+[data-theme="portiq"] .app-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--portiq-card-shadow);
+}
+
+[data-theme="portiq"] .app-tile--mint {
+  background: var(--portiq-mint-soft);
+}
+
+[data-theme="portiq"] .app-tile--amber {
+  background: var(--portiq-amber-soft);
+}
+
+[data-theme="portiq"] .app-tile--olive {
+  background: var(--portiq-olive-soft);
+}
+
+[data-theme="portiq"] .app-tile--lilac {
+  background: var(--portiq-lilac-soft);
+}
+
+/* Each tile's icon takes its family colour, as in the reference. */
+[data-theme="portiq"] .app-tile--mint .app-tile-icon {
+  color: #1e6b52;
+}
+
+[data-theme="portiq"] .app-tile--amber .app-tile-icon {
+  color: #b4651e;
+}
+
+[data-theme="portiq"] .app-tile--olive .app-tile-icon {
+  color: #3d7a2e;
+}
+
+[data-theme="portiq"] .app-tile--lilac .app-tile-icon {
+  color: #5b3f8c;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="portiq"] .app-tile:hover {
+    transform: none;
+  }
+}
+
+/* ---- Stage 2: rest of the app ---- */
+
+/* Chart colours read by recharts through rgb(var(--chart-*, fallback)). */
+:root[data-theme="portiq"] {
+  --chart-grid: 235 234 229;
+  --chart-increase: 224 108 136;
+  --chart-decrease: 78 159 82;
+}
+
+/* Mobile navigation drawer mirrors the sidebar. */
+[data-theme="portiq"] .app-drawer {
+  border-right: 0;
+  color: #fff;
+  background: linear-gradient(
+    180deg,
+    var(--portiq-sidebar-top) 0%,
+    var(--portiq-sidebar-bottom) 100%
+  );
+}
+
+[data-theme="portiq"] .app-drawer .app-drawer-header {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="portiq"] .app-drawer .app-drawer-header p {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="portiq"] .app-drawer > button {
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-drawer .app-wordmark,
+[data-theme="portiq"] .app-auth-aside .app-wordmark {
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-drawer .app-wordmark-mark,
+[data-theme="portiq"] .app-auth-aside .app-wordmark-mark {
+  background: var(--portiq-mint);
+  color: var(--portiq-sidebar-top);
+}
+
+[data-theme="portiq"] .app-drawer .app-nav-link {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+[data-theme="portiq"] .app-drawer .app-nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-drawer .app-nav-link[aria-current="page"] {
+  background: var(--portiq-nav-active);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Tables: white panel, quiet sentence-case header, row hover. */
+[data-theme="portiq"] .app-table {
+  border-radius: 14px;
+  background: rgb(var(--surface));
+  box-shadow: var(--portiq-card-shadow);
+}
+
+[data-theme="portiq"] .app-table-grid thead {
+  background: rgb(var(--canvas) / 0.7);
+  color: rgb(var(--text));
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8125rem;
+}
+
+[data-theme="portiq"] .app-table-grid th {
+  font-weight: 600;
+}
+
+[data-theme="portiq"] .app-table-grid tbody tr {
+  transition: background-color 120ms ease;
+}
+
+[data-theme="portiq"] .app-table-grid tbody tr:hover {
+  background: rgb(var(--canvas) / 0.6);
+}
+
+/* Stat tiles: estimates get the mint highlight used for predictions. */
+[data-theme="portiq"] .app-stat {
+  border-radius: 12px;
+}
+
+[data-theme="portiq"] .app-stat--estimate {
+  background: var(--portiq-mint-soft);
+  border-color: transparent;
+  /* Darker secondary text so labels keep 4.5:1 on mint. */
+  --muted: 77 89 84;
+}
+
+/* Display serif, used sparingly (sign-in headings). */
+[data-theme="portiq"] .app-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Sign-in screens: full-bleed port photo with a deep-green wash on the left,
+ * brand copy on the left and a frosted sign-in card on the right (wide screens).
+ */
+:root[data-theme="portiq"] {
+  --portiq-auth-photo: url("/themes/portiq/port-login.webp");
+  --portiq-auth-wash: rgba(8, 44, 41, 0.9);
+}
+
+[data-theme="portiq"] .app-auth {
+  background:
+    linear-gradient(rgba(8, 44, 41, 0.55), rgba(8, 44, 41, 0.55)),
+    var(--portiq-auth-photo) 62% center / cover no-repeat,
+    var(--portiq-sidebar-top);
+}
+
+.app-auth-aside {
+  display: none;
+}
+
+[data-theme="portiq"] .app-auth-header .app-wordmark {
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-auth-header .app-wordmark-mark {
+  background: var(--portiq-mint);
+  color: var(--portiq-sidebar-top);
+}
+
+[data-theme="portiq"] .app-auth .app-card {
+  border-color: rgba(255, 255, 255, 0.7);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 60px rgba(4, 20, 18, 0.28);
+}
+
+[data-theme="portiq"] .app-auth .app-card h1 {
+  font-size: 1.875rem;
+}
+
+@media (min-width: 1024px) {
+  [data-theme="portiq"] .app-auth {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    background:
+      linear-gradient(
+        90deg,
+        var(--portiq-auth-wash) 0%,
+        rgba(8, 44, 41, 0.72) 30%,
+        rgba(8, 44, 41, 0.2) 55%,
+        rgba(8, 44, 41, 0.05) 100%
+      ),
+      var(--portiq-auth-photo) 62% center / cover no-repeat,
+      var(--portiq-sidebar-top);
+  }
+
+  [data-theme="portiq"] .app-auth-aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 4rem 3rem 4rem 5rem;
+    color: #fff;
+  }
+
+  [data-theme="portiq"] .app-auth-header {
+    display: none;
+  }
+}
+
+[data-theme="portiq"] .app-auth-aside .app-wordmark {
+  font-size: 2rem;
+}
+
+[data-theme="portiq"] .app-auth-aside .app-wordmark-mark {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+[data-theme="portiq"] .app-auth-tagline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.82);
+  padding-left: 3.25rem;
+}
+
+[data-theme="portiq"] .app-auth-accent {
+  width: 5.5rem;
+  height: 3px;
+  border-radius: 9999px;
+  background: #4ade80;
+}
+
+/* Sign-in inputs: leading icons drawn by CSS so the form markup stays unchanged. */
+[data-theme="portiq"] .app-input-mail,
+[data-theme="portiq"] .app-input-lock {
+  padding-left: 2.5rem;
+  background-repeat: no-repeat;
+  background-position: 0.85rem center;
+  background-size: 16px 16px;
+}
+
+[data-theme="portiq"] .app-input-mail {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2366706c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2' y='4' width='20' height='16' rx='2'/%3E%3Cpath d='m22 7-10 5L2 7'/%3E%3C/svg%3E");
+}
+
+[data-theme="portiq"] .app-input-lock {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2366706c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='11' width='18' height='11' rx='2'/%3E%3Cpath d='M7 11V7a5 5 0 0 1 10 0v4'/%3E%3C/svg%3E");
+}
+
+/* Decorative PortIQ container cut-out (portiq_bg.svg), shown only under this theme. */
+.app-container-art {
+  display: none;
+}
+
+@media (min-width: 400px) {
+  [data-theme="portiq"] .app-container-art {
+    display: block;
+    filter: drop-shadow(0 10px 14px rgb(11 44 41 / 0.18));
+  }
+}
+
+/* Soft studio backdrop behind the 3D container. */
+.app-planner-stage {
+  background: rgb(var(--surface));
+}
+
+[data-theme="portiq"] .app-planner-stage {
+  background: radial-gradient(120% 90% at 50% 35%, #ffffff 0%, #f6f5f1 55%, #ecebe5 100%);
+}

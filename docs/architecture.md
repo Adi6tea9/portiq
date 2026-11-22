@@ -13,6 +13,7 @@ assessment. Backend behaviour is fixed by `docs/BACKEND_SPEC.md`; the HTTP shape
 apps/web (Next.js 14, App Router)          services/api (FastAPI, Python 3.11+)
   Supabase JS client + @supabase/ssr  ──►   AUTH_MODE=dev | supabase
   React Query data layer                    get_current_user → profiles row
+  three.js (Load planner, lazy)
   MSW mocks for offline work                routers: me, config, ports, shipments,
   Playwright e2e                              capacity, predict, operator, admin
         │                                          │
@@ -20,14 +21,17 @@ apps/web (Next.js 14, App Router)          services/api (FastAPI, Python 3.11+)
         ▼                                          ▼
   Supabase Auth (JWT)                       PostgreSQL 15+ (Supabase in deployment)
                                                    ▲
-ml/artifacts/dwell_model_v1.joblib ────────────────┘  loaded once at startup
+ml/artifacts/dwell_model_v2.joblib ────────────────┘  loaded once at startup
 ```
 
 - The API is the only path to the data. The browser never queries Postgres directly.
 - `ml/` holds the generator, the training scripts, the artifact and the reports. Training never
   runs inside a request.
-- `docs/` holds the frozen specs, this file, the security checklist and the project review. The data
-  dictionary and model card required by spec 10/11.7 are not written yet.
+- `docs/` holds the frozen specs, this file, the security checklist, the project status file
+  (`docs/PROJECT_STATUS.md`) and the Load planner notes. The data dictionary and model card required
+  by spec 10/11.7 are not written yet.
+- `services/api/docker-compose.yml` runs Postgres 15 and the API; the API mounts `ml/artifacts`
+  read-only at `/models` and waits for a healthy database.
 
 ## Request lifecycle
 
@@ -113,9 +117,13 @@ known limitations — the operator router currently only implements `/operator/d
    `PREDICTION_TIMEOUT_SECONDS`. A missing model, a timeout, an exception, or a non-finite or
    negative output returns **503 `MODEL_UNAVAILABLE`**; a number is never invented. The frame
    builder (`DwellTimeModel.model_frame`) is shared with SHAP so both see the same encoded row.
-6. **SHAP** (`app/services/explain.py`) runs `shap.TreeExplainer` on the fitted forest, folds the
-   one-hot values back onto the 12 original feature names, and checks additivity
-   (`base + Σ contributions == prediction` within 1e-3 days). Any failure returns
+6. **SHAP** (`app/services/explain.py`) runs `shap.TreeExplainer` on the fitted tree model and folds
+   the one-hot values back onto the 12 original feature names. It first checks additivity in the
+   model's own units (base + Σ contributions == raw tree output within 1e-3). For the v2 log-target
+   model it then maps to days: base = `expm1(base_log)`, and the gap to the prediction is shared in
+   proportion to each feature's log-space value (signs and ranking kept, exactly additive). The five
+   v2-only inputs, which the API always fills with fixed defaults, are folded into the base value.
+   A final check confirms `base + Σ contributions == prediction` within 1e-3 days. Any failure returns
    `status:"unavailable"` with a reason and the `EXPLANATION_UNAVAILABLE` warning; the prediction
    still returns.
 7. **Cost engine** (`app/services/cost_engine.py`): `Decimal` only, most-specific active tariff per
@@ -125,25 +133,37 @@ known limitations — the operator router currently only implements `/operator/d
    capacity snapshot, warnings, `input_snapshot` (inputs, features, capacity feature), model and
    dataset versions, and tariff versions.
 
-Model caveat worth knowing: the prepared training CSV round-trips `hs_chapter` through
-`pandas.read_csv`, so the artifact encodes integer categories (`84`, `2`) while the API accepts the
-two-character string (`"84"`, `"02"`). `model_frame` converts to the artifact's type; without that,
-`OneHotEncoder(handle_unknown="ignore")` silently encodes the chapter as all zeros and the
-prediction shifts. This is a training-data defect described here and in the model notes, not a
-serving choice.
+Model caveat worth knowing: the v1 training CSV round-tripped `hs_chapter` through
+`pandas.read_csv`, so the v1 artifact encodes integer categories (`84`, `2`) while the API accepts
+the two-character string (`"84"`, `"02"`). v2 reads `hs_chapter` as text, so its categories are
+strings. `model_frame` converts each input to the artifact's own column types (it finds the
+preprocessor as `prep` in v2 or `preprocessor` in v1).
 
 ## Data and model
 
-- `ml/scripts/generate_synthetic.py` writes `ml/data/raw/synthetic_v1.csv` (10,000 rows, fixed
-  seed) plus a separate stress holdout. `prepare_data.py` derives `arrival_day_of_week` and
-  `arrival_month` and splits by time (70/15/15). CSVs and artifacts are git-ignored.
-- `train.py` fits one `Pipeline`: `ColumnTransformer` (numeric passthrough/scale, one-hot
-  categoricals) + `RandomForestRegressor`. The committed artifact is
-  `ml/artifacts/dwell_model_v1.joblib`; metrics are in `ml/reports/metrics.json`
-  (test MAE 1.03 days, stress MAE 1.49 days) and are synthetic-data numbers only.
-- The metadata file required by spec 11.6 (baseline metrics, numeric training ranges) does not
-  exist yet, so `MODEL_VERSION` or the pinned artifact name is reported and `OUT_OF_RANGE_INPUT`
-  cannot be evaluated — **CONTRACT-GAP CG-015**.
+- `ml/scripts/generate_synthetic_v2.py` writes `ml/data/raw/synthetic_v2.csv` plus a stress holdout
+  (fixed seed). It imports the API's capacity simulator, so train it with `services/api` next to
+  `ml`. `prepare_data.py --version v2` splits by time into `ml/data/processed/v2/`. Generated CSVs
+  are git-ignored (rebuilt exactly); the reference CSVs and the trained model are committed. The v1 generator and splits remain available with `--version v1`.
+- `train.py --version v2` compares per-port/direction mean and median baselines with RandomForest
+  and HistGradientBoosting candidates (with and without a log target), tuned on validation only. The
+  chosen model is HistGradientBoosting with a `log1p` target inside `Pipeline(prep, reg)`. It also
+  fits 10th/90th-percentile models with a calibration margin, and stores `serve="model"` only if
+  the point model beats both baselines on test and stress.
+- The served artifact is the bundle `ml/artifacts/dwell_model_v2.joblib` (`point_model`,
+  `q10_model`, `q90_model`, baseline table, interval margin) with `model_metadata_v2.json`.
+  Metrics are in `ml/reports/metrics_v2.json`: test MAE 0.611 days (best baseline 0.942), stress
+  MAE 1.327 (baseline 2.030). These are synthetic-data numbers only.
+- Train inside the API image so the scikit-learn version matches the one that loads the bundle.
+  The 22 Nov rebuild reproduced the committed metrics exactly.
+- `train.py` also writes `ml/artifacts/model_metadata_v2.json` (spec 11.6: versions, feature schema,
+  numeric training ranges, metrics, limitations). The API loads it with the model: provenance
+  reports its `model_version` (`dwell-model-v2`) and `dataset_version` (`synthetic-v2`), and
+  `OUT_OF_RANGE_INPUT` is raised for API numeric inputs outside the training ranges (CG-015,
+  resolved). Model card: `docs/model-card.md`; data dictionary: `docs/data-dictionary.md`.
+- The five v2-only inputs are filled with training-vocabulary defaults (`customs_channel=unknown`,
+  `importer_type=regular`, `cargo_priority=standard`, `is_holiday=0`, `exam_queue_len` from
+  utilization). Served test MAE is about 0.73 days against 0.611 with all inputs.
 
 ## Frontend integration
 
@@ -154,8 +174,12 @@ serving choice.
   means `false` plus a real Supabase project and a running API (`AUTH_MODE=supabase`).
 - Supabase SSR stores the session in cookies; the API client forwards the access token as
   `Authorization: Bearer …`. The API never reads Supabase cookies.
-- Pages: dashboard, shipments (list, new, detail, edit, prediction detail), capacity, operator,
-  admin tariffs, settings, auth (login, signup, reset).
+- Pages: dashboard, shipments (list, new, detail, edit, prediction detail), capacity, Load
+  planner (3D, client-side only, sample cargo), operator, admin tariffs, settings, auth (login,
+  signup, reset).
+- Live mode needs Supabase: the browser cannot send `dev:` tokens. `apps/web/.env.local` and
+  `services/api/.env` already exist with the Supabase lines empty; with `AUTH_MODE=supabase` the API
+  derives the JWKS URL, issuer and audience from `SUPABASE_URL`.
 - The frontend contract is the source for field names, enums and error codes; the API does not add
   fields of its own.
 
@@ -173,23 +197,27 @@ serving choice.
 
 ## Known limitations (honest list)
 
-- B10 is incomplete: `GET /operator/overview`, `GET /operator/shipments`,
-  `GET /admin/audit-logs` and `GET /shipments/{id}/predictions/{prediction_id}` are not
-  implemented. The operator router only has `/operator/dashboard/summary`; the admin router only
-  exposes tariffs. The frontend screens that call the missing endpoints work against mocks but not
-  against this API.
-- Request-body size limits and date-range caps from B10 are not implemented.
+Current stage and the full pending list: `docs/PROJECT_STATUS.md`.
+
+- The frontend and API have not yet run together live; that needs a Supabase project (B11).
+- B10 is complete. The operator-shipment dwell, warning and at-risk filters run in Python after
+  the SQL filters (fine for thousands of rows). Request bodies are capped at 1 MiB (CG-019); list
+  arrival filters reject backwards ranges but have no span cap (CG-020).
+- The contract tests compare field names and JSON types with the frontend mocks; they do not
+  compare values or enumerate every nullable variant.
+- `GET /operator/dashboard/summary` is an older route outside the frontend contract and accepts
+  operators only.
 - `POST /api/v1/predict/dwell` (direct model inference) exists in code but is not part of the
   frozen frontend contract; treat it as a diagnostic endpoint.
-- The model metadata/baseline comparison required by spec 11.6/11.7 is missing, and so is
-  `docs/model-card.md`; both are B06 work.
+- B06: the reference data (`ml/data/reference/`, hours) has no recorded source URL, download date
+  or licence. `is_holiday` is always 0 at prediction time because the features carry no date.
 - Rate limiting is in-memory per process (spec 4.13 allows this; it is not a distributed limiter).
-- `ruff check .` is clean as of this session. `mypy .` still reports 25 pre-existing annotation
-  errors in six older modules (`app/api/v1/admin.py`, `app/api/v1/capacity.py`,
-  `app/schemas/admin.py`, `scripts/seed_capacity.py`, `tests/test_cost_engine.py`,
-  `tests/test_operator.py`). Nothing is silenced with blanket ignores; the only lint-config change
-  is treating FastAPI's `Depends(...)`/`require_role(...)` defaults as immutable calls (B008), which
-  is the documented FastAPI idiom.
+- `ruff check .` is clean. `mypy .` reports 11 pre-existing annotation errors in five older
+  modules (`app/schemas/capacity.py` bucket serializer moved from `capacity.py`,
+  `app/services/ml.py`, `scripts/seed_capacity.py`, `tests/test_cost_engine.py`,
+  `tests/test_operator.py`). None are in code added since 22 Nov. The only lint-config change is treating FastAPI's
+  `Depends(...)`/`require_role(...)` defaults as immutable calls (B008), and `sklearn` joins the
+  libraries mypy treats as untyped.
 
 Undefined contract corners and the single function that holds each assumption are listed in
 `services/api/CONTRACT_GAPS.md`.

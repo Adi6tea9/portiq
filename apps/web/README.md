@@ -2,7 +2,7 @@
 
 Frontend for the PortIQ shipment-planning and port-capacity forecasting prototype.
 
-All ten feature sections are implemented against the mock API. F01 is the foundation (design tokens, typed API client, shared components, app shell, role-driven navigation, MSW mocks, sandbox). F02 adds Supabase-backed authentication, protected routes, `/me`-driven navigation, role permissions and password recovery. F03–F09 add shipments, predictions, capacity, the dashboard, the operator overview, tariffs and the audit trail. F10 adds the public landing page, settings, the accessibility and copy passes, and the cross-feature E2E flows.
+All ten feature sections are implemented against the mock API, plus the PortIQ theme and a 3D Load planner tab (`/load-planner`, importers and operators). Every endpoint the app calls now also exists in the real API (`services/api`); live mode needs a Supabase project. Project stage and pending work: `../../docs/PROJECT_STATUS.md`. F01 is the foundation (design tokens, typed API client, shared components, app shell, role-driven navigation, MSW mocks, sandbox). F02 adds Supabase-backed authentication, protected routes, `/me`-driven navigation, role permissions and password recovery. F03–F09 add shipments, predictions, capacity, the dashboard, the operator overview, tariffs and the audit trail. F10 adds the public landing page, settings, the accessibility and copy passes, and the cross-feature E2E flows.
 
 ## Stack
 
@@ -164,7 +164,9 @@ tests/
 - Mock-created shipments and tariff rules live in memory and reset when the dev server restarts.
 - Real Supabase auth needs valid project credentials. Mock mode accepts any validly formatted email and any password.
 - Password recovery and reset are wired to Supabase but are only exercised end-to-end in mock mode.
-- The backend services in `services/` are placeholders; all UI work uses MSW.
+- The real API in `services/api` implements every endpoint this app calls, but the two have not run together yet: live mode needs Supabase (the browser cannot send `dev:` tokens). `.env.local` exists with the Supabase lines empty and `NEXT_PUBLIC_USE_MOCKS=true`.
+- Against the real API, the tariff screen's filters other than rule type have no effect yet (backend gap).
+- The Load planner uses sample cargo only; it makes no API calls (`../../docs/load-planner-integration.md`).
 - Role switching is a development-only mock tool; production role comes from `/me`.
 
 See `CONTRACT_GAPS.md` for tracked assumptions and spec deviations.

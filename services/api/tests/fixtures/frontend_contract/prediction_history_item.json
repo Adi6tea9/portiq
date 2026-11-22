@@ -1,0 +1,9 @@
+{
+  "prediction_id": "pred_001",
+  "created_at": "2026-10-28T14:30:00Z",
+  "model_version": "demo-model-0.8.2",
+  "predicted_dwell_days": 6.2,
+  "total_estimated_cost": "285700.00",
+  "total_is_partial": false,
+  "is_demo_data": true
+}

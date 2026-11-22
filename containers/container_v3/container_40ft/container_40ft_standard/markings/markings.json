@@ -1,0 +1,47 @@
+{
+  "_comment": "Editable PortIQ 40 FT Container Markings Configuration. Edit any text field below and run `python generate_markings.py` followed by `python generate_container.py`.",
+  "is_demo_asset": true,
+  "nominal_length": "40FT",
+  "container_id": {
+    "owner_code": "PRTQ",
+    "equipment_category": "U",
+    "serial_number": "000401",
+    "check_digit": "1",
+    "display_full": "PRTQ 000401 1"
+  },
+  "size_type_code": "42G1",
+  "owner_operator": {
+    "brand_name": "PORTIQ",
+    "operator_subtitle": "LOGISTICS VISUALIZATION DEMO",
+    "accent_color": "#E6ECE9",
+    "brand_accent_bar": "#CDAA7B"
+  },
+  "custom_side_text": "PREDICT. PLAN. SHIP.",
+  "custom_rear_text": "DEMO ASSET \u2014 FICTIONAL MARKINGS",
+  "weights_and_capacity": {
+    "max_gross_kg": "30,480 KG",
+    "max_gross_lb": "67,200 LB",
+    "tare_kg": "3,750 KG",
+    "tare_lb": "8,270 LB",
+    "payload_kg": "26,730 KG",
+    "payload_lb": "58,930 LB",
+    "cube_m3": "67.6 CU.M",
+    "cube_ft3": "2,386 CU.FT"
+  },
+  "warnings": {
+    "show_caution_weight": true,
+    "caution_label": "CAUTION: HEAVY",
+    "show_forklift_symbol": true
+  },
+  "csc_plate": {
+    "header": "CSC SAFETY APPROVAL",
+    "demo_banner": "DEMO / SAMPLE ONLY \u2014 NOT CERTIFIED",
+    "approval_ref": "DEMO / [REPLACEABLE REF]",
+    "date_manufactured": "2026-11 (DEMO)",
+    "identification_no": "PRTQ-DEMO-40FT-001",
+    "maximum_gross_weight": "30,480 KG   67,200 LB",
+    "allowable_stacking_weight": "192,000 KG  423,280 LB",
+    "racking_test_load": "15,240 KG   33,600 LB",
+    "acep_program": "ACEP / DEMO-0000"
+  }
+}

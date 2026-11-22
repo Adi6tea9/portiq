@@ -146,7 +146,7 @@ test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
     await expect(page).toHaveURL(/\/login$/);
 
     await page.getByLabel("Email").fill("importer@portiq.demo");
-    await page.getByLabel("Password").fill("password123");
+    await page.getByLabel(/^Password/).fill("password123");
     await page.getByRole("button", { name: "Sign in" }).click();
     await page.waitForURL("/dashboard");
 
@@ -323,9 +323,12 @@ test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
     await page.keyboard.press("Enter");
 
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
 
     await page.keyboard.press("Tab");
+    await page.keyboard.press("Tab");
+    // Account type toggle: Importer / Exporter is selected by default.
+    await expect(page.locator(":focus")).toHaveAttribute("value", "importer");
     await page.keyboard.press("Tab");
     await expect(page.locator(":focus")).toHaveAttribute("type", "email");
     await page.keyboard.type("importer@portiq.demo");
@@ -334,6 +337,9 @@ test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
     await expect(page.locator(":focus")).toHaveAttribute("type", "password");
     await page.keyboard.type("password123");
 
+    // Show-password button, then "Forgot password?", then submit.
+    await page.keyboard.press("Tab");
+    await expect(page.locator(":focus")).toHaveAttribute("aria-label", "Show password");
     await page.keyboard.press("Tab");
     await page.keyboard.press("Tab");
     await expect(page.locator(":focus")).toHaveAttribute("type", "submit");

@@ -1,0 +1,19 @@
+{
+  "id": "rule_001",
+  "rule_type": "customs_duty",
+  "port_id": "port_nsa",
+  "hs_code_prefix": "85",
+  "shipping_line": null,
+  "cargo_type": null,
+  "container_size_ft": null,
+  "rate_type": "percent_of_value",
+  "rate_value": "10.00",
+  "currency": "INR",
+  "free_days": null,
+  "tier_config": null,
+  "valid_from": "2026-04-01T00:00:00Z",
+  "valid_to": null,
+  "source_note": "Synthetic demo tariff for electronics.",
+  "version": "tariff-v2.3",
+  "is_active": true
+}

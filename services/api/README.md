@@ -5,10 +5,12 @@ nothing here is an official customs assessment or a guarantee.
 
 Scope of the code: **B01 scaffold, B02 database, B03 auth, B04 shipments, B05 capacity, B06
 synthetic data/training, B07 model service and SHAP, B08 cost engine and tariff admin, B09
-prediction orchestration**, plus the B11 documentation and Supabase smoke test. **B10 is
-incomplete**: `/operator/overview`, `/operator/shipments`, `/admin/audit-logs`, a single-prediction
-GET and the frontend contract tests are not implemented. See `docs/architecture.md` for the exact
-limitation list.
+prediction orchestration**, the B10 endpoints (`/operator/overview`, `/operator/shipments`,
+`/admin/audit-logs`, the single-prediction GET), plus the B11 documentation and Supabase smoke
+test. B10 is complete: also the 1 MiB body cap (CG-019), date-range rules (CG-020),
+`scripts/export_openapi.py` (writes `docs/openapi.json`), contract tests against the frontend
+mocks (`tests/test_contract.py`) and the section 7 matrix (`tests/test_auth_matrix.py`). See
+`docs/architecture.md` for the remaining limitations.
 
 ## Requirements
 
@@ -39,8 +41,10 @@ uvicorn app.main:app --reload
 - `http://localhost:8000/ready` → 200 when Postgres is reachable **and** the model is loaded; 503 otherwise
 - `http://localhost:8000/docs` → OpenAPI UI
 
-`/ready` returns 503 and predictions return 503 until `ml/artifacts/dwell_model_v1.joblib` exists
-(build it with `generate_synthetic.py`, `prepare_data.py`, `train.py`; see the repository README).
+`/ready` returns 503 and predictions return 503 until `ml/artifacts/dwell_model_v2.joblib` exists
+(or the file `MODEL_PATH` points to). Build it with `generate_synthetic_v2.py`,
+`prepare_data.py --version v2` and `train.py --version v2`, inside the API image; see the
+repository README.
 
 ## Authentication
 
@@ -91,10 +95,12 @@ All under `/api/v1/shipments` (backend spec sections 7 and 8, frontend contract 
   invalid buckets excluded. Operators are limited to their `operator_ports`.
 - `POST /predict/dwell` — direct model inference for a full 12-feature payload. This endpoint is
   outside the frozen frontend contract; treat it as a diagnostic.
-- `GET /operator/dashboard/summary` is the only operator route today; `/operator/overview` and
-  `/operator/shipments` from spec section 14 are B10 work and are not implemented.
-- `/admin/tariffs` implements list/create/deactivate only; `GET /admin/audit-logs` is B10 work and is
-  not implemented.
+- `GET /operator/overview` and `GET /operator/shipments` implement spec section 14 (operators see
+  their ports, the admin sees all; at-risk rules in `app/services/at_risk.py`).
+  `GET /operator/dashboard/summary` is an older extra route outside the frontend contract.
+- `GET /admin/audit-logs`: admin only, newest first, paginated. `/admin/tariffs` implements
+  list (every spec filter), create (409 `TARIFF_CONFLICT` with `conflicting_rule`) and deactivate.
+- `GET /shipments/{id}/predictions/{prediction_id}`: the stored prediction, never recomputed.
 
 ## Quality gates
 
@@ -105,8 +111,8 @@ cd services\api
 ..\..\.venv\Scripts\python.exe -m pytest
 ```
 
-Current state: `pytest` 113 passed, `ruff check .` clean, `mypy .` 25 pre-existing errors in six
-older modules (annotation gaps only). Tests need a local Postgres; `conftest.py` refuses any
+Current state (22 Nov): `pytest` 172 passed, `ruff check .` clean, `mypy .` 11 pre-existing errors
+in five older modules (annotation gaps only). Tests need a local Postgres; `conftest.py` refuses any
 database that is not a local `*_test` database.
 
 ## Supabase smoke test

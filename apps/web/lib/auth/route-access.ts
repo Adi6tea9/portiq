@@ -51,6 +51,10 @@ export function rolesForPath(pathname: string): readonly Role[] | null {
     return IMPORTER_OR_OPERATOR;
   }
 
+  if (matchesPrefix(pathname, "/load-planner")) {
+    return IMPORTER_OR_OPERATOR;
+  }
+
   if (matchesPrefix(pathname, "/operator")) {
     return OPERATOR_OR_ADMIN;
   }

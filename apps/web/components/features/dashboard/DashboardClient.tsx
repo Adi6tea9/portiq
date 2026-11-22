@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ArrowRight, BarChart3, Database, Layers, Timer } from "lucide-react";
+import { portiqThemeContent } from "@/themes/portiq/content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Callout } from "@/components/shared/Callout";
 import { DateTime } from "@/components/shared/DateTime";
 import { DemoBadge } from "@/components/shared/DemoBadge";
+import { ContainerArt } from "@/components/shared/ContainerArt";
 import { Money } from "@/components/shared/Money";
 import { PageState } from "@/components/shared/PageState";
 import { Stat } from "@/components/shared/Stat";
@@ -37,6 +40,7 @@ interface DashboardClientProps {
   mockLatestShipment?: string;
 }
 
+const tiles = portiqThemeContent.dashboardTiles;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const UPCOMING_DAYS = 7;
 const FORECAST_DAYS = 30;
@@ -56,8 +60,7 @@ const COST_LABELS = {
 
 const COST_NOTE =
   "Indicative total; verify against applicable tariffs and carrier terms.";
-const PARTIAL_TOTAL_NOTE =
-  "Indicative total. Some components could not be calculated.";
+const PARTIAL_TOTAL_NOTE = "Indicative total. Some components could not be calculated.";
 
 function addDays(isoDate: string, days: number): string {
   return new Date(Date.parse(`${isoDate}T00:00:00Z`) + days * DAY_MS)
@@ -83,8 +86,7 @@ function newestPredictionShipment(shipments: Shipment[]): Shipment | null {
       return shipment;
     }
 
-    return shipment.latest_prediction.created_at >
-      latest.latest_prediction.created_at
+    return shipment.latest_prediction.created_at > latest.latest_prediction.created_at
       ? shipment
       : latest;
   }, null);
@@ -159,10 +161,7 @@ export function DashboardClient({
   mockCapacityError,
   mockLatestShipment,
 }: DashboardClientProps) {
-  const today = React.useMemo(
-    () => new Date().toISOString().slice(0, 10),
-    [],
-  );
+  const today = React.useMemo(() => new Date().toISOString().slice(0, 10), []);
   const summaryQuery = useShipmentSummary(mockEmpty);
   const latestQuery = useShipments({
     page: 1,
@@ -244,13 +243,48 @@ export function DashboardClient({
         <div>
           <h1 className="text-2xl font-semibold text-harbor-navy">Dashboard</h1>
           <p className="text-sm text-muted">
-            Your shipments, forecasts and latest estimates.
+            Plan your shipments with predictive insights, cost estimates and port capacity
+            context.
           </p>
         </div>
         <Button asChild>
           <Link href="/shipments/new">New shipment</Link>
         </Button>
       </div>
+
+      <nav
+        aria-label="Quick actions"
+        className="app-quick-actions grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4"
+      >
+        {[
+          { title: tiles.predict, href: "/shipments/new", icon: Timer, tone: "mint" },
+          { title: tiles.charges, href: "/shipments", icon: Database, tone: "amber" },
+          { title: tiles.capacity, href: "/capacity", icon: BarChart3, tone: "olive" },
+          {
+            title: tiles.explain,
+            href: latestShipment?.latest_prediction
+              ? `/shipments/${latestShipment.id}/prediction/${latestShipment.latest_prediction.prediction_id}`
+              : "/shipments",
+            icon: Layers,
+            tone: "lilac",
+          },
+        ].map(({ title, href, icon: Icon, tone }) => (
+          <Link
+            key={title}
+            href={href}
+            className={`app-tile app-tile--${tone} group flex min-h-[112px] flex-col justify-between gap-4 p-4 text-harbor-navy sm:min-h-[132px] sm:p-5`}
+          >
+            <Icon aria-hidden="true" className="app-tile-icon h-7 w-7 text-ocean-teal" />
+            <span className="flex items-end justify-between gap-3">
+              <span className="text-base font-semibold">{title}</span>
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
+              />
+            </span>
+          </Link>
+        ))}
+      </nav>
 
       <Card>
         <CardHeader>
@@ -279,9 +313,7 @@ export function DashboardClient({
           >
             {summary && (
               <div className="grid gap-4 sm:grid-cols-3">
-                {(
-                  Object.keys(STATUS_LABELS) as ShipmentStatus[]
-                ).map((status) => (
+                {(Object.keys(STATUS_LABELS) as ShipmentStatus[]).map((status) => (
                   <Stat
                     key={status}
                     label={STATUS_LABELS[status]}
@@ -316,22 +348,23 @@ export function DashboardClient({
             >
               {latestShipment?.latest_prediction && (
                 <>
-                  <Stat
-                    label="Latest predicted dwell"
-                    value={formatDays(
-                      latestShipment.latest_prediction.predicted_dwell_days,
-                    )}
-                    estimate
-                    supportingText={`${latestShipment.reference} | ${formatDate(
-                      latestShipment.latest_prediction.created_at,
-                      timezoneFor(latestShipment.port_id),
-                    )}`}
-                  />
+                  <div className="relative">
+                    <Stat
+                      label="Latest predicted dwell"
+                      value={formatDays(
+                        latestShipment.latest_prediction.predicted_dwell_days,
+                      )}
+                      estimate
+                      supportingText={`${latestShipment.reference} | ${formatDate(
+                        latestShipment.latest_prediction.created_at,
+                        timezoneFor(latestShipment.port_id),
+                      )}`}
+                    />
+                    <ContainerArt className="absolute bottom-2 right-4 w-24 sm:w-32" />
+                  </div>
                   <div className="flex flex-wrap gap-3">
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/shipments/${latestShipment.id}`}>
-                        Open shipment
-                      </Link>
+                      <Link href={`/shipments/${latestShipment.id}`}>Open shipment</Link>
                     </Button>
                     <RunPredictionButton shipmentId={latestShipment.id} />
                   </div>
@@ -368,9 +401,7 @@ export function DashboardClient({
                         key={line.component}
                         className="flex items-start justify-between gap-4 border-b py-2 last:border-0"
                       >
-                        <span className="font-medium">
-                          {COST_LABELS[line.component]}
-                        </span>
+                        <span className="font-medium">{COST_LABELS[line.component]}</span>
                         <Money amount={line.amount} reason={line.reason} />
                       </li>
                     ))}
@@ -410,10 +441,7 @@ export function DashboardClient({
               title="Unable to load upcoming arrivals"
               empty={
                 upcomingQuery.data?.shipments.length === 0 ? (
-                  <PageState
-                    state="empty"
-                    title="No arrivals in the next 7 days."
-                  />
+                  <PageState state="empty" title="No arrivals in the next 7 days." />
                 ) : undefined
               }
             >
@@ -458,10 +486,7 @@ export function DashboardClient({
               title="Unable to load the latest milestone"
               empty={
                 !milestone ? (
-                  <PageState
-                    state="empty"
-                    title="No milestone recorded yet."
-                  />
+                  <PageState state="empty" title="No milestone recorded yet." />
                 ) : undefined
               }
             >
@@ -525,15 +550,14 @@ export function DashboardClient({
                       {formatPercent(bucket.utilization_pct)}
                     </span>
                     <span className="text-sm text-muted">
-                      ({thresholdLabel(bucket.utilization_pct, config.capacity_thresholds)})
+                      (
+                      {thresholdLabel(bucket.utilization_pct, config.capacity_thresholds)}
+                      )
                     </span>
                   </div>
                   <p className="text-sm text-muted">
                     Yard at {forecastPort?.name ?? "Selected port"} |{" "}
-                    {formatDate(
-                      bucket.bucket_start,
-                      forecastPort?.timezone ?? "UTC",
-                    )}
+                    {formatDate(bucket.bucket_start, forecastPort?.timezone ?? "UTC")}
                   </p>
                   {bucket.source_type === "synthetic" && (
                     <p className="text-xs text-muted">
@@ -551,8 +575,8 @@ export function DashboardClient({
       </div>
 
       <p className="text-xs text-muted">
-        PortIQ provides planning estimates, not guarantees. Some figures are
-        based on synthetic demo data.
+        PortIQ provides planning estimates, not guarantees. Some figures are based on
+        synthetic demo data.
       </p>
     </div>
   );

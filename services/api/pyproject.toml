@@ -32,7 +32,7 @@ warn_unused_ignores = true
 
 # These ship no type information (no py.typed) and have no stub packages installed.
 [[tool.mypy.overrides]]
-module = ["joblib", "joblib.*", "pandas", "pandas.*", "shap", "shap.*"]
+module = ["joblib", "joblib.*", "pandas", "pandas.*", "shap", "shap.*", "sklearn", "sklearn.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

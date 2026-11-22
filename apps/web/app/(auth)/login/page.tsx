@@ -31,8 +31,8 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <AuthCard
-      title="Sign in"
-      description="Sign in to plan shipments and review forecasts."
+      title="Welcome to PortIQ"
+      description="Sign in to your account"
     >
       <LoginForm
         returnTo={returnTo}

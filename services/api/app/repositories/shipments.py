@@ -95,6 +95,32 @@ def list_shipments(
     return list(session.scalars(stmt))
 
 
+def list_matching(
+    session: Session,
+    *,
+    port_ids: Sequence[UUID],
+    status: ShipmentStatus | None = None,
+    arrival_from: datetime | None = None,
+    arrival_to: datetime | None = None,
+) -> list[Shipment]:
+    """Every shipment in the given ports matching the filters, earliest expected arrival first."""
+    stmt = (
+        select(Shipment)
+        .where(
+            *_filters(
+                owner_user_id=None,
+                port_ids=port_ids,
+                status=status,
+                arrival_from=arrival_from,
+                arrival_to=arrival_to,
+                q=None,
+            )
+        )
+        .order_by(Shipment.expected_arrival_at.asc(), Shipment.id.asc())
+    )
+    return list(session.scalars(stmt))
+
+
 def count_shipments(
     session: Session,
     *,

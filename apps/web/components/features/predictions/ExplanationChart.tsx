@@ -124,13 +124,15 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
                 );
               }}
             />
-            <ReferenceLine x={0} stroke="#D9E2EC" />
+            <ReferenceLine x={0} stroke="rgb(var(--border))" />
             <Bar dataKey="contribution" radius={[0, 4, 4, 0]} isAnimationActive={false}>
               {data.map((entry) => (
                 <Cell
                   key={entry.label}
                   fill={
-                    entry.contribution >= 0 ? "#B7791F" : "#1F8A5B"
+                    entry.contribution >= 0
+                      ? "rgb(var(--chart-increase, var(--warning)))"
+                      : "rgb(var(--chart-decrease, var(--success)))"
                   }
                 />
               ))}
@@ -143,7 +145,7 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
           <span
             aria-hidden="true"
             className="h-3 w-3 rounded"
-            style={{ backgroundColor: "#1F8A5B" }}
+            style={{ backgroundColor: "rgb(var(--chart-decrease, var(--success)))" }}
           />
           <span>Decreased estimate</span>
         </div>
@@ -151,7 +153,7 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
           <span
             aria-hidden="true"
             className="h-3 w-3 rounded"
-            style={{ backgroundColor: "#B7791F" }}
+            style={{ backgroundColor: "rgb(var(--chart-increase, var(--warning)))" }}
           />
           <span>Increased estimate</span>
         </div>

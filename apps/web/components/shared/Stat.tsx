@@ -16,7 +16,13 @@ export function Stat({
   className,
 }: StatProps) {
   return (
-    <div className={cn("rounded-lg border border-border bg-surface p-4", className)}>
+    <div
+      className={cn(
+        "app-stat rounded-lg border border-border bg-surface p-4",
+        estimate && "app-stat--estimate",
+        className,
+      )}
+    >
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           {label}

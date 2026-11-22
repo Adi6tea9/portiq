@@ -22,6 +22,8 @@
     "@radix-ui/react-separator": "1.2.0",
     "@radix-ui/react-slot": "1.5.0",
     "@radix-ui/react-tabs": "1.2.1",
+    "@react-three/drei": "9.122.0",
+    "@react-three/fiber": "8.18.0",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
     "@tanstack/react-query": "5.105.0",
@@ -37,6 +39,7 @@
     "recharts": "2.15.4",
     "tailwind-merge": "2.6.1",
     "tailwindcss-animate": "1.0.7",
+    "three": "0.170.0",
     "zod": "3.25.76"
   },
   "devDependencies": {
@@ -47,6 +50,7 @@
     "@types/node": "20.19.43",
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
+    "@types/three": "0.170.0",
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "10.4.21",
     "eslint": "8.57.1",

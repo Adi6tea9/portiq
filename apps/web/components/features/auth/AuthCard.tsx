@@ -13,9 +13,9 @@ export function AuthCard({
   footer?: React.ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
+    <section className="app-card rounded-lg border border-border bg-surface p-6 shadow-sm sm:p-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-harbor-navy">{title}</h1>
+        <h1 className="app-display text-2xl font-semibold text-harbor-navy">{title}</h1>
         {description ? (
           <p className="text-sm leading-relaxed text-muted">{description}</p>
         ) : null}
@@ -37,10 +37,10 @@ export function AuthBrand() {
       aria-label="PortIQ home"
       className="inline-flex items-center gap-2 text-harbor-navy"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-md bg-ocean-teal text-white">
+      <span className="app-wordmark-mark flex h-8 w-8 items-center justify-center rounded-md bg-ocean-teal text-white">
         <Ship aria-hidden="true" className="h-5 w-5" />
       </span>
-      <span className="text-lg font-semibold tracking-tight">PortIQ</span>
+      <span className="app-wordmark text-lg font-semibold tracking-tight">PortIQ</span>
     </Link>
   );
 }

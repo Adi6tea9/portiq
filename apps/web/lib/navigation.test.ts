@@ -12,6 +12,7 @@ describe("navForRole", () => {
       { label: "Dashboard", href: "/dashboard" },
       { label: "Shipments", href: "/shipments" },
       { label: "Capacity", href: "/capacity" },
+      { label: "Load planner", href: "/load-planner" },
     ]);
   });
 
@@ -21,6 +22,7 @@ describe("navForRole", () => {
     expect(items.map((item) => item.label)).toEqual([
       "Operator overview",
       "Capacity",
+      "Load planner",
     ]);
     expect(items.some((item) => item.href === "/shipments")).toBe(false);
   });

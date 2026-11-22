@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import {
   requestPasswordReset,
   signInWithPassword,
+  signOut,
   signUpWithPassword,
 } from "@/lib/auth/actions";
 import { LoginForm } from "./LoginForm";
@@ -80,6 +81,42 @@ describe("auth forms", () => {
     expect(
       (screen.getByLabelText(/^Email/) as HTMLInputElement).value,
     ).toBe("importer@portiq.demo");
+  });
+
+  it("signs back out when the account does not match the chosen type", async () => {
+    vi.mocked(signInWithPassword).mockResolvedValue({ error: null });
+    const user = userEvent.setup();
+    render(<LoginForm returnTo={null} />);
+
+    // The mock /me user is an importer; choose the operator tab instead.
+    await user.click(screen.getByLabelText("Port Operator"));
+    await user.type(screen.getByLabelText(/^Email/), "importer@portiq.demo");
+    await user.type(screen.getByLabelText(/^Password/), "password");
+    await act(async () => {
+      await user.click(screen.getByRole("button", { name: "Sign in" }));
+    });
+
+    expect(
+      await screen.findByText(
+        "This is an Importer / Exporter account. Switch to Importer / Exporter to sign in.",
+      ),
+    ).toBeTruthy();
+    expect(signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it("explains that port operator accounts are not self-registered", async () => {
+    const user = userEvent.setup();
+    render(<SignupForm returnTo={null} />);
+
+    await user.click(screen.getByLabelText("Port Operator"));
+
+    expect(
+      screen.getByText(/Port operator accounts are set up by your port administrator/),
+    ).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Create account" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Sign in" }).getAttribute("href")).toBe(
+      "/login",
+    );
   });
 
   it("requires an eight character signup password", async () => {

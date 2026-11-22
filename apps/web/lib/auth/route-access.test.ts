@@ -25,6 +25,10 @@ describe("rolesForPath", () => {
       "importer_exporter",
       "port_operator",
     ]);
+    expect(rolesForPath("/load-planner")).toEqual([
+      "importer_exporter",
+      "port_operator",
+    ]);
     expect(rolesForPath("/operator")).toEqual([
       "port_operator",
       "platform_admin",

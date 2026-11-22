@@ -22,6 +22,45 @@ processed_root = current_dir.parent / "data" / "processed"
 
 DATE_COLUMNS = ["arrival_date", "expected_arrival_at", "arrival_time", "date"]
 
+# Spec 10 / 11: columns every dataset version has, and the allowed values or ranges.
+REQUIRED = ["port_code", "direction", "cargo_type", "container_size_ft", "hs_chapter", "weight_kg",
+            "shipping_line", "vessel_size_band", "documentation_status",
+            "forecast_capacity_utilization_pct", "dwell_days"]
+ALLOWED = {
+    "port_code": {"INNSA", "INMUN"},
+    "direction": {"import", "export"},
+    "cargo_type": {"general_container", "reefer", "hazardous", "oversized"},
+    "container_size_ft": {20, 40},
+    "shipping_line": {"Line A", "Line B", "Line C", "Line D", "other"},
+    "vessel_size_band": {"small", "medium", "large"},
+    "documentation_status": {"complete", "incomplete", "unknown"},
+}
+RANGES = {
+    "weight_kg": (0.0, 60000.0),          # spec 4.16: > 0 and <= 60 000 kg
+    "forecast_capacity_utilization_pct": (0.0, 120.0),  # occupancy may reach 1.2x capacity
+    "dwell_days": (0.1, 30.0),            # spec 10: clipped to [0.1, 30]
+}
+
+
+def validate(df: pd.DataFrame, name: str) -> None:
+    """Fail loudly on a schema, null, category or range problem instead of training on it."""
+    missing = [c for c in REQUIRED if c not in df.columns]
+    if missing:
+        raise ValueError(f"{name}: missing columns {missing}")
+    nulls = {c: int(n) for c, n in df.isna().sum().items() if n}
+    if nulls:
+        raise ValueError(f"{name}: null values in {nulls}")
+    for col, allowed in ALLOWED.items():
+        bad = set(df[col].unique()) - allowed
+        if bad:
+            raise ValueError(f"{name}: unexpected {col} values {sorted(map(str, bad))}")
+    for col, (low, high) in RANGES.items():
+        outside = df[(df[col] <= low if col == "weight_kg" else df[col] < low) | (df[col] > high)]
+        if len(outside):
+            raise ValueError(f"{name}: {len(outside)} rows with {col} outside [{low}, {high}]")
+    if not df["hs_chapter"].str.fullmatch(r"\d{2}").all():
+        raise ValueError(f"{name}: hs_chapter must be a two-digit string")
+
 
 def load_and_prepare(
     filename: str, is_train: bool = True
@@ -32,7 +71,7 @@ def load_and_prepare(
             f"Cannot find {file_path}. Run generate_synthetic.py (v1) or generate_synthetic_v2.py (v2) first."
         )
 
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(file_path, dtype={"hs_chapter": str})
 
     # 1. Schema validation & types
     if "hs_chapter" in df.columns:
@@ -50,11 +89,7 @@ def load_and_prepare(
     df["arrival_day_of_week"] = df[date_col].dt.day_name()
     df["arrival_month"] = df[date_col].dt.month_name()
 
-    before = len(df)
-    df = df.dropna()
-    dropped = before - len(df)
-    if dropped:
-        print(f"  WARNING {filename}: dropna() removed {dropped} of {before} rows")
+    validate(df, filename)
 
     # Sort strictly by arrival date so the split never leaks the future into training
     df = df.sort_values(date_col).reset_index(drop=True)

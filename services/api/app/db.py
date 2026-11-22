@@ -57,11 +57,3 @@ def check_database() -> bool:
         logger.warning("database_unavailable: %s", exc)
         return False
     return True
-
-def get_db() -> Iterator[Session]:
-    """FastAPI dependency to yield a database session."""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()

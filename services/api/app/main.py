@@ -4,20 +4,24 @@ from __future__ import annotations
 
 import logging
 import time
-
-# from app.api.v1 import capacity
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.datastructures import MutableHeaders
+from starlette.datastructures import Headers, MutableHeaders
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from app.api.v1 import admin, api_router, capacity, operator
-from app.core.config import settings
-from app.core.errors import error_response, register_exception_handlers, request_id_of
+from app.api.v1 import admin, api_router, operator
+from app.core.config import MAX_REQUEST_BODY_BYTES, settings
+from app.core.errors import (
+    error_code_for_status,
+    error_response,
+    register_exception_handlers,
+    request_id_of,
+)
 from app.core.logging import configure_logging, new_request_id
 from app.db import check_database
 from app.schemas.envelope import ErrorDetail, envelope
@@ -66,6 +70,30 @@ class RequestContextMiddleware:
         started = time.perf_counter()
         status_code = 500
 
+        # Body cap (CG-019): refuse a declared oversize body up front, and count streamed bytes
+        # so a chunked body without Content-Length cannot get past it either.
+        declared = Headers(scope=scope).get("content-length", "")
+        if declared.isdigit() and int(declared) > MAX_REQUEST_BODY_BYTES:
+            state["error_code"] = error_code_for_status(413)
+            response = error_response(
+                request_id, 413, error_code_for_status(413), "Request body is too large."
+            )
+            await response(scope, receive, send)
+            _log_request(scope, request_id, 413, started)
+            return
+
+        received = 0
+
+        async def limited_receive() -> Message:
+            nonlocal received
+            message = await receive()
+            if message["type"] == "http.request":
+                received += len(message.get("body", b""))
+                if received > MAX_REQUEST_BODY_BYTES:
+                    # FastAPI re-raises HTTPException from body parsing; anything else becomes 400.
+                    raise StarletteHTTPException(413, "Request body is too large.")
+            return message
+
         async def send_with_request_id(message: Message) -> None:
             nonlocal status_code
             if message["type"] == "http.response.start":
@@ -75,7 +103,7 @@ class RequestContextMiddleware:
             await send(message)
 
         try:
-            await self.app(scope, receive, send_with_request_id)
+            await self.app(scope, limited_receive, send_with_request_id)
         except Exception as exc:  # noqa: BLE001 - boundary: never leak a traceback
             logger.error(
                 "unhandled_exception",
@@ -141,12 +169,14 @@ def create_app() -> FastAPI:
     configure_logging(settings.log_level)
     
     # --- B07: LOAD THE ML MODEL ---
-    # __file__ is app/main.py. parents[3] dynamically finds the root 'portiq' folder.
+    # MODEL_PATH wins. Otherwise use the repo layout (services/api/app/main.py -> repo root).
+    # `.parent` never raises, unlike parents[3], so a shallow Docker path just misses the file
+    # and the API starts with the model marked unavailable instead of crashing.
     if settings.model_path:
         model_path = Path(settings.model_path)
     else:
-        root_dir = Path(__file__).resolve().parents[3]
-        model_path = root_dir / "ml" / "artifacts" / "dwell_model_v1.joblib"
+        repo_root = Path(__file__).resolve().parent.parent.parent.parent
+        model_path = repo_root / "ml" / "artifacts" / "dwell_model_v2.joblib"
     dwell_model.load(model_path)
     
     app = FastAPI(title="PortIQ API", version="0.1.0")
@@ -164,7 +194,6 @@ def create_app() -> FastAPI:
     app.include_router(api_router, prefix="/api/v1")
     app.include_router(admin.router, prefix="/api/v1")
     app.include_router(operator.router, prefix="/api/v1")
-    app.include_router(capacity.router, prefix="/api/v1")
     return app
 
 

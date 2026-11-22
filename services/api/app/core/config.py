@@ -25,6 +25,10 @@ CAPACITY_HIGH_PCT = 85
 MAX_FORECAST_RANGE_DAYS = 31
 DEFAULT_FORECAST_BUCKET: Final[Literal["day"]] = "day"
 
+# CONTRACT-GAP: CG-019 - B10 asks for a request-body cap without a number; the largest real
+# body (a tariff or shipment) is a few KB.
+MAX_REQUEST_BODY_BYTES = 1_048_576
+
 SUPABASE_REQUIRED_VARIABLES = (
     "SUPABASE_JWT_JWKS_URL",
     "SUPABASE_JWT_ISSUER",
@@ -82,6 +86,23 @@ def _optional(source: Mapping[str, str], name: str) -> str | None:
     return raw or None
 
 
+def supabase_jwt_settings(env: Mapping[str, str]) -> tuple[str | None, str | None, str]:
+    """JWKS URL, issuer and audience, derived from SUPABASE_URL when not set explicitly.
+
+    Supabase serves its signing keys at ``<project>/auth/v1/.well-known/jwks.json`` and signs
+    tokens with issuer ``<project>/auth/v1`` and audience ``authenticated``, so the project URL
+    alone is enough. Explicit SUPABASE_JWT_* values still win.
+    """
+    project = (_optional(env, "SUPABASE_URL") or "").rstrip("/")
+    auth_base = f"{project}/auth/v1" if project else None
+    jwks_url = _optional(env, "SUPABASE_JWT_JWKS_URL") or (
+        f"{auth_base}/.well-known/jwks.json" if auth_base else None
+    )
+    issuer = _optional(env, "SUPABASE_JWT_ISSUER") or auth_base
+    audience = _optional(env, "SUPABASE_JWT_AUDIENCE") or "authenticated"
+    return jwks_url, issuer, audience
+
+
 def load_settings(source: Mapping[str, str] | None = None) -> Settings:
     """Build settings from ``source`` (defaults to ``os.environ``), failing fast if invalid."""
     env: Mapping[str, str] = os.environ if source is None else source
@@ -95,10 +116,15 @@ def load_settings(source: Mapping[str, str] | None = None) -> Settings:
         raise RuntimeError(f"AUTH_MODE must be one of {sorted(_AUTH_MODES)}, got {auth_mode!r}")
     if auth_mode == "dev" and app_env in _URL_REQUIRED_ENVIRONMENTS:
         raise RuntimeError("AUTH_MODE=dev is not allowed when APP_ENV is staging or production")
+    jwks_url, issuer, audience = supabase_jwt_settings(env)
     if auth_mode == "supabase":
-        missing = [name for name in SUPABASE_REQUIRED_VARIABLES if not env.get(name, "").strip()]
+        resolved = dict(zip(SUPABASE_REQUIRED_VARIABLES, (jwks_url, issuer, audience), strict=True))
+        missing = [name for name, value in resolved.items() if not value]
         if missing:
-            raise RuntimeError(f"{', '.join(missing)} required when AUTH_MODE=supabase")
+            raise RuntimeError(
+                f"{', '.join(missing)} required when AUTH_MODE=supabase "
+                "(set SUPABASE_URL and they are derived automatically)"
+            )
 
     log_level = env.get("LOG_LEVEL", "INFO").strip().upper() or "INFO"
     if log_level not in _LOG_LEVELS:
@@ -127,9 +153,9 @@ def load_settings(source: Mapping[str, str] | None = None) -> Settings:
         allowed_origins=allowed_origins,
         auth_mode=auth_mode,
         supabase_url=_optional(env, "SUPABASE_URL"),
-        supabase_jwt_jwks_url=_optional(env, "SUPABASE_JWT_JWKS_URL"),
-        supabase_jwt_issuer=_optional(env, "SUPABASE_JWT_ISSUER"),
-        supabase_jwt_audience=_optional(env, "SUPABASE_JWT_AUDIENCE"),
+        supabase_jwt_jwks_url=jwks_url,
+        supabase_jwt_issuer=issuer,
+        supabase_jwt_audience=audience,
         model_path=_optional(env, "MODEL_PATH"),
         model_version=_optional(env, "MODEL_VERSION"),
         prediction_timeout_seconds=prediction_timeout_seconds,

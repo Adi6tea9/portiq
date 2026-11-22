@@ -1,0 +1,165 @@
+{
+  "dataset": "synthetic_v2.csv",
+  "what_this_checks": "The synthetic data's per port/direction means, not model accuracy.",
+  "tolerance_pct": 15.0,
+  "units": "reference files are in hours (confirmed by the owner); compared in days",
+  "against_generator_base_means": {
+    "INMUN export": {
+      "reference_mean_days": 5.18,
+      "reference_months": 0,
+      "simulated_mean_days": 5.1716,
+      "difference_pct": -0.16,
+      "within_tolerance": true
+    },
+    "INMUN import": {
+      "reference_mean_days": 1.17,
+      "reference_months": 0,
+      "simulated_mean_days": 1.17,
+      "difference_pct": 0.0,
+      "within_tolerance": true
+    },
+    "INNSA export": {
+      "reference_mean_days": 3.14,
+      "reference_months": 0,
+      "simulated_mean_days": 3.14,
+      "difference_pct": -0.0,
+      "within_tolerance": true
+    },
+    "INNSA import": {
+      "reference_mean_days": 0.87,
+      "reference_months": 0,
+      "simulated_mean_days": 0.87,
+      "difference_pct": 0.0,
+      "within_tolerance": true
+    }
+  },
+  "assumption": "The container-level spread (lognormal noise) cannot be derived from monthly averages; it is an assumption.",
+  "base_means_reproduced": {
+    "INMUN export": {
+      "generator_base_days": 5.18,
+      "reference_2020_2021_days": 5.182,
+      "matches": true
+    },
+    "INMUN import": {
+      "generator_base_days": 1.17,
+      "reference_2020_2021_days": 1.172,
+      "matches": true
+    },
+    "INNSA export": {
+      "generator_base_days": 3.14,
+      "reference_2020_2021_days": 3.144,
+      "matches": true
+    },
+    "INNSA import": {
+      "generator_base_days": 0.87,
+      "reference_2020_2021_days": 0.87,
+      "matches": true
+    }
+  },
+  "per_year": {
+    "2020": {
+      "INMUN export": {
+        "reference_mean_days": 5.0653,
+        "reference_months": 9,
+        "simulated_mean_days": 5.1716,
+        "difference_pct": 2.1,
+        "within_tolerance": true
+      },
+      "INMUN import": {
+        "reference_mean_days": 1.3028,
+        "reference_months": 9,
+        "simulated_mean_days": 1.17,
+        "difference_pct": -10.19,
+        "within_tolerance": true
+      },
+      "INNSA export": {
+        "reference_mean_days": 3.037,
+        "reference_months": 9,
+        "simulated_mean_days": 3.14,
+        "difference_pct": 3.39,
+        "within_tolerance": true
+      },
+      "INNSA import": {
+        "reference_mean_days": 0.8611,
+        "reference_months": 9,
+        "simulated_mean_days": 0.87,
+        "difference_pct": 1.03,
+        "within_tolerance": true
+      }
+    },
+    "2021": {
+      "INMUN export": {
+        "reference_mean_days": 5.2701,
+        "reference_months": 12,
+        "simulated_mean_days": 5.1716,
+        "difference_pct": -1.87,
+        "within_tolerance": true
+      },
+      "INMUN import": {
+        "reference_mean_days": 1.074,
+        "reference_months": 12,
+        "simulated_mean_days": 1.17,
+        "difference_pct": 8.94,
+        "within_tolerance": true
+      },
+      "INNSA export": {
+        "reference_mean_days": 3.2236,
+        "reference_months": 12,
+        "simulated_mean_days": 3.14,
+        "difference_pct": -2.59,
+        "within_tolerance": true
+      },
+      "INNSA import": {
+        "reference_mean_days": 0.8774,
+        "reference_months": 12,
+        "simulated_mean_days": 0.87,
+        "difference_pct": -0.85,
+        "within_tolerance": true
+      }
+    },
+    "2022": {
+      "INMUN export": {
+        "reference_mean_days": 4.758,
+        "reference_months": 11,
+        "simulated_mean_days": 5.1716,
+        "difference_pct": 8.69,
+        "within_tolerance": true
+      },
+      "INMUN import": {
+        "reference_mean_days": 1.1405,
+        "reference_months": 11,
+        "simulated_mean_days": 1.17,
+        "difference_pct": 2.58,
+        "within_tolerance": true
+      },
+      "INNSA export": {
+        "reference_mean_days": 3.1216,
+        "reference_months": 11,
+        "simulated_mean_days": 3.14,
+        "difference_pct": 0.59,
+        "within_tolerance": true
+      },
+      "INNSA import": {
+        "reference_mean_days": 0.9235,
+        "reference_months": 11,
+        "simulated_mean_days": 0.87,
+        "difference_pct": -5.79,
+        "within_tolerance": true
+      }
+    }
+  },
+  "lockdown_multiplier": {
+    "normal_2020_hours": 20.7,
+    "lockdown_hours": [
+      50.0,
+      65.0,
+      38.0
+    ],
+    "ratio_min": 1.84,
+    "ratio_max": 3.15,
+    "generator_disruption_range": [
+      2.0,
+      3.0
+    ]
+  }
+}

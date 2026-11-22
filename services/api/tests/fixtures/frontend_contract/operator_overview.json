@@ -1,0 +1,751 @@
+{
+  "port_scope": [
+    {
+      "id": "port_nsa",
+      "name": "Nhava Sheva (JNPA)"
+    },
+    {
+      "id": "port_sin",
+      "name": "Singapore"
+    }
+  ],
+  "range": {
+    "from": "2026-11-22T00:00:00Z",
+    "to": "2026-12-22T00:00:00.000Z"
+  },
+  "status_counts": {
+    "submitted": 23,
+    "arrived": 11,
+    "cleared": 6
+  },
+  "utilization": {
+    "yard": [
+      {
+        "bucket_start": "2026-11-22T00:00:00.000Z",
+        "bucket_end": "2026-11-23T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 520,
+        "total_capacity": 1000,
+        "utilization_pct": 52,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-23T00:00:00.000Z",
+        "bucket_end": "2026-11-24T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 557,
+        "total_capacity": 1000,
+        "utilization_pct": 56,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-24T00:00:00.000Z",
+        "bucket_end": "2026-11-25T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 594,
+        "total_capacity": 1000,
+        "utilization_pct": 59,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-25T00:00:00.000Z",
+        "bucket_end": "2026-11-26T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 631,
+        "total_capacity": 1000,
+        "utilization_pct": 63,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-26T00:00:00.000Z",
+        "bucket_end": "2026-11-27T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 668,
+        "total_capacity": 1000,
+        "utilization_pct": 67,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-27T00:00:00.000Z",
+        "bucket_end": "2026-11-28T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 705,
+        "total_capacity": 1000,
+        "utilization_pct": 71,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-28T00:00:00.000Z",
+        "bucket_end": "2026-11-29T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 742,
+        "total_capacity": 1000,
+        "utilization_pct": 74,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-29T00:00:00.000Z",
+        "bucket_end": "2026-11-30T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 779,
+        "total_capacity": 1000,
+        "utilization_pct": 78,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-30T00:00:00.000Z",
+        "bucket_end": "2026-12-01T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 816,
+        "total_capacity": 1000,
+        "utilization_pct": 82,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-01T00:00:00.000Z",
+        "bucket_end": "2026-12-02T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 553,
+        "total_capacity": 1000,
+        "utilization_pct": 55,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-02T00:00:00.000Z",
+        "bucket_end": "2026-12-03T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 920,
+        "total_capacity": 1000,
+        "utilization_pct": 92,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-03T00:00:00.000Z",
+        "bucket_end": "2026-12-04T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 880,
+        "total_capacity": 1000,
+        "utilization_pct": 88,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-04T00:00:00.000Z",
+        "bucket_end": "2026-12-05T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 860,
+        "total_capacity": 1000,
+        "utilization_pct": 86,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-05T00:00:00.000Z",
+        "bucket_end": "2026-12-06T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 701,
+        "total_capacity": 1000,
+        "utilization_pct": 70,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-06T00:00:00.000Z",
+        "bucket_end": "2026-12-07T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 738,
+        "total_capacity": 1000,
+        "utilization_pct": 74,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-07T00:00:00.000Z",
+        "bucket_end": "2026-12-08T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 775,
+        "total_capacity": 1000,
+        "utilization_pct": 78,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-08T00:00:00.000Z",
+        "bucket_end": "2026-12-09T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 812,
+        "total_capacity": 1000,
+        "utilization_pct": 81,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-09T00:00:00.000Z",
+        "bucket_end": "2026-12-10T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 549,
+        "total_capacity": 1000,
+        "utilization_pct": 55,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-10T00:00:00.000Z",
+        "bucket_end": "2026-12-11T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 586,
+        "total_capacity": 1000,
+        "utilization_pct": 59,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-11T00:00:00.000Z",
+        "bucket_end": "2026-12-12T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 623,
+        "total_capacity": 1000,
+        "utilization_pct": 62,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-12T00:00:00.000Z",
+        "bucket_end": "2026-12-13T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 660,
+        "total_capacity": 1000,
+        "utilization_pct": 66,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-13T00:00:00.000Z",
+        "bucket_end": "2026-12-14T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 697,
+        "total_capacity": 1000,
+        "utilization_pct": 70,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-14T00:00:00.000Z",
+        "bucket_end": "2026-12-15T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 734,
+        "total_capacity": 1000,
+        "utilization_pct": 73,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-15T00:00:00.000Z",
+        "bucket_end": "2026-12-16T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 771,
+        "total_capacity": 1000,
+        "utilization_pct": 77,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-16T00:00:00.000Z",
+        "bucket_end": "2026-12-17T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 808,
+        "total_capacity": 1000,
+        "utilization_pct": 81,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-17T00:00:00.000Z",
+        "bucket_end": "2026-12-18T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 545,
+        "total_capacity": 1000,
+        "utilization_pct": 55,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-18T00:00:00.000Z",
+        "bucket_end": "2026-12-19T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 582,
+        "total_capacity": 1000,
+        "utilization_pct": 58,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-19T00:00:00.000Z",
+        "bucket_end": "2026-12-20T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 619,
+        "total_capacity": 1000,
+        "utilization_pct": 62,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-20T00:00:00.000Z",
+        "bucket_end": "2026-12-21T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 656,
+        "total_capacity": 1000,
+        "utilization_pct": 66,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-21T00:00:00.000Z",
+        "bucket_end": "2026-12-22T00:00:00.000Z",
+        "resource_type": "yard",
+        "predicted_occupied": 693,
+        "total_capacity": 1000,
+        "utilization_pct": 69,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      }
+    ],
+    "berth": [
+      {
+        "bucket_start": "2026-11-22T00:00:00.000Z",
+        "bucket_end": "2026-11-23T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 58,
+        "total_capacity": 120,
+        "utilization_pct": 48,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-23T00:00:00.000Z",
+        "bucket_end": "2026-11-24T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 69,
+        "total_capacity": 120,
+        "utilization_pct": 57,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-24T00:00:00.000Z",
+        "bucket_end": "2026-11-25T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 80,
+        "total_capacity": 120,
+        "utilization_pct": 67,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-25T00:00:00.000Z",
+        "bucket_end": "2026-11-26T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 91,
+        "total_capacity": 120,
+        "utilization_pct": 76,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-26T00:00:00.000Z",
+        "bucket_end": "2026-11-27T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 67,
+        "total_capacity": 120,
+        "utilization_pct": 56,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-27T00:00:00.000Z",
+        "bucket_end": "2026-11-28T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 78,
+        "total_capacity": 120,
+        "utilization_pct": 65,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-28T00:00:00.000Z",
+        "bucket_end": "2026-11-29T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 89,
+        "total_capacity": 120,
+        "utilization_pct": 74,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-29T00:00:00.000Z",
+        "bucket_end": "2026-11-30T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 65,
+        "total_capacity": 120,
+        "utilization_pct": 54,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-11-30T00:00:00.000Z",
+        "bucket_end": "2026-12-01T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 76,
+        "total_capacity": 120,
+        "utilization_pct": 63,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-01T00:00:00.000Z",
+        "bucket_end": "2026-12-02T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 87,
+        "total_capacity": 120,
+        "utilization_pct": 73,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-02T00:00:00.000Z",
+        "bucket_end": "2026-12-03T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 104,
+        "total_capacity": 120,
+        "utilization_pct": 87,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-03T00:00:00.000Z",
+        "bucket_end": "2026-12-04T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 102,
+        "total_capacity": 120,
+        "utilization_pct": 85,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-04T00:00:00.000Z",
+        "bucket_end": "2026-12-05T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 85,
+        "total_capacity": 120,
+        "utilization_pct": 71,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-05T00:00:00.000Z",
+        "bucket_end": "2026-12-06T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 61,
+        "total_capacity": 120,
+        "utilization_pct": 51,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-06T00:00:00.000Z",
+        "bucket_end": "2026-12-07T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 72,
+        "total_capacity": 120,
+        "utilization_pct": 60,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-07T00:00:00.000Z",
+        "bucket_end": "2026-12-08T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 83,
+        "total_capacity": 120,
+        "utilization_pct": 69,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-08T00:00:00.000Z",
+        "bucket_end": "2026-12-09T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 59,
+        "total_capacity": 120,
+        "utilization_pct": 49,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-09T00:00:00.000Z",
+        "bucket_end": "2026-12-10T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 70,
+        "total_capacity": 120,
+        "utilization_pct": 58,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-10T00:00:00.000Z",
+        "bucket_end": "2026-12-11T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 81,
+        "total_capacity": 120,
+        "utilization_pct": 68,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-11T00:00:00.000Z",
+        "bucket_end": "2026-12-12T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 92,
+        "total_capacity": 120,
+        "utilization_pct": 77,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-12T00:00:00.000Z",
+        "bucket_end": "2026-12-13T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 68,
+        "total_capacity": 120,
+        "utilization_pct": 57,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-13T00:00:00.000Z",
+        "bucket_end": "2026-12-14T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 79,
+        "total_capacity": 120,
+        "utilization_pct": 66,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-14T00:00:00.000Z",
+        "bucket_end": "2026-12-15T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 90,
+        "total_capacity": 120,
+        "utilization_pct": 75,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-15T00:00:00.000Z",
+        "bucket_end": "2026-12-16T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 66,
+        "total_capacity": 120,
+        "utilization_pct": 55,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-16T00:00:00.000Z",
+        "bucket_end": "2026-12-17T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 77,
+        "total_capacity": 120,
+        "utilization_pct": 64,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-17T00:00:00.000Z",
+        "bucket_end": "2026-12-18T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 88,
+        "total_capacity": 120,
+        "utilization_pct": 73,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-18T00:00:00.000Z",
+        "bucket_end": "2026-12-19T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 64,
+        "total_capacity": 120,
+        "utilization_pct": 53,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-19T00:00:00.000Z",
+        "bucket_end": "2026-12-20T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 75,
+        "total_capacity": 120,
+        "utilization_pct": 63,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-20T00:00:00.000Z",
+        "bucket_end": "2026-12-21T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 86,
+        "total_capacity": 120,
+        "utilization_pct": 72,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      },
+      {
+        "bucket_start": "2026-12-21T00:00:00.000Z",
+        "bucket_end": "2026-12-22T00:00:00.000Z",
+        "resource_type": "berth",
+        "predicted_occupied": 62,
+        "total_capacity": 120,
+        "utilization_pct": 52,
+        "source_type": "synthetic",
+        "model_or_rule_version": "capacity-rules-v1.4",
+        "generated_at": "2026-11-22T10:45:56.564Z"
+      }
+    ]
+  },
+  "at_risk_count": 3,
+  "at_risk": [
+    {
+      "shipment_id": "ops_ship_001",
+      "reference": "OPS-2026-001",
+      "reasons": [
+        {
+          "code": "FORECAST_THRESHOLD_CROSSED",
+          "message": "Forecast utilization is above the high threshold."
+        },
+        {
+          "code": "DWELL_ABOVE_THRESHOLD",
+          "message": "Predicted dwell is above the planning threshold."
+        }
+      ]
+    },
+    {
+      "shipment_id": "ops_ship_002",
+      "reference": "OPS-2026-002",
+      "reasons": [
+        {
+          "code": "DOCUMENTATION_INCOMPLETE",
+          "message": "Documentation is incomplete."
+        }
+      ]
+    },
+    {
+      "shipment_id": "ops_ship_003",
+      "reference": "OPS-2026-003",
+      "reasons": []
+    }
+  ],
+  "dwell_distribution": [
+    {
+      "bin_start_days": 0,
+      "bin_end_days": 2,
+      "count": 4
+    },
+    {
+      "bin_start_days": 2,
+      "bin_end_days": 4,
+      "count": 9
+    },
+    {
+      "bin_start_days": 4,
+      "bin_end_days": 6,
+      "count": 12
+    },
+    {
+      "bin_start_days": 6,
+      "bin_end_days": 8,
+      "count": 8
+    },
+    {
+      "bin_start_days": 8,
+      "bin_end_days": 10,
+      "count": 5
+    },
+    {
+      "bin_start_days": 10,
+      "bin_end_days": 14,
+      "count": 2
+    }
+  ]
+}

@@ -1,0 +1,1082 @@
+{
+  "asset_name": "container_20ft_standard.glb",
+  "version": "3.0 (Quality Pass 2 \u2014 refinement of v2)",
+  "format": "glTF 2.0 Binary (.glb)",
+  "units": "metres",
+  "coordinate_system": {
+    "convention": "Right-handed Y-up",
+    "origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "origin_description": "Internal bottom-left corner at the loading-door threshold",
+    "axes": {
+      "X": "Length 0.000 -> 5.900",
+      "Y": "Height 0.000 (floor top) -> 2.390",
+      "Z": "Width 0.000 -> 2.350"
+    }
+  },
+  "specified_dimensions_m": {
+    "internal_clear": {
+      "length": 5.9,
+      "width": 2.35,
+      "height": 2.39
+    },
+    "external_body": {
+      "length": 6.06,
+      "width": 2.44,
+      "height": 2.59
+    },
+    "rear_door_clear_opening": {
+      "width": 2.34,
+      "height": 2.28
+    },
+    "door_open_angle_deg": 200.0
+  },
+  "measured_dimensions_m": {
+    "internal_clear": {
+      "length": 5.9,
+      "width": 2.35,
+      "height": 2.39,
+      "volume_m3": 33.137
+    },
+    "external_body": {
+      "length": 6.06,
+      "width": 2.44,
+      "height": 2.59
+    },
+    "external_bounds_min": [
+      -0.08,
+      -0.145,
+      -0.045
+    ],
+    "external_bounds_max": [
+      5.98,
+      2.445,
+      2.395
+    ]
+  },
+  "uv_texel_density": {
+    "painted_steel_m_per_tile": 1.6,
+    "hardware_m_per_tile": 0.25,
+    "corrugated_panels": "continuous arc-length UVs (one parameterisation per panel surface)"
+  },
+  "smoothing": {
+    "cylinder_segments": 28,
+    "rounded_bevel_segments": "2 on structure, 1 on small brackets",
+    "corrugation": "hard edges (flat facets)"
+  },
+  "layout": {
+    "rod_z_local": {
+      "left": [
+        0.2100000000000001,
+        1.03
+      ],
+      "right": [
+        -0.21000000000000024,
+        -1.0300000000000002
+      ]
+    },
+    "rib_rows": [
+      [
+        0.21200000000000002,
+        0.267
+      ],
+      [
+        0.5920000000000001,
+        0.6470000000000001
+      ],
+      [
+        0.972,
+        1.027
+      ],
+      [
+        1.352,
+        1.407
+      ],
+      [
+        1.732,
+        1.787
+      ]
+    ],
+    "csc_plate_local": {
+      "y": [
+        0.32350000000000007,
+        0.5355000000000001
+      ],
+      "z": [
+        0.4500000000000001,
+        0.7700000000000001
+      ]
+    },
+    "door_z_local": {
+      "left": [
+        0.030000000000000113,
+        1.196
+      ],
+      "right": [
+        -1.196,
+        -0.03000000000000025
+      ]
+    },
+    "door_y": [
+      0.004,
+      2.276
+    ],
+    "door_decal_inset": 0.085,
+    "pivots": {
+      "left": [
+        -0.084,
+        0.0,
+        -0.024999999999999998
+      ],
+      "right": [
+        -0.084,
+        0.0,
+        2.375
+      ]
+    }
+  },
+  "totals": {
+    "mesh_nodes": 20,
+    "vertices": 53260,
+    "triangles": 60342,
+    "runtime_glb_bytes": 7919368,
+    "runtime_glb_mb": 7.55,
+    "master_glb_bytes": 33159620,
+    "master_glb_mb": 31.62
+  },
+  "runtime_images": {
+    "wood_albedo": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 130361,
+      "sha256": "c99532ed6464a2b0c7124abee05cf07c2a67c71d1ffb25c56fe77d790d78ea81"
+    },
+    "wood_mr": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 94048,
+      "sha256": "f28073667ce7984a5e50ca5ed5cf48d10318442673427a539a4a8bcbc58e6a49"
+    },
+    "wood_normal": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 85096,
+      "sha256": "c7da41bdfed46ba440836e21b0ac8c32a355e5b85cf88bf570162e246f839684"
+    },
+    "wood_ao": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 46076,
+      "sha256": "a583f89a9b13a741958319fd6102afb66365f7ca18f5930eb1fd7edbbf28c60d"
+    },
+    "ext_albedo": {
+      "mime": "image/jpeg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 89411,
+      "sha256": "6f7bd485c769accc773477b5f34a02e654de7e3b0ec5ec0298c771e36563d8da"
+    },
+    "ext_orm": {
+      "mime": "image/jpeg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 485362,
+      "sha256": "87665a7ddcecf41866581e0da1c04b41e5a208d3a372a62ee77a84d5e2ac9435"
+    },
+    "ext_normal": {
+      "mime": "image/jpeg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1929892,
+      "sha256": "f089239e5bafaaf274e698e3c4be79d78fe7fecd0f7252e67a15b2e80c8166fc"
+    },
+    "int_albedo": {
+      "mime": "image/jpeg",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 143380,
+      "sha256": "c0708096478aef2702b4f478756ea573b872bf609dd7be8ca9f02506ec0e491f"
+    },
+    "int_orm": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 100982,
+      "sha256": "f99e7f85b231bfea7c1e80f2b28dc3a3cc09b4212a4ebbfa5a9eff3982c949d2"
+    },
+    "int_normal": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 418673,
+      "sha256": "47fe25870bafba5b7eeaa63c123f1f72a5667727b15db0af3d618264da464f60"
+    },
+    "hw_albedo": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 71728,
+      "sha256": "fc7544a290cefc9755b0fa9b09ed92b7f4400e6b909b942eca35cf364f5c4881"
+    },
+    "hw_orm": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 106042,
+      "sha256": "df9af2e8f482535e2ef7d87e156b808670f2daed2355b8ac1491626b5162782d"
+    },
+    "hw_normal": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 305885,
+      "sha256": "dfd38240eed43232459a5eca5379ff53cde641457d3477663980d9a79880def0"
+    },
+    "decal_side_panel": {
+      "mime": "image/png",
+      "size": [
+        4096,
+        2048
+      ],
+      "bytes": 656971,
+      "sha256": "eaf6c8734803c277146fdc999826f3c1166320a3829c3162199bf600c0256e25"
+    },
+    "decal_side_owner": {
+      "mime": "image/png",
+      "size": [
+        4096,
+        2048
+      ],
+      "bytes": 364258,
+      "sha256": "47d4fe6e7c15fea2b90ac711bb89afc5086d7818dd3130707602496d21745fae"
+    },
+    "decal_rear_doors": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 670285,
+      "sha256": "a596e6e74de2d8cb9b8b24e364aadae3450c49f4faa632ae59fd2ff3b768c80b"
+    },
+    "decal_csc_plate": {
+      "mime": "image/jpeg",
+      "size": [
+        1024,
+        680
+      ],
+      "bytes": 116145,
+      "sha256": "cadf7f51cd2529446d8500dfd678673cb6a66bd4df2a8cb503910d10445627ea"
+    }
+  },
+  "master_images": {
+    "wood_albedo": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 4189574,
+      "sha256": "ae2cfb57300e92a1b13475407af8cc4ab1e87bf3137b3ec5c44094e61aa7f58a"
+    },
+    "wood_mr": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 373953,
+      "sha256": "73f779f9cff94d185c969a00d54ec889618050af051d56c97fa85489e0c5369e"
+    },
+    "wood_normal": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 5273859,
+      "sha256": "d9b0e7fbf3cc27aadc17e12a26e5f901c14eeff3ff9b02d94575b74a87df7b5d"
+    },
+    "wood_ao": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 20292,
+      "sha256": "d23a1bb417246be67617d5954c6691aaea2ed5fd18f4590e0761092c0f1dbcef"
+    },
+    "ext_albedo": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 523629,
+      "sha256": "cc508c470646b311e28bb99770f531661691364f54d05da87a3dc78edfe5424d"
+    },
+    "ext_orm": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 2097363,
+      "sha256": "4d394d2c1dbb3b26ca776952a38e93979009a2e68a8bb54575f7a8b2d4febd50"
+    },
+    "ext_normal": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 6007042,
+      "sha256": "c2b8d25de9e65e22a7940e2b508f1810ade6502ff0023b0b0d53e9d5b6cec47c"
+    },
+    "int_albedo": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1030753,
+      "sha256": "4ca3aa5f8235f285231a1ad71bc63c0e25913d5302432052947120e730507566"
+    },
+    "int_orm": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 1185668,
+      "sha256": "600474325c8f12d63a13b1e9fdff584ec9fd276f2fb0ae20770562d197022d9c"
+    },
+    "int_normal": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        2048
+      ],
+      "bytes": 6044309,
+      "sha256": "ad45b7611cfbb15822ff8565d5dffe58b0e604fed741586f2236da027bba409b"
+    },
+    "hw_albedo": {
+      "mime": "image/png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 401371,
+      "sha256": "cee3dfb85915b3c42031f49e947e43db03464f2a50578bc27ff373c6d085abe3"
+    },
+    "hw_orm": {
+      "mime": "image/png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 516562,
+      "sha256": "a48dc967e53b26b1052ef9134023b967d2719df44bc5efd3dcd8c48a6e60b8c4"
+    },
+    "hw_normal": {
+      "mime": "image/png",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 548502,
+      "sha256": "4e3a23473391f1b1d89804c17bbb00a62a516a16fde843772ce00d0a72b88594"
+    },
+    "decal_side_panel": {
+      "mime": "image/png",
+      "size": [
+        4096,
+        2048
+      ],
+      "bytes": 653791,
+      "sha256": "9e00824b739da0c785ae26b16accf9494798cd85bbbcd541d5128e0171c1559a"
+    },
+    "decal_side_owner": {
+      "mime": "image/png",
+      "size": [
+        4096,
+        2048
+      ],
+      "bytes": 360366,
+      "sha256": "6d6ee8bc2374f91ac0ba803fd3f956515ff846a0bbd7a7c9506818377c2c6f09"
+    },
+    "decal_rear_doors": {
+      "mime": "image/png",
+      "size": [
+        4096,
+        4096
+      ],
+      "bytes": 1482270,
+      "sha256": "a1b46718984eff1fcfa26d6b0ee063536c10f8cc11e6de75c8227a1cb5470417"
+    },
+    "decal_csc_plate": {
+      "mime": "image/png",
+      "size": [
+        2048,
+        1360
+      ],
+      "bytes": 345365,
+      "sha256": "4d1b9538ec55a19b97e6f499839a15ef4fda85ed1949c4b5724c17b9173c7f2f"
+    }
+  },
+  "hierarchy": [
+    {
+      "name": "Base_Floor",
+      "parent": "Container_Root",
+      "vertices": 5816,
+      "triangles": 6200,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Interior_Wall",
+        "Mat_Hardware_Steel",
+        "Mat_Rubber_Gasket"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.08,
+        -0.145,
+        -0.0456
+      ],
+      "local_max": [
+        5.98,
+        0.073,
+        2.3956
+      ]
+    },
+    {
+      "name": "Floor_Surface",
+      "parent": "Container_Root",
+      "vertices": 24,
+      "triangles": 12,
+      "materials": [
+        "Mat_Wood_Floor"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.0,
+        -0.028,
+        0.0
+      ],
+      "local_max": [
+        5.9,
+        0.0,
+        2.35
+      ]
+    },
+    {
+      "name": "Corner_Castings",
+      "parent": "Container_Root",
+      "vertices": 2160,
+      "triangles": 2784,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Rubber_Gasket"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.0808,
+        -0.1458,
+        -0.0458
+      ],
+      "local_max": [
+        5.9808,
+        2.4458,
+        2.3958
+      ]
+    },
+    {
+      "name": "Corner_Posts",
+      "parent": "Container_Root",
+      "vertices": 5912,
+      "triangles": 7180,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Interior_Wall",
+        "Mat_Hardware_Steel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.08,
+        -0.027,
+        -0.045
+      ],
+      "local_max": [
+        5.98,
+        2.445,
+        2.395
+      ]
+    },
+    {
+      "name": "Rear_Frame",
+      "parent": "Container_Root",
+      "vertices": 3912,
+      "triangles": 4884,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Hardware_Steel",
+        "Mat_Rubber_Gasket"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.1,
+        -0.048,
+        0.005
+      ],
+      "local_max": [
+        0.0,
+        2.445,
+        2.345
+      ]
+    },
+    {
+      "name": "Left_Side_Wall",
+      "parent": "Container_Root",
+      "vertices": 1680,
+      "triangles": 840,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Interior_Wall"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.0,
+        0.0,
+        -0.045
+      ],
+      "local_max": [
+        5.9,
+        2.39,
+        0.0
+      ]
+    },
+    {
+      "name": "Right_Side_Wall",
+      "parent": "Container_Root",
+      "vertices": 1680,
+      "triangles": 840,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Interior_Wall"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.0,
+        0.0,
+        2.35
+      ],
+      "local_max": [
+        5.9,
+        2.39,
+        2.395
+      ]
+    },
+    {
+      "name": "Roof_Panel",
+      "parent": "Container_Root",
+      "vertices": 2240,
+      "triangles": 1120,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Interior_Wall"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.0,
+        2.39,
+        0.0
+      ],
+      "local_max": [
+        5.9,
+        2.445,
+        2.35
+      ]
+    },
+    {
+      "name": "Front_End_Wall",
+      "parent": "Container_Root",
+      "vertices": 400,
+      "triangles": 200,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Interior_Wall"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        5.9,
+        0.0,
+        0.0
+      ],
+      "local_max": [
+        5.965,
+        2.39,
+        2.35
+      ]
+    },
+    {
+      "name": "Rear_Door_Left",
+      "parent": "Container_Root",
+      "vertices": 3456,
+      "triangles": 4656,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Structural_Dark",
+        "Mat_Interior_Wall",
+        "Mat_Rubber_Gasket"
+      ],
+      "pivot": [
+        -0.084,
+        0.0,
+        -0.025
+      ],
+      "rotation_quat": [
+        0.0,
+        -0.984808,
+        0.0,
+        -0.173648
+      ],
+      "local_min": [
+        0.002,
+        -0.001,
+        0.025
+      ],
+      "local_max": [
+        0.056,
+        2.281,
+        1.201
+      ]
+    },
+    {
+      "name": "Rear_Door_Right",
+      "parent": "Container_Root",
+      "vertices": 3456,
+      "triangles": 4656,
+      "materials": [
+        "Mat_Exterior_Green",
+        "Mat_Structural_Dark",
+        "Mat_Interior_Wall",
+        "Mat_Rubber_Gasket"
+      ],
+      "pivot": [
+        -0.084,
+        0.0,
+        2.375
+      ],
+      "rotation_quat": [
+        0.0,
+        0.984808,
+        0.0,
+        -0.173648
+      ],
+      "local_min": [
+        0.002,
+        -0.001,
+        -1.201
+      ],
+      "local_max": [
+        0.056,
+        2.281,
+        -0.025
+      ]
+    },
+    {
+      "name": "Locking_Rods",
+      "parent": "Container_Root",
+      "vertices": 11920,
+      "triangles": 14832,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Hardware_Steel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.033,
+        -0.032,
+        -1.2369
+      ],
+      "local_max": [
+        0.4114,
+        2.312,
+        3.5869
+      ]
+    },
+    {
+      "name": "Hinges",
+      "parent": "Container_Root",
+      "vertices": 8192,
+      "triangles": 10656,
+      "materials": [
+        "Mat_Structural_Dark",
+        "Mat_Hardware_Steel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.099,
+        0.164,
+        -0.1944
+      ],
+      "local_max": [
+        -0.0104,
+        2.144,
+        2.5444
+      ]
+    },
+    {
+      "name": "Exterior_Marking_Side_Left",
+      "parent": "Exterior_Marking_Side",
+      "vertices": 396,
+      "triangles": 198,
+      "materials": [
+        "Mat_Decal_Side_Panel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.22,
+        0.16,
+        -0.0468
+      ],
+      "local_max": [
+        5.68,
+        2.26,
+        -0.0068
+      ]
+    },
+    {
+      "name": "Exterior_Marking_Side_Right",
+      "parent": "Exterior_Marking_Side",
+      "vertices": 396,
+      "triangles": 198,
+      "materials": [
+        "Mat_Decal_Side_Panel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.22,
+        0.16,
+        2.3568
+      ],
+      "local_max": [
+        5.68,
+        2.26,
+        2.3968
+      ]
+    },
+    {
+      "name": "Exterior_Marking_Owner_Left",
+      "parent": "Exterior_Marking_Owner",
+      "vertices": 396,
+      "triangles": 198,
+      "materials": [
+        "Mat_Decal_Side_Owner"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.22,
+        0.16,
+        -0.0474
+      ],
+      "local_max": [
+        5.68,
+        2.26,
+        -0.0074
+      ]
+    },
+    {
+      "name": "Exterior_Marking_Owner_Right",
+      "parent": "Exterior_Marking_Owner",
+      "vertices": 396,
+      "triangles": 198,
+      "materials": [
+        "Mat_Decal_Side_Owner"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.22,
+        0.16,
+        2.3574
+      ],
+      "local_max": [
+        5.68,
+        2.26,
+        2.3974
+      ]
+    },
+    {
+      "name": "Rear_Door_Marking",
+      "parent": "Door_Marking_Decals",
+      "vertices": 424,
+      "triangles": 212,
+      "materials": [
+        "Mat_Decal_Rear_Doors"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        -0.0511,
+        0.089,
+        -1.0713
+      ],
+      "local_max": [
+        0.2896,
+        2.191,
+        3.4213
+      ]
+    },
+    {
+      "name": "CSC_Plate_Geometry",
+      "parent": "CSC_Plate",
+      "vertices": 400,
+      "triangles": 476,
+      "materials": [
+        "Mat_CSC_Steel"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.0628,
+        0.3235,
+        -0.7509
+      ],
+      "local_max": [
+        0.1742,
+        0.5355,
+        -0.45
+      ]
+    },
+    {
+      "name": "CSC_Plate_Marking",
+      "parent": "CSC_Plate",
+      "vertices": 4,
+      "triangles": 2,
+      "materials": [
+        "Mat_Decal_CSC_Plate"
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation_quat": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "local_min": [
+        0.066,
+        0.3235,
+        -0.75
+      ],
+      "local_max": [
+        0.1754,
+        0.5355,
+        -0.4493
+      ]
+    }
+  ]
+}
