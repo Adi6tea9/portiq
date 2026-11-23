@@ -4,17 +4,20 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from decimal import ROUND_HALF_UP, Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Literal, overload
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
 
 from app.models import PredictionRun, Shipment, ShipmentEvent
 from app.schemas.enums import (
+    CargoPriority,
     CargoType,
     Currency,
+    CustomsChannel,
     Direction,
     DocumentationStatus,
+    ImporterType,
     ShipmentStatus,
     ShippingLine,
     VesselSizeBand,
@@ -28,6 +31,12 @@ DECLARED_VALUE_MAX = Decimal("1000000000000")
 MONEY = Decimal("0.01")
 
 
+@overload
+def utc_z(value: datetime) -> str: ...
+@overload
+def utc_z(value: None) -> None: ...
+@overload
+def utc_z(value: datetime | None) -> str | None: ...
 def utc_z(value: datetime | None) -> str | None:
     """UTC ISO-8601 ending in ``Z`` (backend spec 5.1)."""
     if value is None:
@@ -78,6 +87,9 @@ class ShipmentResponse(BaseModel):
     vessel_size_band: VesselSizeBand
     expected_arrival_at: str
     documentation_status: DocumentationStatus
+    customs_channel: CustomsChannel
+    importer_type: ImporterType
+    cargo_priority: CargoPriority
     status: ShipmentStatus
     actual_arrival_at: str | None
     actual_cleared_at: str | None
@@ -126,6 +138,10 @@ class ShipmentCreate(BaseModel):
     vessel_size_band: VesselSizeBand
     expected_arrival_at: AwareDatetime
     documentation_status: DocumentationStatus
+    # Optional so older clients keep working; defaults are what an unknown value means (CG-021).
+    customs_channel: CustomsChannel = CustomsChannel.UNKNOWN
+    importer_type: ImporterType = ImporterType.REGULAR
+    cargo_priority: CargoPriority = CargoPriority.STANDARD
 
 
 class ShipmentPatch(BaseModel):
@@ -142,6 +158,9 @@ class ShipmentPatch(BaseModel):
     vessel_size_band: VesselSizeBand | None = None
     expected_arrival_at: AwareDatetime | None = None
     documentation_status: DocumentationStatus | None = None
+    customs_channel: CustomsChannel | None = None
+    importer_type: ImporterType | None = None
+    cargo_priority: CargoPriority | None = None
 
 
 class EventCreate(BaseModel):
@@ -184,6 +203,9 @@ def shipment_response(
         vessel_size_band=shipment.vessel_size_band,
         expected_arrival_at=utc_z(shipment.expected_arrival_at) or "",
         documentation_status=shipment.documentation_status,
+        customs_channel=shipment.customs_channel,
+        importer_type=shipment.importer_type,
+        cargo_priority=shipment.cargo_priority,
         status=shipment.status,
         actual_arrival_at=utc_z(shipment.actual_arrival_at),
         actual_cleared_at=utc_z(shipment.actual_cleared_at),

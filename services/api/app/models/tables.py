@@ -18,10 +18,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 from app.schemas.enums import (
+    CargoPriority,
     CargoType,
     Currency,
+    CustomsChannel,
     Direction,
     DocumentationStatus,
+    ImporterType,
     RateType,
     ResourceType,
     Role,
@@ -132,6 +135,15 @@ class Shipment(Base):
     actual_cleared_at: Mapped[datetime | None] = mapped_column(_TS)
     documentation_status: Mapped[DocumentationStatus] = mapped_column(
         _enum(DocumentationStatus, "documentation_status"), nullable=False
+    )
+    customs_channel: Mapped[CustomsChannel] = mapped_column(
+        _enum(CustomsChannel, "customs_channel"), nullable=False, server_default="unknown"
+    )
+    importer_type: Mapped[ImporterType] = mapped_column(
+        _enum(ImporterType, "importer_type"), nullable=False, server_default="regular"
+    )
+    cargo_priority: Mapped[CargoPriority] = mapped_column(
+        _enum(CargoPriority, "cargo_priority"), nullable=False, server_default="standard"
     )
     status: Mapped[ShipmentStatus] = mapped_column(
         _enum(ShipmentStatus, "shipment_status"), nullable=False

@@ -100,6 +100,26 @@ class WarningCode(StrEnum):
     OUT_OF_RANGE_INPUT = "OUT_OF_RANGE_INPUT"
 
 
+# Model inputs added 2026-11-23 (CG-021). Values are the training vocabulary of the dwell model.
+class CustomsChannel(StrEnum):
+    GREEN = "green"
+    ORANGE = "orange"
+    RED = "red"
+    UNKNOWN = "unknown"
+
+
+class ImporterType(StrEnum):
+    AEO = "AEO"
+    REGULAR = "regular"
+    NEW = "new"
+
+
+class CargoPriority(StrEnum):
+    STANDARD = "standard"
+    EXPEDITED = "expedited"
+    GOVERNMENT = "government"
+
+
 class AtRiskCode(StrEnum):
     FORECAST_THRESHOLD_CROSSED = "FORECAST_THRESHOLD_CROSSED"
     DWELL_ABOVE_THRESHOLD = "DWELL_ABOVE_THRESHOLD"

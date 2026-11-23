@@ -4,7 +4,7 @@ from app.services.cost_engine import calculate_costs
 
 
 class MockShipment:
-    def __init__(self):
+    def __init__(self) -> None:
         self.expected_arrival_at = datetime(2026, 11, 15)
         self.port_id = "INNSA"
         self.hs_code = "850440"
@@ -15,7 +15,9 @@ class MockShipment:
         self.currency = "INR"
 
 class MockRule:
-    def __init__(self, rule_type, rate_type="flat", rate_value="100.00"):
+    def __init__(
+        self, rule_type: str, rate_type: str = "flat", rate_value: str = "100.00"
+    ) -> None:
         self.rule_type = rule_type
         self.rate_type = rate_type
         self.rate_value = rate_value
@@ -32,7 +34,7 @@ class MockRule:
         self.free_days = None
         self.tier_config = None
 
-def test_missing_tariff_returns_unavailable_not_zero():
+def test_missing_tariff_returns_unavailable_not_zero() -> None:
     shipment = MockShipment()
     # Provide ONLY customs duty. Port storage and demurrage are missing.
     rules = [MockRule(rule_type="customs_duty", rate_type="percent_of_value", rate_value="10.00")]

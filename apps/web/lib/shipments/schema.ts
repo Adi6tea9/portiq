@@ -1,10 +1,13 @@
 import { z } from "zod";
 import type { ShipmentCreate } from "../api/types";
 import {
+  CARGO_PRIORITY_OPTIONS,
   CARGO_TYPE_OPTIONS,
   CONTAINER_SIZE_OPTIONS,
+  CUSTOMS_CHANNEL_OPTIONS,
   DIRECTION_OPTIONS,
   DOCUMENTATION_STATUS_OPTIONS,
+  IMPORTER_TYPE_OPTIONS,
   SHIPPING_LINE_OPTIONS,
   VESSEL_SIZE_BAND_OPTIONS,
 } from "./options";
@@ -61,6 +64,15 @@ export const shipmentFormSchema = z.object({
   documentation_status: z.enum(DOCUMENTATION_STATUS_OPTIONS, {
     errorMap: () => ({ message: "Select a documentation status." }),
   }),
+  customs_channel: z.enum(CUSTOMS_CHANNEL_OPTIONS, {
+    errorMap: () => ({ message: "Select a customs channel." }),
+  }),
+  importer_type: z.enum(IMPORTER_TYPE_OPTIONS, {
+    errorMap: () => ({ message: "Select an importer type." }),
+  }),
+  cargo_priority: z.enum(CARGO_PRIORITY_OPTIONS, {
+    errorMap: () => ({ message: "Select a cargo priority." }),
+  }),
 });
 
 export type ShipmentFormValues = z.input<typeof shipmentFormSchema>;
@@ -77,6 +89,9 @@ export const shipmentEditSchema = shipmentFormSchema.pick({
   vessel_size_band: true,
   expected_arrival_at: true,
   documentation_status: true,
+  customs_channel: true,
+  importer_type: true,
+  cargo_priority: true,
 });
 
 export type ShipmentEditValues = z.input<typeof shipmentEditSchema>;
@@ -95,6 +110,9 @@ export const SHIPMENT_FORM_FIELDS = [
   "vessel_size_band",
   "expected_arrival_at",
   "documentation_status",
+  "customs_channel",
+  "importer_type",
+  "cargo_priority",
 ] as const satisfies readonly ShipmentFormField[];
 
 export function toShipmentCreate(
@@ -115,5 +133,8 @@ export function toShipmentCreate(
     vessel_size_band: values.vessel_size_band,
     expected_arrival_at: expectedArrivalAt,
     documentation_status: values.documentation_status,
+    customs_channel: values.customs_channel,
+    importer_type: values.importer_type,
+    cargo_priority: values.cargo_priority,
   };
 }

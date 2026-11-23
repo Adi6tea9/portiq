@@ -81,6 +81,7 @@ def demo(db_session: Session) -> Session:
     shipment = db_session.query(Shipment).filter(Shipment.reference == "SNEAKY-TEST").first()
     if not shipment:
         importer = db_session.query(Profile).filter(Profile.role == "importer_exporter").first()
+        assert importer is not None
         shipment = Shipment(
             id=str(uuid.uuid4()),
             owner_user_id=importer.id,
@@ -131,6 +132,7 @@ def test_operator_scope_isolation(api: TestClient, demo: Session) -> None:
     
     # 1. Identify a shipment assigned specifically to Operator 1
     op1 = demo.query(Profile).filter(Profile.email == "operator1@portiq.demo").first()
+    assert op1 is not None
     op1_ports = demo.query(OperatorPort).filter(OperatorPort.user_id == op1.id).all()
     op1_port_ids = [p.port_id for p in op1_ports]
     

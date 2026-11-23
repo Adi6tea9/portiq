@@ -29,9 +29,19 @@ export function getApiBaseUrl(): string {
 export function buildLoginRedirectUrl(returnTo: string): string {
   return `/login?returnTo=${encodeURIComponent(returnTo)}`;
 }
+let isPageUnloading = false;
+
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", () => {
+    isPageUnloading = true;
+  });
+  window.addEventListener("pageshow", () => {
+    isPageUnloading = false;
+  });
+}
 
 export function handleUnauthorized(): void {
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || isPageUnloading) {
     return;
   }
 

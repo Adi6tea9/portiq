@@ -1,7 +1,10 @@
 import type {
+  CargoPriority,
   CargoType,
+  CustomsChannel,
   Direction,
   DocumentationStatus,
+  ImporterType,
   ShipmentStatus,
   ShippingLine,
   VesselSizeBand,
@@ -40,6 +43,39 @@ export const DOCUMENTATION_STATUS_OPTIONS = [
   "incomplete",
   "unknown",
 ] as const satisfies readonly DocumentationStatus[];
+
+export const CUSTOMS_CHANNEL_OPTIONS = [
+  "unknown",
+  "green",
+  "orange",
+  "red",
+] as const satisfies readonly CustomsChannel[];
+
+export const IMPORTER_TYPE_OPTIONS = [
+  "regular",
+  "AEO",
+  "new",
+] as const satisfies readonly ImporterType[];
+
+export const CARGO_PRIORITY_OPTIONS = [
+  "standard",
+  "expedited",
+  "government",
+] as const satisfies readonly CargoPriority[];
+
+/** Display labels for the model-input options (the values are the API's). */
+export const MODEL_INPUT_LABELS: Record<string, string> = {
+  unknown: "Not known yet",
+  green: "Green: no inspection",
+  orange: "Orange: document check",
+  red: "Red: physical examination",
+  regular: "Regular importer",
+  AEO: "AEO-certified importer",
+  new: "New importer",
+  standard: "Standard",
+  expedited: "Expedited (perishable / urgent)",
+  government: "Government",
+};
 
 export const SHIPMENT_STATUS_OPTIONS = [
   "submitted",

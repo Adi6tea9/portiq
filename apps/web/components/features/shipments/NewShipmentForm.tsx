@@ -31,6 +31,7 @@ import {
   toShipmentCreate,
   type ShipmentFormValues,
 } from "@/lib/shipments/schema";
+import { ModelInputFields } from "./ModelInputFields";
 import { SelectControl, type SelectOption } from "./SelectControl";
 
 const DIRECTION_SELECT_OPTIONS: SelectOption[] = DIRECTION_OPTIONS.map(
@@ -79,7 +80,12 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<ShipmentFormValues>({
     resolver: zodResolver(shipmentFormSchema),
-    defaultValues: { currency: "INR" },
+    defaultValues: {
+      currency: "INR",
+      customs_channel: "unknown",
+      importer_type: "regular",
+      cargo_priority: "standard",
+    },
   });
 
   const ports = portsQuery.data ?? [];
@@ -349,6 +355,19 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
                     {...register("documentation_status")}
                   />
                 </Field>
+
+                <ModelInputFields
+                  registered={{
+                    customs_channel: register("customs_channel"),
+                    importer_type: register("importer_type"),
+                    cargo_priority: register("cargo_priority"),
+                  }}
+                  errors={{
+                    customs_channel: errors.customs_channel?.message,
+                    importer_type: errors.importer_type?.message,
+                    cargo_priority: errors.cargo_priority?.message,
+                  }}
+                />
               </div>
 
               <Button type="submit" disabled={isSubmitting}>

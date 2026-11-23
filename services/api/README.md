@@ -111,9 +111,7 @@ cd services\api
 ..\..\.venv\Scripts\python.exe -m pytest
 ```
 
-Current state (22 Nov): `pytest` 172 passed, `ruff check .` clean, `mypy .` 11 pre-existing errors
-in five older modules (annotation gaps only). Tests need a local Postgres; `conftest.py` refuses any
-database that is not a local `*_test` database.
+Current state (23 Nov): `pytest` 197 passed, `ruff check .` clean, `mypy .` 0 errors.
 
 ## Supabase smoke test
 

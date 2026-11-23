@@ -189,7 +189,7 @@ def test_explanation_adds_up_to_the_prediction(demo: Session, client: TestClient
 
     assert explanation["status"] == "available", explanation["reason"]
     assert explanation["method"] == "SHAP"
-    assert len(explanation["features"]) == 12
+    assert len(explanation["features"]) == len(FEATURE_NAMES)
     total = explanation["base_value_days"] + sum(
         item["contribution"] for item in explanation["features"]
     )

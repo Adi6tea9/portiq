@@ -15,7 +15,7 @@ from app.models import CapacityForecast, Port
 from app.services.capacity_sim import capacity_sim_for_date
 
 
-def run_seed(start_date: date, days: int):
+def run_seed(start_date: date, days: int) -> None:
     with Session(engine) as db:
         ports = db.scalars(select(Port)).all()
         if not ports:

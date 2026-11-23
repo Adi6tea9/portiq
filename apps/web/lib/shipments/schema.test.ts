@@ -21,6 +21,9 @@ const validValues: ShipmentFormValues = {
   vessel_size_band: "large",
   expected_arrival_at: "2026-11-05T08:30",
   documentation_status: "complete",
+  customs_channel: "unknown",
+  importer_type: "regular",
+  cargo_priority: "standard",
 };
 
 function fieldError(field: string, value: unknown): string | undefined {
@@ -127,6 +130,9 @@ describe("toShipmentCreate", () => {
       vessel_size_band: "large",
       expected_arrival_at: "2026-11-05T03:00:00.000Z",
       documentation_status: "complete",
+      customs_channel: "unknown",
+      importer_type: "regular",
+      cargo_priority: "standard",
     });
     expect(payload).not.toHaveProperty("owner_id");
     expect(payload).not.toHaveProperty("status");

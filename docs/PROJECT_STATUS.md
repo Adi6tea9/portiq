@@ -10,7 +10,7 @@
 
 ## Status at a glance
 
-**Development stage: B01–B10 complete (B06 completed 22 Nov); next is B11 (live Supabase integration).**
+**Development stage: B11 in progress — the app now runs live on Supabase sign-in (switched 23 Nov); live flow testing, account roles and the Load planner's real-data stage remain.**
 Everything is built and tested in isolation. The frontend runs on mocks, the backend runs in
 Docker with the trained model, and the two have not yet been run together against a real Supabase
 project. Against the spec timeline (B10 due 24–26 Nov, B11 27–30 Nov, buffer and report 1–4 Dec)
@@ -20,8 +20,8 @@ the project is slightly ahead of schedule.
 |---|---|---|
 | Frontend (`apps/web`) | ~97% | F01–F10 built with Vitest + Playwright coverage, plus the PortIQ theme and the 3D Load planner tab. Runs on MSW mocks. |
 | Backend (`services/api`) | ~97% | B01–B10 done. B11 code and docs written, never run against a real project. |
-| ML (`ml/`) | ~98% | v2 pipeline, metadata, reference data, per-year calibration, model card, data dictionary and 19 ML tests done. Reference source URL/date/licence could not be confirmed. |
-| Live integration | ~30% | Every frontend API call has a backend route; the two have never run together without mocks. |
+| ML (`ml/`) | ~98% | v2 pipeline, metadata, reference data, per-year calibration, model card, data dictionary and 19 ML tests done. Reference source and licence confirmed 24 Nov (data.gov.in, NDSAP/GODL; 3 files, downloaded 2026-11-11). |
+| Live integration | ~50% | API in `AUTH_MODE=supabase`, web app live (mocks off), Supabase ES256 keys verified, one real account signed in. Flows not yet tested live; operator/admin accounts not set up. |
 | Deployment / tooling | ~20% | Docker runs API + Postgres only. No frontend container, no CI, no hosting, no git repository. |
 | **Overall** | **~92%** | |
 
@@ -48,21 +48,21 @@ Percentages are judgement against the spec deliverables, not a measured number.
 | B03 Auth, profiles, config, ports | Done (dev mode tested; Supabase JWKS path unit-tested only) |
 | B04 Shipments and events | Done |
 | B05 Capacity simulator and forecast | Done |
-| B06 Synthetic data and training | Done: per-category metrics, spec baseline, full `model_metadata_v2.json`, schema validation, reference data (2020–2022, hours) with per-year calibration (all within 15%), `docs/model-card.md`, `docs/data-dictionary.md`, `ml/tests/` (19). Reference source URL/date/licence not recorded (owner could not confirm) |
+| B06 Synthetic data and training | Done: per-category metrics, spec baseline, full `model_metadata_v2.json`, schema validation, reference data (2020–2022, hours) with per-year calibration (all within 15%), `docs/model-card.md`, `docs/data-dictionary.md`, `ml/tests/` (19). Reference source: data.gov.in "Port Dwell Time" (NDSAP/GODL), 3 files, downloaded 2026-11-11 |
 | B07 Model service and SHAP | Done (v2 bundle, log-target SHAP, metadata-driven versions, correct v2 defaults) |
 | B08 Cost engine and tariff admin | Done (tariff routes rewritten 22 Nov: all filters, envelope, `conflicting_rule`) |
 | B09 Prediction orchestration | Done (real model, SHAP, capacity snapshot) |
 | B10 Operator, hardening, contract tests | Done: section 14 endpoints, audit logs, single-prediction GET, rate limit, 1 MiB body cap, date-range rules, `export_openapi.py` → `docs/openapi.json`, contract tests against the frontend mocks, full section 7 auth matrix |
-| B11 Supabase integration | Partial: code, `.env` templates, docs and smoke script done; real-project run blocked on keys |
+| B11 Supabase integration | In progress: switched to live Supabase sign-in 23 Nov; user/role management command added. Left: live pass of every flow, operator/admin accounts, demo data for real accounts, smoke script |
 
 ### Quality gates (22 Nov 2026)
 
 | Check | Result |
 |---|---|
-| Backend `pytest` (Docker, Postgres 15) | **176 passed** |
-| ML `pytest ml/tests` | **19 passed** |
+| Backend `pytest` (Docker, Postgres 15) | **197 passed** |
+| ML `pytest ml/tests` | **20 passed** |
 | Backend `ruff check .` | clean |
-| Backend `mypy .` | 11 pre-existing errors in 5 older modules (none in new code; was 26) |
+| Backend `mypy .` | **0 errors** (was 26 on 22 Nov) |
 | Frontend typecheck / lint | clean |
 | Frontend Vitest | 23 files, 191 tests passing (one known timing flake under load) |
 | Frontend Playwright (mock mode, local Chrome) | 85 passed |
@@ -74,13 +74,9 @@ Percentages are judgement against the spec deliverables, not a measured number.
 1. **Live integration (B11).** Paste the Supabase project URL and publishable key into
    `apps/web/.env.local` and `services/api/.env` (`AUTH_MODE=supabase`), run one full manual pass
    with mocks off, create operator/admin accounts with SQL, run `scripts/smoke_supabase.py`.
-2. **Reference data provenance.** The source URL, download date and licence of
-   `ml/data/reference/*.csv` are not recorded; confirm them before any public release.
-3. **Robustness.** `capacity_sim` replays from 2025-01-01 on every call (§9.6).
-4. **Housekeeping.** Rename the mislabelled `features/` files (F01 lives in `00_READ_FIRST`, etc.)
-   and add the missing F04 spec file; remove the unused `ComingSoon.tsx`; align one partial-total
-   message with the spec wording; drop the duplicate `PyJWT` pin.
-5. **Deployment and delivery.** Initialise git, add CI, a frontend container and hosting; then
+2. **Load planner real data.** Shipment link, stored cargo lines, editing (still sample cargo).
+3. **Housekeeping.** Align one partial-total message with the spec wording.
+4. **Deployment and delivery.** Initialise git, add CI, a frontend container and hosting; then
    the 1–4 Dec slot: demo script, report, slides.
 
 ### Change log since the 13 Nov review
@@ -94,6 +90,9 @@ Percentages are judgement against the spec deliverables, not a measured number.
 | 22 Nov | B10 endpoints: operator overview, operator shipments, audit logs, single-prediction GET; demo capacity seeded | `BACKEND_FIXES_REPORT.md` part 2 |
 | 22 Nov | B10 completed: body cap, date-range rules, OpenAPI export, contract tests, auth matrix; tariff routes rewritten; duplicate capacity router removed | `BACKEND_FIXES_REPORT.md` part 3 |
 | 22 Nov | B06 completed: metadata, per-category metrics, calibration report, model card, data dictionary, ML tests; CG-015 resolved; API defaults for the v2-only inputs fixed (they biased predictions by −0.42 days) | `BACKEND_FIXES_REPORT.md` part 4 |
+| 24 Nov | Reference data source and licence confirmed: data.gov.in "Port Dwell Time" (NICDC LDB), NDSAP / GODL-India, attribution required; the 3 catalog files are the 3 reference CSVs, downloaded 2026-11-11 | docs/data-dictionary.md |
+| 23 Nov | Smaller items: shipments collect customs channel, importer type and cargo priority, holidays derived from the date (served MAE 0.732 → 0.610, CG-021, migration 0002); capacity simulator caches each day (about 68x faster, identical output); reference data's probable source recorded; `features/` files renamed and F04 added; `ComingSoon.tsx` and duplicate PyJWT pin removed; mypy 11 → 0 errors | CONTRACT_GAPS CG-021 |
+| 23 Nov | Switched to live Supabase sign-in (fixed three `.env` values); `scripts/manage_users.py` to add/remove importers, port operators and admins (audited, last-admin guard, 13 tests) | README "Managing users and roles" |
 
 ---
 
@@ -643,9 +642,9 @@ each re-checked against the code:
 | 9.3 | Four frontend endpoints had no backend route | **Resolved** | Operator overview, operator shipments, audit logs, single-prediction GET added 22 Nov with 19 tests. |
 | 9.4 | Frontend README called the backend a placeholder | **Resolved** | Updated 22 Nov. |
 | 9.5 | `admin.py`: non-committing session helper, naive datetimes, raw ORM dicts, `HTTPException` | **Resolved** | Tariff routes rewritten 22 Nov (standard session, envelope, `AppError`, every filter); the unused `app.db.get_db` is deleted. |
-| 9.6 | `capacity_sim` replays from 2025-01-01 on every call | **Open** | Fine for current volumes; cache or closed-form it if generation gets slow. |
+| 9.6 | `capacity_sim` replays from 2025-01-01 on every call | **Resolved 23 Nov** | Each simulated day is cached per port/resource; 976 calls went from 4.06 s to 0.06 s with identical outputs. |
 | 9.7 | `ml.py` rebuilds features heuristically | **Resolved** | The step lookup handles `prep` (v2) and `preprocessor` (v1); v2 defaults use the training vocabulary and a test pins them to the trained categories and ranges. |
-| 9.8 | Duplicate `PyJWT` pin with different versions | **Mostly resolved** | Both lines are now `2.15.1`; the duplicate line itself remains. |
+| 9.8 | Duplicate `PyJWT` pin with different versions | **Resolved 23 Nov** | One pin left: `PyJWT[crypto]==2.15.1`. |
 | 9.9 | Supabase CLI config outside the repo, pointing at a missing seed | **No longer applies** | No Supabase CLI config in this copy; Supabase will be hosted. |
 
 New findings since the review:
@@ -661,7 +660,7 @@ New findings since the review:
 | API defaults for the v2-only inputs (`"Standard"`, `"Green"`) were unknown to the model; predictions ran 0.42 days low | Resolved 22 Nov |
 | Provenance reported `dataset_version: synthetic-v1` while v2 was served | Resolved 22 Nov |
 | Capacity router mounted twice (duplicate OpenAPI operation id) | Resolved 22 Nov |
-| `features/` file names do not match their contents; no F04 spec file | Open (housekeeping) |
+| `features/` file names do not match their contents; no F04 spec file | Resolved 23 Nov (renamed by title; F04 created from the master spec) |
 
 ---
 
@@ -938,7 +937,5 @@ mocks, and broad automated coverage (172 backend tests, 191 frontend unit tests,
 **Weak, in priority order:**
 
 1. The frontend and backend have never run together live; that needs the Supabase keys (B11).
-2. The reference data's source and licence are not recorded; the served accuracy (~0.73 days MAE) is lower than the full-input figure (0.611) because the
-   API does not collect the five v2-only inputs.
-3. The capacity simulator replays from 2025-01-01 on every call.
+2. The Load planner still runs on sample cargo.
 4. No git, CI or deployment setup yet, and the demo/report deliverables have not started.

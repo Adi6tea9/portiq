@@ -68,6 +68,9 @@ ml/artifacts/dwell_model_v2.joblib ───────────────
   operator or an admin, and a concurrent first request is resolved with an `IntegrityError`
   retry.
 - **Roles** come from `profiles.role`: `importer_exporter`, `port_operator`, `platform_admin`.
+  They are read on every request and changed only with `scripts/manage_users.py` (list, set-role
+  with ports, deactivate, activate, delete-without-history; audited; the last admin is protected).
+  See README "Managing users and roles".
 - **Per-resource checks** live in the routers/repositories, not in the client: an importer sees
   only `owner_user_id = me`; an operator sees only shipments at ports listed in `operator_ports`;
   anything else is **404**, while a role that may never call the route gets **403** (spec 4.9).
@@ -161,9 +164,12 @@ preprocessor as `prep` in v2 or `preprocessor` in v1).
   reports its `model_version` (`dwell-model-v2`) and `dataset_version` (`synthetic-v2`), and
   `OUT_OF_RANGE_INPUT` is raised for API numeric inputs outside the training ranges (CG-015,
   resolved). Model card: `docs/model-card.md`; data dictionary: `docs/data-dictionary.md`.
-- The five v2-only inputs are filled with training-vocabulary defaults (`customs_channel=unknown`,
-  `importer_type=regular`, `cargo_priority=standard`, `is_holiday=0`, `exam_queue_len` from
-  utilization). Served test MAE is about 0.73 days against 0.611 with all inputs.
+- Shipments carry `customs_channel`, `importer_type` and `cargo_priority` (CG-021). They go to
+  the model and appear in the explanation (15 features). `is_holiday` is derived from the arrival
+  date and `exam_queue_len` from utilization. Served test MAE is 0.610 (0.611 with every true input).
+- The capacity simulator caches each simulated day per port and resource. Each day is computed
+  once instead of replaying from 2025-01-01 on every call (about 68x faster), and the outputs are
+  identical (`tests/test_capacity_sim.py`).
 
 ## Frontend integration
 
@@ -209,13 +215,10 @@ Current stage and the full pending list: `docs/PROJECT_STATUS.md`.
   operators only.
 - `POST /api/v1/predict/dwell` (direct model inference) exists in code but is not part of the
   frozen frontend contract; treat it as a diagnostic endpoint.
-- B06: the reference data (`ml/data/reference/`, hours) has no recorded source URL, download date
-  or licence. `is_holiday` is always 0 at prediction time because the features carry no date.
+- B06: the reference data (`ml/data/reference/`, hours) comes from data.gov.in "Port Dwell Time"
+  (NDSAP / GODL-India, attribution required), downloaded 2026-11-11.
 - Rate limiting is in-memory per process (spec 4.13 allows this; it is not a distributed limiter).
-- `ruff check .` is clean. `mypy .` reports 11 pre-existing annotation errors in five older
-  modules (`app/schemas/capacity.py` bucket serializer moved from `capacity.py`,
-  `app/services/ml.py`, `scripts/seed_capacity.py`, `tests/test_cost_engine.py`,
-  `tests/test_operator.py`). None are in code added since 22 Nov. The only lint-config change is treating FastAPI's
+- `ruff check .` and `mypy .` are both clean (0 errors since 23 Nov). The only lint-config change is treating FastAPI's
   `Depends(...)`/`require_role(...)` defaults as immutable calls (B008), and `sklearn` joins the
   libraries mypy treats as untyped.
 

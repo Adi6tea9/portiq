@@ -27,6 +27,7 @@ import {
   shipmentEditSchema,
   type ShipmentEditValues,
 } from "@/lib/shipments/schema";
+import { ModelInputFields } from "./ModelInputFields";
 import { SelectControl, type SelectOption } from "./SelectControl";
 
 const CARGO_TYPE_SELECT_OPTIONS: SelectOption[] = CARGO_TYPE_OPTIONS.map(
@@ -91,6 +92,9 @@ export function EditShipmentForm({
         portTimezone,
       ),
       documentation_status: shipment.documentation_status,
+      customs_channel: shipment.customs_channel,
+      importer_type: shipment.importer_type,
+      cargo_priority: shipment.cargo_priority,
     },
   });
 
@@ -144,6 +148,16 @@ export function EditShipmentForm({
 
       if (values.documentation_status !== shipment.documentation_status) {
         patch.documentation_status = values.documentation_status as ShipmentPatch["documentation_status"];
+      }
+
+      if (values.customs_channel !== shipment.customs_channel) {
+        patch.customs_channel = values.customs_channel;
+      }
+      if (values.importer_type !== shipment.importer_type) {
+        patch.importer_type = values.importer_type;
+      }
+      if (values.cargo_priority !== shipment.cargo_priority) {
+        patch.cargo_priority = values.cargo_priority;
       }
 
       await updateShipment(shipment.id, patch, mockError);
@@ -320,6 +334,19 @@ export function EditShipmentForm({
                 aria-invalid={!!errors.documentation_status}
               />
             </Field>
+
+            <ModelInputFields
+              registered={{
+                customs_channel: register("customs_channel"),
+                importer_type: register("importer_type"),
+                cargo_priority: register("cargo_priority"),
+              }}
+              errors={{
+                customs_channel: errors.customs_channel?.message,
+                importer_type: errors.importer_type?.message,
+                cargo_priority: errors.cargo_priority?.message,
+              }}
+            />
 
             <div className="flex gap-3 pt-2">
               <Button

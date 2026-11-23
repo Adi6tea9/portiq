@@ -81,6 +81,8 @@ class DwellTimeModel:
         for col, default_val in v2_defaults(row).items():
             row.setdefault(col, default_val)
 
+        if self.model is None:
+            raise RuntimeError("Model is not loaded. Cannot build its input frame.")
         steps = getattr(self.model["point_model"], "named_steps", {})
         # v2 bundles name the step "prep"; v1 pipelines used "preprocessor".
         preprocessor = steps["prep"] if "prep" in steps else steps.get("preprocessor")

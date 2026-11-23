@@ -125,9 +125,9 @@ the disruption scenario.
 | | |
 |---|---|
 | Units | **hours** (confirmed by the project owner, 22 Nov 2026) |
-| Source URL | **not recorded**: the owner could not confirm it |
-| Download date | **not recorded**: the owner could not confirm it |
-| Licence | **not recorded**: the owner could not confirm it. Treat the files as reference material for this prototype only, and confirm the licence before redistributing them. |
+| Source URL | **[data.gov.in catalog "Port Dwell Time"](https://www.data.gov.in/catalog/port-dwell-time)** (confirmed by the project owner, 24 Nov 2026). Category-wise and month-wise port dwell time from the NICDC Logistics Data Bank; published 12/01/2023, updated 07/02/2026; Ministry of Commerce and Industry, Department for Promotion of Industry and Internal Trade. The same data appears in the NICDC Logistics Data Bank (LDB) monthly port dwell-time analytics, Government of India. Their published reports have the same layout (ports including Kattupalli and Hazira, Western/Southern/Eastern averages, import/export, hours) and the same definition (terminal entry to exit). Examples: [JNPA, Nov 2020](https://www.jnport.gov.in/uploads/pdf/ia_report/52/NLDS_Analytics_JNPT__Nov_20_23_2020_12_29_11_00_38_dldspdf_.pdf), [Feb 2024 ministry report](https://www.jnport.gov.in/uploads/pdf/ia_report/91/LDB_Analytics_-_Ministry_Report_-_Feb-2024.pdf). The catalog's three resources are the three files here: `port_dwell_2020.csv`, `port_dwell_2021.csv`, `port_dwell_2022.csv` (confirmed by the project owner). |
+| Download date | **2026-11-11** (checked by the project owner, 24 Nov 2026). |
+| Licence | Released under the **National Data Sharing and Accessibility Policy (NDSAP)** on the Open Government Data Platform India, whose data is licensed under the Government Open Data License – India (GODL): free reuse and redistribution, with attribution required. Attribution: "Source: Port Dwell Time, Open Government Data Platform India (data.gov.in), NICDC Logistics Data Bank." |
 
 **The files reproduce the generator's base values.** The 2020–2021 means, lockdown excluded (21
 months each), are:

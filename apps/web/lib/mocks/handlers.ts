@@ -373,6 +373,10 @@ export const handlers = [
     const now = new Date().toISOString();
     const shipment: Shipment = {
       ...body,
+      // Same defaults as the real API when the model inputs are left out.
+      customs_channel: body.customs_channel ?? "unknown",
+      importer_type: body.importer_type ?? "regular",
+      cargo_priority: body.cargo_priority ?? "standard",
       id: `ship_${crypto.randomUUID().slice(0, 8)}`,
       status: "submitted",
       actual_arrival_at: null,

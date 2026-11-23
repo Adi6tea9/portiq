@@ -27,7 +27,7 @@ import { useRole } from "@/components/providers/RoleProvider";
 import { recordShipmentEvent } from "@/lib/shipments/api";
 import { RunPredictionButton } from "@/components/features/predictions/RunPredictionButton";
 import {
-  humanizeOption,
+  MODEL_INPUT_LABELS, humanizeOption,
   isShipmentStatus,
   SHIPMENT_STATUS_OPTIONS,
 } from "@/lib/shipments/options";
@@ -124,6 +124,9 @@ function FieldsPanel({
     { label: "Vessel size", value: humanizeOption(shipment.vessel_size_band) },
     { label: "Expected arrival", value: <DateTime isoTimestamp={shipment.expected_arrival_at} timezone={timezone} /> },
     { label: "Documentation", value: humanizeOption(shipment.documentation_status) },
+    { label: "Customs channel", value: MODEL_INPUT_LABELS[shipment.customs_channel] },
+    { label: "Importer type", value: MODEL_INPUT_LABELS[shipment.importer_type] },
+    { label: "Cargo priority", value: MODEL_INPUT_LABELS[shipment.cargo_priority] },
   ];
 
   return (

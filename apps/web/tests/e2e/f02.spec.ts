@@ -192,6 +192,20 @@ test.describe("API 401 handling", () => {
       window.sessionStorage.setItem("portiq.mock.auth", "1");
     });
 
+    await page.route("**/api/v1/**", async (route) => {
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: {
+            code: "SERVICE_UNAVAILABLE",
+            message: "Stubbed in 401 redirect test.",
+            request_id: "req_stub",
+          },
+        }),
+      });
+    });
+
     let meCalls = 0;
     await page.route("**/api/v1/me", async (route) => {
       meCalls += 1;

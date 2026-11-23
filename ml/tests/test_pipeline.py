@@ -240,3 +240,10 @@ def test_reference_loader_handles_bom_and_rejects_bad_files(tmp_path) -> None:
     (tmp_path / "port_dwell_2022.csv").write_text("port,hours\nJNPT,1\n", encoding="utf-8")
     with pytest.raises(ValueError, match="reference columns"):
         evaluate.load_reference(tmp_path)
+
+
+def test_api_holidays_match_the_training_data() -> None:
+    """The API derives is_holiday itself; it must use the generator's exact holiday list."""
+    from app.services.model_service import FIXED_HOLIDAYS
+
+    assert FIXED_HOLIDAYS == gen.FIXED_HOLIDAYS

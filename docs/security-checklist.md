@@ -43,7 +43,8 @@ the human supplies the section 18 values; **FAIL** = known gap, listed with the 
 | Admin blocked from owner flows; importers/operators blocked from `/admin/*` | PASS | `tests/test_admin.py`, `tests/test_auth.py`. |
 | 404 for hidden resources, 403 for forbidden roles | PASS | Spec 4.9 convention, asserted in the suite. |
 | Admin can call `/operator/*` (spec section 7) | PASS | `/operator/overview` and `/operator/shipments` accept the admin with every port in scope (`tests/test_b10_endpoints.py`). The older non-contract `/operator/dashboard/summary` stays operator-only. |
-| No self-promotion path | PASS | No endpoint writes `profiles.role`; profile creation is importer-only. |
+| No self-promotion path | PASS | No endpoint writes `profiles.role`; profile creation is importer-only. Roles change only through the server-side `scripts/manage_users.py`, which requires an active admin (`--by`) and writes an audit entry. |
+| Removing access | PASS | `manage_users.py deactivate` blocks a user on the next request (403); hard delete is refused while the user owns any history (`tests/test_manage_users.py`). |
 
 ## 4. Data protection
 
@@ -106,8 +107,9 @@ the human supplies the section 18 values; **FAIL** = known gap, listed with the 
    `DATABASE_URL`. Leave `AUTH_MODE=dev` behind — startup refuses it in production.
 3. Run `alembic upgrade head`. Do **not** run `seed_dev.py` (it refuses `production` anyway) and do
    not run the pytest suite against Supabase.
-4. Sign up once, then promote the operator/admin profiles and insert `operator_ports` rows with
-   SQL, as section 18 step 5 describes. Never add a role-setting endpoint.
+4. Sign up once, then promote operator/admin profiles with `scripts/manage_users.py` (audited,
+   last-admin guard, ports validated; see README "Managing users and roles"). Never add a
+   role-setting endpoint.
 5. Confirm RLS is still enabled and still has no policies, and that the API's DB role is the
    intended one.
 6. Run `python scripts/smoke_supabase.py ...` against the deployed API with a real importer.

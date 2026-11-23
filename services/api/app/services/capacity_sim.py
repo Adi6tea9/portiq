@@ -1,5 +1,6 @@
 import hashlib
 import math
+import threading
 from datetime import date, timedelta
 from typing import Any
 
@@ -23,6 +24,44 @@ def _get_base_arrivals(port_code: str, resource_type: str) -> float:
     mean_dwell = 2.0 if resource_type == "yard" else 1.0
     return (target_pct * cap) / mean_dwell
 
+# Occupancy at the end of each day since EPOCH_DATE, per (port, resource). Every day depends
+# only on the day before, so each is computed once and reused; the arithmetic is unchanged.
+_SERIES: dict[tuple[str, str], list[float]] = {}
+_SERIES_LOCK = threading.Lock()
+
+
+def _occupancy(port_code: str, resource_type: str, cap: float, target_date: date) -> float:
+    mean_dwell = 2.0 if resource_type == "yard" else 1.0
+    base_arrivals = _get_base_arrivals(port_code, resource_type)
+    index = (target_date - EPOCH_DATE).days
+    with _SERIES_LOCK:
+        series = _SERIES.setdefault((port_code, resource_type), [])
+        occupied = series[-1] if series else cap * (0.65 if resource_type == "yard" else 0.55)
+        current_date = EPOCH_DATE + timedelta(days=len(series))
+        while len(series) <= index:
+            day_of_year = current_date.timetuple().tm_yday
+            weekday = current_date.weekday()
+
+            if weekday in (0, 1, 2, 3):  # Mon - Thu
+                weekday_effect = 0.08
+            elif weekday in (5, 6):      # Sat - Sun
+                weekday_effect = -0.12
+            else:                        # Fri
+                weekday_effect = 0.0
+
+            seasonality = 1 + 0.15 * math.sin(2 * math.pi * day_of_year / 365) + weekday_effect
+
+            rng = np.random.default_rng(_get_seed(port_code, resource_type, current_date))
+            arrivals = rng.poisson(base_arrivals * seasonality)
+
+            departures = occupied / mean_dwell
+            occupied = occupied + arrivals - departures
+            series.append(occupied)
+
+            current_date += timedelta(days=1)
+        return series[index]
+
+
 def capacity_sim_for_date(port_code: str, resource_type: str, target_date: date) -> dict[str, Any]:
     if target_date < EPOCH_DATE:
         raise ValueError("Cannot simulate dates before epoch (2025-01-01)")
@@ -31,31 +70,7 @@ def capacity_sim_for_date(port_code: str, resource_type: str, target_date: date)
     if not cap:
         return {"is_valid": False}
 
-    mean_dwell = 2.0 if resource_type == "yard" else 1.0
-    occupied = cap * (0.65 if resource_type == "yard" else 0.55)
-    base_arrivals = _get_base_arrivals(port_code, resource_type)
-
-    current_date = EPOCH_DATE
-    while current_date <= target_date:
-        day_of_year = current_date.timetuple().tm_yday
-        weekday = current_date.weekday()
-        
-        if weekday in (0, 1, 2, 3):  # Mon - Thu
-            weekday_effect = 0.08
-        elif weekday in (5, 6):      # Sat - Sun
-            weekday_effect = -0.12
-        else:                        # Fri
-            weekday_effect = 0.0
-
-        seasonality = 1 + 0.15 * math.sin(2 * math.pi * day_of_year / 365) + weekday_effect
-
-        rng = np.random.default_rng(_get_seed(port_code, resource_type, current_date))
-        arrivals = rng.poisson(base_arrivals * seasonality)
-        
-        departures = occupied / mean_dwell
-        occupied = occupied + arrivals - departures
-        
-        current_date += timedelta(days=1)
+    occupied = _occupancy(port_code, resource_type, cap, target_date)
 
     utilization_pct = 100 * occupied / cap
     is_valid = True

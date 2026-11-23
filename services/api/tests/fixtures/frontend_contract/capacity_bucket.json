@@ -1,11 +1,11 @@
 {
-  "bucket_start": "2026-11-22T00:00:00.000Z",
-  "bucket_end": "2026-11-23T00:00:00.000Z",
+  "bucket_start": "2026-11-23T00:00:00.000Z",
+  "bucket_end": "2026-11-24T00:00:00.000Z",
   "resource_type": "yard",
   "predicted_occupied": 520,
   "total_capacity": 1000,
   "utilization_pct": 52,
   "source_type": "synthetic",
   "model_or_rule_version": "capacity-rules-v1.4",
-  "generated_at": "2026-11-22T10:45:56.564Z"
+  "generated_at": "2026-11-23T13:21:58.286Z"
 }

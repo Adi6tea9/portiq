@@ -15,12 +15,12 @@ complete.** Full breakdown and pending list: `docs/PROJECT_STATUS.md`.
 
 | Area | State |
 | --- | --- |
-| Backend B01–B09 (config, database, auth, shipments, capacity simulator, model, cost engine, prediction) | Implemented, tests pass. B06 note: reference data source/licence not recorded |
+| Backend B01–B09 (config, database, auth, shipments, capacity simulator, model, cost engine, prediction) | Implemented, tests pass. Reference data: data.gov.in "Port Dwell Time" (NDSAP / GODL-India) |
 | Backend B10 (operator/admin completion, hardening, contract tests) | **Done** — section 14 endpoints, audit logs, single-prediction GET, 1 MiB body cap, date-range rules, `docs/openapi.json` (`scripts/export_openapi.py`), contract tests against the frontend mocks, full section 7 auth matrix |
 | Backend B11 (Supabase integration, docs, smoke test) | Code, `.env` templates, docs and smoke script ready; only the project URL and publishable key are needed to run it |
 | Frontend F01–F10 | Complete in mock mode (`NEXT_PUBLIC_USE_MOCKS=true`); live mode needs Supabase + this API |
 | Frontend extras | PortIQ theme restyle and the 3D Load planner tab (`PORTIQ_THEME_CHANGES.md`) |
-| ML | v2 model trained and served (test MAE 0.611 with all inputs, ~0.73 as served; synthetic data). Model card `docs/model-card.md`, data dictionary `docs/data-dictionary.md`, per-year calibration within 15% (2020–2022), 19 ML tests |
+| ML | v2 model trained and served (test MAE 0.610 as served, synthetic data). Model card `docs/model-card.md`, data dictionary `docs/data-dictionary.md`, per-year calibration within 15% (2020–2022), 19 ML tests |
 
 Exactly what works and what does not is in `docs/PROJECT_STATUS.md` and `docs/architecture.md`
 (known limitations). Change reports: `PORTIQ_THEME_CHANGES.md` (frontend), `BACKEND_FIXES_REPORT.md`
@@ -139,12 +139,9 @@ The suite drops and recreates the `public` schema of `portiq_test`, runs every m
 empty, and rolls each test back. It refuses any database whose name does not end in `_test` on a
 non-local host, so it can never touch Supabase.
 
-Current state (22 Nov): `pytest` **176 passed** (plus **19** in `ml/tests`), `ruff check .` **clean**. `mypy .` still reports
-**11 pre-existing errors in 5 older modules** (`app/schemas/capacity.py`, `app/services/ml.py`,
-`scripts/seed_capacity.py`, `tests/test_cost_engine.py`, `tests/test_operator.py`). They are type-annotation gaps,
-not runtime defects; code added since 22 Nov type-checks clean. Without a local Python, run the suite
-in Docker (command in `BACKEND_FIXES_REPORT.md`). Frontend: 191 Vitest tests and 85 Playwright tests
-pass in mock mode.
+Current state (23 Nov): `pytest` **197 passed** (plus **20** in `ml/tests`), `ruff check .` **clean**,
+`mypy .` **0 errors**. Without a local Python, run the suite in Docker (command in
+`BACKEND_FIXES_REPORT.md`). Frontend: 191 Vitest tests pass; Playwright runs in mock mode.
 
 ```powershell
 cd apps\web
@@ -160,8 +157,8 @@ npm test
 2. In `services/api/.env` set `AUTH_MODE=supabase` and `SUPABASE_URL` — the JWKS URL, issuer and
    audience are derived from it. In `apps/web/.env.local` set the URL, the publishable key and
    `NEXT_PUBLIC_USE_MOCKS=false`. Both files already exist and are git-ignored; never commit them.
-3. Run `alembic upgrade head` against the project, then create operator/admin profiles by signing
-   up and updating `profiles.role` + `operator_ports` with SQL.
+3. Run `alembic upgrade head` against the project, then have operators and admins sign up and sign
+   in once, and promote them with `scripts/manage_users.py` (see "Managing users and roles").
 4. Add the frontend origin to `ALLOWED_ORIGINS`.
 5. Prove the wiring end to end:
 
@@ -179,6 +176,82 @@ account with the password grant enabled.
 
 `docs/security-checklist.md` lists every control with PASS / FAIL / BLOCKED / HUMAN and what is
 still unverified.
+
+## Managing users and roles
+
+PortIQ has three roles:
+
+| Role | Who | Can use |
+| --- | --- | --- |
+| `importer_exporter` | importers / exporters | their own shipments, predictions, dashboard, capacity, Load planner |
+| `port_operator` | port managers | operator overview, shipments and capacity **for their assigned ports only**, recording arrivals and clearances |
+| `platform_admin` | administrators | tariff rules, audit log, operator overview across every port |
+
+### How it works
+
+- **Sign-in identity lives in Supabase**: passwords, email confirmation and password resets.
+- **The role lives in PortIQ's own database**, in the `profiles` table. A port operator's ports live
+  in `operator_ports`.
+- **New accounts:** the first time someone signs in, the API creates their profile as an
+  **importer**. Nobody can sign up directly as an operator or an admin.
+- **No self-promotion:** roles are changed only with the command below, never through the website or
+  the API, so a user cannot promote themselves.
+- **Changes apply immediately:** the API reads the role on every request, so there's no need to sign
+  out and back in.
+- **Every change is logged** in the audit log (Admin > Tariffs > Audit tab), recorded against the
+  admin who made it.
+
+### The command
+
+Run it where the API runs. With Docker, from anywhere:
+
+```powershell
+docker exec -w /app api-api-1 python scripts/manage_users.py list
+```
+
+Without Docker, from `services\api`: `python scripts\manage_users.py list`.
+
+| To… | Command (after `python scripts/manage_users.py`) |
+| --- | --- |
+| See everyone | `list` |
+| Add an importer / exporter | Nothing to run: they sign up in the app and sign in once |
+| Add a port manager | `set-role ana@example.com port_operator --ports INNSA,INMUN --by admin@example.com` |
+| Change a port manager's ports | the same `set-role … port_operator --ports …` with the new list (it replaces the old one) |
+| Add an admin | `set-role ben@example.com platform_admin --by admin@example.com` |
+| Turn an operator or admin back into an importer | `set-role ana@example.com importer_exporter --by admin@example.com` |
+| Remove someone's access (keeps their data) | `deactivate ana@example.com --by admin@example.com` |
+| Give access back | `activate ana@example.com --by admin@example.com` |
+| Delete someone completely | `delete ana@example.com --by admin@example.com` |
+
+### Adding a person, step by step
+
+1. **Account:** they sign up at the PortIQ sign-up page. Alternatively, invite them from the
+   Supabase dashboard (Authentication > Users > Invite) and they set a password from the email.
+2. **First sign-in:** they sign in once. That creates their profile as an importer, and they now show
+   up in `list`.
+3. **Role:** for an operator or admin, run `set-role`. Port codes are the ones in the `ports` table
+   (`INNSA`, `INMUN`). Operators must have at least one port.
+
+### Removing a person
+
+- **Deactivate (normal case).** The account is blocked straight away (every API call returns 403),
+  but their shipments, predictions and audit history stay intact and readable by others. It can be
+  undone with `activate`.
+- **Delete (only for accounts with no history).** `delete` refuses any user who owns shipments,
+  predictions, events, tariff rules or audit entries, because that history must keep its owner. Use
+  `deactivate` for them. After deleting, also remove the person in Supabase (Authentication >
+  Users); otherwise their next sign-in creates a fresh importer profile.
+
+### Safety rules built into the command
+
+- `--by` must be an **active admin**. It's only optional while the database has no active admin at
+  all, so you can create the very first admin:
+  `set-role you@example.com platform_admin`.
+- The **last active admin** cannot be demoted, deactivated or deleted. Promote another admin first.
+- Admins cannot delete themselves.
+- Email matching ignores upper and lower case.
+
+Behaviour is covered by `services/api/tests/test_manage_users.py`.
 
 ## Endpoints
 

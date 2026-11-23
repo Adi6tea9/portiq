@@ -17,6 +17,7 @@ extend-immutable-calls = ["fastapi.Depends", "app.core.deps.require_role"]
 [tool.ruff.lint.per-file-ignores]
 # seed_dev.py bootstraps sys.path before importing the app so `python scripts/seed_dev.py` works.
 "scripts/seed_dev.py" = ["E402"]
+"scripts/manage_users.py" = ["E402"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["app", "tests"]

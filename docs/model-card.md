@@ -34,21 +34,18 @@ The model is trained on 17 columns.
 - `arrival_day_of_week`, `arrival_month`
 - `forecast_capacity_utilization_pct` (stored yard bucket, or the capacity simulator)
 
-**5 v2-only inputs** the API does not collect:
-- `customs_channel`, `importer_type`, `cargo_priority`, `is_holiday`, `exam_queue_len`
+**5 v2 inputs**, all supplied since 23 Nov:
 
-At prediction time the API fills those five with values from the training vocabulary:
-
-| Input | Value at prediction time |
+| Input | Where it comes from |
 |---|---|
-| `customs_channel` | `unknown` (not known before arrival) |
-| `importer_type` | `regular` |
-| `cargo_priority` | `standard` |
-| `is_holiday` | 0 |
-| `exam_queue_len` | derived from utilization |
+| `customs_channel` | the shipment form (green / orange / red / "not known yet") |
+| `importer_type` | the shipment form (AEO-certified / regular / new) |
+| `cargo_priority` | the shipment form (standard / expedited / government) |
+| `is_holiday` | derived from the arrival date, using the training data's holiday list |
+| `exam_queue_len` | derived from yard utilization (the generator's formula, without its noise) |
 
-Their SHAP share is folded into the base value, so explanations list the 12 API features. See
-"Served accuracy" for what this costs.
+Explanations list the 12 frozen features plus the three form inputs (15). The two derived inputs
+are folded into the base value.
 
 `declared_value` and the raw `port_id` are never inputs.
 
@@ -98,17 +95,17 @@ Full numbers, including the RMSE and R² for every baseline, are in `ml/reports/
 
 ### Served accuracy
 
-The figures above use all 17 true inputs. The API does not collect the five v2-only inputs, so on
-the same test rows:
+What the API actually sends, measured on the same 1,500 test rows:
 
-| Inputs the API sends | Test MAE | Average bias |
+| What the API sends | Test MAE | Average bias |
 |---|---|---|
-| All 17 true inputs | 0.611 | — |
-| **Current defaults** | **0.732** | +0.01 days |
-| Defaults before 22 Nov (`"Standard"`, `"Green"`; unknown to the model) | 0.755 | −0.42 days |
+| All 17 true inputs (best case) | 0.611 | — |
+| **Since 23 Nov: form inputs, holiday from the date, queue from utilization** | **0.610** | −0.002 days |
+| 22 Nov: fixed defaults for all five | 0.732 | +0.01 days |
+| Before 22 Nov: wrong defaults (`"Standard"`, `"Green"`; unknown to the model) | 0.755 | −0.42 days |
 
-So the accuracy a user actually gets is about 0.73 days, still clearly better than the best
-baseline (0.942).
+This assumes users enter the real channel, importer type and priority when they know them.
+"Not known yet" is a valid answer, and 35% of the training rows use it.
 
 ### Per-category MAE (model / per port/direction median baseline, test set)
 
@@ -162,10 +159,10 @@ warning.
 - **Planted effects:** the multipliers for cargo, documentation, congestion and the rest are
   planted. The priority and importer-type effects are assumptions with no published source.
 - **Two ports and fixed category lists.** An unseen category is encoded as "none of the above".
-- **`is_holiday` is always 0 at prediction time** (the features carry no date), and the other
-  v2-only inputs use fixed defaults. That costs about 0.12 days of MAE.
-- **The reference data's source URL, download date and licence are not recorded** (units confirmed
-  as hours). The per-year calibration check passes for 2020, 2021 and 2022: every port/direction
+- **Accuracy depends on users answering the three new form questions.** Leaving them at their
+  defaults costs about 0.12 days of MAE (0.732 instead of 0.610).
+- **Reference data source:** data.gov.in "Port Dwell Time" (NICDC Logistics Data Bank, NDSAP /
+  GODL-India, attribution required; units hours; see `docs/data-dictionary.md`). The per-year calibration check passes for 2020, 2021 and 2022: every port/direction
   mean is within 15%, and 2022 is an out-of-sample year (`docs/data-dictionary.md`).
 
 ## Reproduce

@@ -182,6 +182,9 @@ def create_shipment(
             vessel_size_band=payload.vessel_size_band,
             expected_arrival_at=payload.expected_arrival_at.astimezone(UTC),
             documentation_status=payload.documentation_status,
+            customs_channel=payload.customs_channel,
+            importer_type=payload.importer_type,
+            cargo_priority=payload.cargo_priority,
             status=ShipmentStatus.SUBMITTED,
         )
     except IntegrityError:

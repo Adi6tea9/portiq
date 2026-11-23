@@ -35,7 +35,14 @@ FEATURE_NAMES: tuple[str, ...] = (
     "arrival_day_of_week",
     "arrival_month",
     "forecast_capacity_utilization_pct",
+    # CG-021: model inputs collected on the shipment since 2026-11-23.
+    "customs_channel",
+    "importer_type",
+    "cargo_priority",
 )
+
+# Same fixed national holidays as ml/scripts/generate_synthetic_v2.py (a test keeps them equal).
+FIXED_HOLIDAYS = {(1, 26), (5, 1), (8, 15), (10, 2), (12, 25)}
 
 # Fallback when the artifact has no metadata file.
 DATASET_VERSION = "synthetic-v1"
@@ -51,7 +58,11 @@ def as_utc(value: datetime) -> datetime:
 
 
 def feature_row(shipment: Shipment, port: Port, utilization_pct: float) -> dict[str, Any]:
-    """Build the 12 features. ``declared_value`` and the raw ``port_id`` are excluded."""
+    """Build the model features. ``declared_value`` and the raw ``port_id`` are excluded.
+
+    ``is_holiday`` is derived from the arrival date the same way the training data was; the
+    customs exam queue stays derived from utilization (``ml.v2_defaults``).
+    """
     arrival = as_utc(shipment.expected_arrival_at)
     return {
         "direction": str(shipment.direction),
@@ -66,6 +77,10 @@ def feature_row(shipment: Shipment, port: Port, utilization_pct: float) -> dict[
         "arrival_day_of_week": arrival.strftime("%A"),
         "arrival_month": arrival.strftime("%B"),
         "forecast_capacity_utilization_pct": float(utilization_pct),
+        "customs_channel": str(shipment.customs_channel),
+        "importer_type": str(shipment.importer_type),
+        "cargo_priority": str(shipment.cargo_priority),
+        "is_holiday": int((arrival.month, arrival.day) in FIXED_HOLIDAYS),
     }
 
 

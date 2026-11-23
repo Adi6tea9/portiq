@@ -5,6 +5,10 @@ export type ContainerSizeFt = 20 | 40;
 export type ShippingLine = "Line A" | "Line B" | "Line C" | "Line D" | "other";
 export type VesselSizeBand = "small" | "medium" | "large";
 export type DocumentationStatus = "complete" | "incomplete" | "unknown";
+// Model inputs added 2026-11-23 (backend CONTRACT_GAPS CG-021).
+export type CustomsChannel = "green" | "orange" | "red" | "unknown";
+export type ImporterType = "AEO" | "regular" | "new";
+export type CargoPriority = "standard" | "expedited" | "government";
 export type ShipmentStatus = "submitted" | "arrived" | "cleared";
 export type ResourceType = "yard" | "berth";
 export type SourceType = "synthetic" | "imported";
@@ -40,7 +44,8 @@ export interface Shipment { id: string; port_id: string; reference: string; dire
   cargo_type: CargoType; container_size_ft: ContainerSizeFt; hs_code: string; weight_kg: number;
   declared_value: string; currency: Currency; shipping_line: ShippingLine;
   vessel_size_band: VesselSizeBand; expected_arrival_at: string;
-  documentation_status: DocumentationStatus; status: ShipmentStatus;
+  documentation_status: DocumentationStatus; customs_channel: CustomsChannel;
+  importer_type: ImporterType; cargo_priority: CargoPriority; status: ShipmentStatus;
   actual_arrival_at: string | null; actual_cleared_at: string | null;
   actual_dwell_days: number | null; created_at: string; updated_at: string;
   latest_prediction: LatestPredictionSummary | null }
@@ -48,11 +53,13 @@ export interface ShipmentCreate { port_id: string; reference: string; direction:
   cargo_type: CargoType; container_size_ft: ContainerSizeFt; hs_code: string; weight_kg: number;
   declared_value: string; currency: Currency; shipping_line: ShippingLine;
   vessel_size_band: VesselSizeBand; expected_arrival_at: string;
-  documentation_status: DocumentationStatus }
+  documentation_status: DocumentationStatus; customs_channel?: CustomsChannel;
+  importer_type?: ImporterType; cargo_priority?: CargoPriority }
 // Editable before status "arrived" (allowlist). Never status, owner or port.
 export type ShipmentPatch = Partial<Pick<ShipmentCreate, "cargo_type" | "container_size_ft"
   | "hs_code" | "weight_kg" | "declared_value" | "shipping_line" | "vessel_size_band"
-  | "expected_arrival_at" | "documentation_status">>;
+  | "expected_arrival_at" | "documentation_status" | "customs_channel" | "importer_type"
+  | "cargo_priority">>;
 export interface ShipmentEvent { id: string; shipment_id: string; event_type: string;
   from_status: ShipmentStatus | null; to_status: ShipmentStatus; occurred_at: string;
   recorded_at: string; actor_display_name: string | null; note: string | null }

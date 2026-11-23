@@ -63,6 +63,9 @@ def _prediction_inputs(shipment: Shipment) -> dict[str, str | int]:
         "vessel_size_band": str(shipment.vessel_size_band),
         "expected_arrival_at": as_utc(shipment.expected_arrival_at).isoformat(),
         "documentation_status": str(shipment.documentation_status),
+        "customs_channel": str(shipment.customs_channel),
+        "importer_type": str(shipment.importer_type),
+        "cargo_priority": str(shipment.cargo_priority),
     }
 
 
