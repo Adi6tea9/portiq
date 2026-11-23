@@ -18,6 +18,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
 from app.schemas.enums import (
+    BookingType,
+    CargoCategory,
     CargoPriority,
     CargoType,
     Currency,
@@ -147,6 +149,13 @@ class Shipment(Base):
     )
     status: Mapped[ShipmentStatus] = mapped_column(
         _enum(ShipmentStatus, "shipment_status"), nullable=False
+    )
+    booking_type: Mapped[BookingType] = mapped_column(
+        _enum(BookingType, "booking_type"), nullable=False, server_default="full"
+    )
+    # Bumped on every cargo change of a full booking: the load-plan version of its container.
+    cargo_version: Mapped[int] = mapped_column(
+        sa.Integer, nullable=False, server_default=sa.text("1")
     )
     created_at: Mapped[datetime] = _created_at()
     updated_at: Mapped[datetime] = mapped_column(
@@ -320,3 +329,58 @@ class AuditLog(Base):
     after: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     request_id: Mapped[str] = mapped_column(sa.String(64), nullable=False)
     created_at: Mapped[datetime] = _created_at()
+
+
+class SharedContainer(Base):
+    """One container of a shared-booking group (port, direction, size, UTC arrival date)."""
+
+    __tablename__ = "shared_containers"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "port_id",
+            "direction",
+            "container_size_ft",
+            "arrival_date",
+            "sequence",
+            name="uq_shared_containers_group_sequence",
+        ),
+    )
+
+    id: Mapped[UUID] = _uuid_pk()
+    port_id: Mapped[UUID] = mapped_column(
+        sa.UUID(as_uuid=True), sa.ForeignKey("ports.id"), nullable=False
+    )
+    direction: Mapped[Direction] = mapped_column(_enum(Direction, "direction"), nullable=False)
+    container_size_ft: Mapped[int] = mapped_column(sa.SmallInteger, nullable=False)
+    arrival_date: Mapped[date] = mapped_column(sa.Date, nullable=False)
+    sequence: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    version: Mapped[int] = mapped_column(sa.Integer, nullable=False, server_default=sa.text("1"))
+    created_at: Mapped[datetime] = _created_at()
+
+
+class CargoItem(Base):
+    __tablename__ = "cargo_items"
+    __table_args__ = (sa.Index("ix_cargo_items_container", "container_id"),)
+
+    id: Mapped[UUID] = _uuid_pk()
+    shipment_id: Mapped[UUID] = mapped_column(
+        sa.UUID(as_uuid=True), sa.ForeignKey("shipments.id", ondelete="CASCADE"), nullable=False,
+        index=True,
+    )
+    container_id: Mapped[UUID | None] = mapped_column(
+        sa.UUID(as_uuid=True), sa.ForeignKey("shared_containers.id")
+    )
+    name: Mapped[str] = mapped_column(sa.String(80), nullable=False)
+    category: Mapped[CargoCategory] = mapped_column(
+        _enum(CargoCategory, "cargo_category"), nullable=False
+    )
+    length_cm: Mapped[Decimal] = mapped_column(sa.Numeric(7, 2), nullable=False)
+    width_cm: Mapped[Decimal] = mapped_column(sa.Numeric(7, 2), nullable=False)
+    height_cm: Mapped[Decimal] = mapped_column(sa.Numeric(7, 2), nullable=False)
+    weight_kg: Mapped[Decimal] = mapped_column(sa.Numeric(9, 2), nullable=False)
+    quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    stackable: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
+    created_at: Mapped[datetime] = _created_at()
+    updated_at: Mapped[datetime] = mapped_column(
+        _TS, nullable=False, server_default=sa.text("now()")
+    )

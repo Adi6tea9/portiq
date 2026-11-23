@@ -9,6 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
+from pydantic import BeforeValidator
 from sqlalchemy.exc import IntegrityError
 
 from app.core.deps import DbSession, require_role
@@ -16,6 +17,7 @@ from app.core.errors import AppError, request_id_of
 from app.models import Profile, Shipment
 from app.models.tables import PredictionRun
 from app.repositories import audit_logs as audit_logs_repo
+from app.repositories import cargo as cargo_repo
 from app.repositories import operator_ports as operator_ports_repo
 from app.repositories import ports as ports_repo
 from app.repositories import shipments as shipments_repo
@@ -31,6 +33,16 @@ from app.schemas.shipments import (
     utc_z,
 )
 from app.services.prediction import run_prediction_flow
+
+
+def _utc_day(value: object) -> object:
+    """Accept a plain date or a timestamp; the web app sends whole days as `…T00:00:00.000Z`."""
+    if isinstance(value, str) and "T" in value:
+        return datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(UTC).date()
+    return value
+
+
+UtcDay = Annotated[date, BeforeValidator(_utc_day)]
 
 router = APIRouter(prefix="/shipments", tags=["shipments"])
 
@@ -126,8 +138,8 @@ def list_shipments(
     user: ScopedReader,
     session: DbSession,
     status: ShipmentStatus | None = None,
-    arrival_from: date | None = None,
-    arrival_to: date | None = None,
+    arrival_from: UtcDay | None = None,
+    arrival_to: UtcDay | None = None,
     q: str | None = None,
     page: Page = 1,
     page_size: PageSize = 20,
@@ -185,6 +197,7 @@ def create_shipment(
             customs_channel=payload.customs_channel,
             importer_type=payload.importer_type,
             cargo_priority=payload.cargo_priority,
+            booking_type=payload.booking_type,
             status=ShipmentStatus.SUBMITTED,
         )
     except IntegrityError:
@@ -230,6 +243,11 @@ def update_shipment(
         raise _state_conflict()
 
     changes = payload.model_dump(exclude_unset=True, exclude_none=True)
+    if (
+        changes.get("booking_type", shipment.booking_type) != shipment.booking_type
+        and cargo_repo.has_cargo(session, shipment.id)
+    ):
+        raise AppError(409, "STATE_CONFLICT", "Booking type cannot change once cargo is added.")
     for field, value in changes.items():
         if field == "expected_arrival_at":
             value = value.astimezone(UTC)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Sequence
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -58,7 +59,7 @@ class AppError(Exception):
         status_code: int,
         code: str,
         message: str,
-        details: list[ErrorDetail] | None = None,
+        details: Sequence[ErrorDetail | dict[str, Any]] | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
@@ -78,12 +79,17 @@ def error_response(
     status_code: int,
     code: str,
     message: str,
-    details: list[ErrorDetail] | None = None,
+    details: Sequence[ErrorDetail | dict[str, Any]] | None = None,
     extra: dict[str, Any] | None = None,
 ) -> JSONResponse:
     """``extra`` adds contract fields to the error object (e.g. ``conflicting_rule``)."""
     body = ErrorResponse(
-        error=ErrorBody(code=code, message=message, details=details, request_id=request_id)
+        error=ErrorBody(
+            code=code,
+            message=message,
+            details=None if details is None else list(details),
+            request_id=request_id,
+        )
     )
     content = body.model_dump(exclude_none=True)
     content["error"].update(extra or {})

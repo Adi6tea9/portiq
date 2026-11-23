@@ -9,6 +9,7 @@ export type DocumentationStatus = "complete" | "incomplete" | "unknown";
 export type CustomsChannel = "green" | "orange" | "red" | "unknown";
 export type ImporterType = "AEO" | "regular" | "new";
 export type CargoPriority = "standard" | "expedited" | "government";
+export type BookingType = "full" | "shared";
 export type ShipmentStatus = "submitted" | "arrived" | "cleared";
 export type ResourceType = "yard" | "berth";
 export type SourceType = "synthetic" | "imported";
@@ -45,7 +46,8 @@ export interface Shipment { id: string; port_id: string; reference: string; dire
   declared_value: string; currency: Currency; shipping_line: ShippingLine;
   vessel_size_band: VesselSizeBand; expected_arrival_at: string;
   documentation_status: DocumentationStatus; customs_channel: CustomsChannel;
-  importer_type: ImporterType; cargo_priority: CargoPriority; status: ShipmentStatus;
+  importer_type: ImporterType; cargo_priority: CargoPriority; booking_type: BookingType;
+  status: ShipmentStatus;
   actual_arrival_at: string | null; actual_cleared_at: string | null;
   actual_dwell_days: number | null; created_at: string; updated_at: string;
   latest_prediction: LatestPredictionSummary | null }
@@ -54,12 +56,12 @@ export interface ShipmentCreate { port_id: string; reference: string; direction:
   declared_value: string; currency: Currency; shipping_line: ShippingLine;
   vessel_size_band: VesselSizeBand; expected_arrival_at: string;
   documentation_status: DocumentationStatus; customs_channel?: CustomsChannel;
-  importer_type?: ImporterType; cargo_priority?: CargoPriority }
+  importer_type?: ImporterType; cargo_priority?: CargoPriority; booking_type?: BookingType }
 // Editable before status "arrived" (allowlist). Never status, owner or port.
 export type ShipmentPatch = Partial<Pick<ShipmentCreate, "cargo_type" | "container_size_ft"
   | "hs_code" | "weight_kg" | "declared_value" | "shipping_line" | "vessel_size_band"
   | "expected_arrival_at" | "documentation_status" | "customs_channel" | "importer_type"
-  | "cargo_priority">>;
+  | "cargo_priority" | "booking_type">>;
 export interface ShipmentEvent { id: string; shipment_id: string; event_type: string;
   from_status: ShipmentStatus | null; to_status: ShipmentStatus; occurred_at: string;
   recorded_at: string; actor_display_name: string | null; note: string | null }
@@ -112,3 +114,31 @@ export type TariffRuleCreate = Omit<TariffRule, "id" | "is_active">;
 export interface AuditLogItem { id: string; actor_display_name: string | null; action: string;
   entity_type: string; entity_id: string; before: unknown | null; after: unknown | null;
   created_at: string; request_id: string }
+
+// Load planner (CG-022). API units are cm and kg.
+export type CargoCategoryId = "box" | "crate" | "pallet" | "drum" | "fragile";
+export interface CargoItemCreate { name: string; category: CargoCategoryId; length_cm: number;
+  width_cm: number; height_cm: number; weight_kg: number; quantity: number; stackable: boolean }
+export interface CargoItem extends CargoItemCreate { id: string; shipment_id: string;
+  container_id: string | null; created_at: string; updated_at: string }
+export type CargoItemPost = CargoItemCreate & { container_id?: string; allow_split?: boolean };
+export interface ContainerFullDetail { container_id: string | null; sequence: number;
+  remaining_volume_m3: number; remaining_payload_kg: number; fits_quantity: number;
+  requested_quantity: number }
+export interface SharedContainerSummary { id: string; sequence: number;
+  container_size_ft: ContainerSizeFt; used_volume_m3: number; remaining_volume_m3: number;
+  volume_utilization_pct: number; total_weight_kg: number; max_payload_kg: number;
+  shipment_count: number }
+export interface CmBox { length: number; width: number; height: number }
+export interface PlanParcelDetails { cargo_item_id: string; name: string;
+  category: CargoCategoryId; weight_kg: number; unit: number; quantity: number;
+  stackable: boolean }
+export interface PlanParcel { id: string; own: boolean; position_cm: { x: number; y: number; z: number };
+  size_cm: CmBox; rotation_y: 0 | 90; details: PlanParcelDetails | null }
+export interface PlanContainer { id: string | null; sequence: number;
+  container_size_ft: ContainerSizeFt; internal_cm: CmBox; max_payload_kg: number;
+  version: number; parcels: PlanParcel[]; unplaced_count: number;
+  summary: { used_volume_m3: number; remaining_volume_m3: number;
+    volume_utilization_pct: number; total_weight_kg: number; remaining_payload_kg: number } }
+export interface LoadPlan { shipment_id: string; booking_type: BookingType;
+  viewer_sees_all: boolean; containers: PlanContainer[] }

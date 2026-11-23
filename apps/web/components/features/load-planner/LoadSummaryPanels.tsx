@@ -115,9 +115,12 @@ export function UtilizationSummary({
 export function ParcelInspector({
   parcel,
   quantity,
+  name,
 }: {
   parcel: Parcel | null;
   quantity: number;
+  /** Cargo line name, when it differs from the parcel code. */
+  name?: string;
 }) {
   if (!parcel) {
     return (
@@ -128,7 +131,7 @@ export function ParcelInspector({
     );
   }
   const rows: Array<[string, string]> = [
-    ["Parcel ID", parcel.id],
+    ["Parcel ID", parcel.label ?? parcel.id],
     ["Category", CARGO_CATEGORIES[parcel.categoryId]?.name ?? parcel.categoryId],
     ["Dimensions", formatDims(parcel.length, parcel.width, parcel.height)],
     ["Weight", kg(parcel.weight)],
@@ -137,13 +140,15 @@ export function ParcelInspector({
       `x ${parcel.position.x.toFixed(2)} · y ${parcel.position.y.toFixed(2)} · z ${parcel.position.z.toFixed(2)} m`,
     ],
     ["Orientation", parcel.rotationY === 0 ? "As listed" : "Turned 90°"],
-    ["Quantity", `${quantity} × ${parcel.code}`],
+    ["Quantity", `${quantity} × ${name ?? parcel.code}`],
   ];
   return (
     <div className="space-y-3" aria-live="polite">
       <div className="flex items-center gap-3">
         <CategorySwatch categoryId={parcel.categoryId} />
-        <span className="text-base font-semibold text-text">{parcel.id}</span>
+        <span className="text-base font-semibold text-text">
+          {parcel.label ?? parcel.id}
+        </span>
       </div>
       <dl className="divide-y divide-border">
         {rows.slice(1).map(([label, value]) => (

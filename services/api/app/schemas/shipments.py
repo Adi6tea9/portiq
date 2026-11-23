@@ -11,6 +11,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstrai
 
 from app.models import PredictionRun, Shipment, ShipmentEvent
 from app.schemas.enums import (
+    BookingType,
     CargoPriority,
     CargoType,
     Currency,
@@ -90,6 +91,7 @@ class ShipmentResponse(BaseModel):
     customs_channel: CustomsChannel
     importer_type: ImporterType
     cargo_priority: CargoPriority
+    booking_type: BookingType
     status: ShipmentStatus
     actual_arrival_at: str | None
     actual_cleared_at: str | None
@@ -142,6 +144,7 @@ class ShipmentCreate(BaseModel):
     customs_channel: CustomsChannel = CustomsChannel.UNKNOWN
     importer_type: ImporterType = ImporterType.REGULAR
     cargo_priority: CargoPriority = CargoPriority.STANDARD
+    booking_type: BookingType = BookingType.FULL
 
 
 class ShipmentPatch(BaseModel):
@@ -161,6 +164,8 @@ class ShipmentPatch(BaseModel):
     customs_channel: CustomsChannel | None = None
     importer_type: ImporterType | None = None
     cargo_priority: CargoPriority | None = None
+    # Only while the shipment has no cargo (CG-022).
+    booking_type: BookingType | None = None
 
 
 class EventCreate(BaseModel):
@@ -206,6 +211,7 @@ def shipment_response(
         customs_channel=shipment.customs_channel,
         importer_type=shipment.importer_type,
         cargo_priority=shipment.cargo_priority,
+        booking_type=shipment.booking_type,
         status=shipment.status,
         actual_arrival_at=utc_z(shipment.actual_arrival_at),
         actual_cleared_at=utc_z(shipment.actual_cleared_at),

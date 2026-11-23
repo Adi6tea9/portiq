@@ -18,6 +18,7 @@ _REQUEST_FIELDS = (
     "actor_id",
     "model_version",
     "error_code",
+    "reason",
 )
 
 

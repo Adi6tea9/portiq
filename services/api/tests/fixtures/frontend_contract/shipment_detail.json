@@ -16,6 +16,7 @@
   "customs_channel": "unknown",
   "importer_type": "regular",
   "cargo_priority": "standard",
+  "booking_type": "full",
   "status": "submitted",
   "actual_arrival_at": null,
   "actual_cleared_at": null,

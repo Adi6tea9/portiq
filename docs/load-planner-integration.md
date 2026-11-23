@@ -1,8 +1,8 @@
 # Load planner — integration notes
 
 The **Load planner** tab (`/load-planner`, importers and port operators) shows a 20 ft or 40 ft container in
-3D with its cargo, a floor utilization matrix and a live loading summary. It runs on sample cargo today. This note
-explains how to feed it real shipment data.
+3D with its cargo, a floor utilization matrix and a live loading summary. Opened as `/load-planner?shipment=<id>` it shows that shipment's
+real cargo, packed by the server (shipment mode). Opened without a shipment it shows labelled sample cargo.
 
 ## Where things live
 
@@ -13,7 +13,13 @@ explains how to feed it real shipment data.
 | `lib/load-planner/calculations.ts` | Volume, weight, summary, bounds/overlap/payload validation, utilization matrix |
 | `lib/load-planner/packing.ts` | `arrangeCargo()` — turns cargo lines into placed parcels |
 | `lib/load-planner/views.ts` | Camera presets and framing maths |
-| `components/features/load-planner/LoadPlannerClient.tsx` | The page: owns state and wires the panels together |
+| `components/features/load-planner/LoadPlannerClient.tsx` | `PlannerWorkspace` (shared layout, selection, view) and the sample demo |
+| `components/features/load-planner/ShipmentLoadPlanner.tsx` | Shipment mode: load plan, container switcher, live indicator |
+| `components/features/load-planner/CargoPanel.tsx` | Add/edit/delete cargo lines and the container-full dialog |
+| `lib/load-planner/shipment.ts` | Maps the load-plan API (cm) to engine types (m); other shipments' parcels become locked grey blocks |
+| `lib/load-planner/cargo-schema.ts` | Zod form rules matching the API limits |
+| `lib/api/hooks/useLoadPlan.ts` | `useCargo`, `useLoadPlan`, `useSharedContainers`, cargo mutations, `useLoadPlanStream` |
+| `lib/mocks/fixtures/cargo.ts` | MSW cargo store: packs with `arrangeCargo`, applies the privacy filter and `CONTAINER_FULL` |
 | `components/features/load-planner/ContainerViewport.tsx` | The 3D view (lazy-loads `ContainerScene`) plus its toolbar |
 | `public/models/container-{20,40}ft.glb` | Compressed container models (see "Models") |
 
@@ -26,7 +32,29 @@ the container, +Y is up and +Z runs across the width. The GLB models use the sam
 line up without any transform. `Parcel.position` is the parcel's **minimum corner**, and its size is as placed,
 after any 90° turn.
 
-## Feeding real cargo
+## Shipment mode
+
+The API contract is in `docs/LOAD_PLANNER_PLAN.md` (CG-022). The page never packs or arranges anything itself:
+
+- `useLoadPlan(id)` fetches `GET /shipments/{id}/load-plan`. `toEngineParcels` converts each parcel from cm to m.
+  A parcel with `details: null` (another shipment's) becomes `categoryId: "other"` (grey `#b9bcb6`) with
+  `locked: true`: it is drawn and counted in the matrix and summary, but `PlannerWorkspace.select` ignores it, the
+  3D mesh has no hover or click, and it never appears in the cargo list or inspector. Staff
+  (`viewer_sees_all`) receive details for every parcel, so nothing is locked for them.
+- The summary comes from the server's `summary`, because the client cannot see other shipments' weights.
+- The container size comes from the shipment and cannot be changed here. With several shared containers a switcher
+  appears. With no cargo an empty container of the shipment's size is shown.
+- `CargoPanel` is editable only for the owner (importer) while the shipment is `submitted`; otherwise it is read
+  only. Mutations invalidate cargo, load plan and shared containers. On `409 CONTAINER_FULL` a dialog shows the
+  space left and `fits_quantity`; for shared bookings it offers "Put N here, rest in next container"
+  (`allow_split`) and every other group container with its space left (`container_id`). "Change the cargo"
+  closes it and keeps the form.
+- `useLoadPlanStream(id)` reads `/load-plan/stream` with `fetch` and the same bearer token as `apiClient`,
+  refetches the plan on each `version` event, reconnects with backoff (1 s doubling to 30 s) and stops on
+  401/403/404. A "Live" dot shows while it is connected. In mock mode it does nothing; mutations already refetch.
+- The shipment forms have a booking-type select. On the edit form it is disabled once the shipment has cargo.
+
+## Feeding cargo to the engine directly
 
 ```tsx
 import { arrangeCargo } from "@/lib/load-planner/packing";
@@ -103,6 +131,7 @@ same `selectedId`. Rotate/pan mode and the wall cutaway are local to the viewpor
 
 ## Not done yet
 
-- No shipment link yet (`/load-planner?shipment=<id>`), and no API for cargo lines. The page uses `SAMPLE_CARGO`.
-- No manual drag-to-move for parcels, and no adding cargo in the UI.
+- No manual drag-to-move for parcels, by design: the server packs the cargo.
+- Staff viewing another shipment's parcels see their category and weight, but the inspector's quantity line is only
+  filled for the viewed shipment's own lines.
 - The decals in the models read correctly only from the +Z side, so all cameras work from that side.

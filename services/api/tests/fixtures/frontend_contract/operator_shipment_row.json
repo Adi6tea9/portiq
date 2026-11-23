@@ -17,6 +17,7 @@
     "customs_channel": "red",
     "importer_type": "new",
     "cargo_priority": "standard",
+    "booking_type": "full",
     "status": "submitted",
     "actual_arrival_at": null,
     "actual_cleared_at": null,

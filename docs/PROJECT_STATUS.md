@@ -74,7 +74,8 @@ Percentages are judgement against the spec deliverables, not a measured number.
 1. **Live integration (B11).** Paste the Supabase project URL and publishable key into
    `apps/web/.env.local` and `services/api/.env` (`AUTH_MODE=supabase`), run one full manual pass
    with mocks off, create operator/admin accounts with SQL, run `scripts/smoke_supabase.py`.
-2. **Load planner real data.** Shipment link, stored cargo lines, editing (still sample cargo).
+2. **Load planner live check.** Real cargo, shared containers and live updates are built (24 Nov,
+   `docs/LOAD_PLANNER_PLAN.md`); still to check signed in with two real importer accounts.
 3. **Housekeeping.** Align one partial-total message with the spec wording.
 4. **Deployment and delivery.** Initialise git, add CI, a frontend container and hosting; then
    the 1–4 Dec slot: demo script, report, slides.

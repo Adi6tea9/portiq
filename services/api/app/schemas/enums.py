@@ -124,3 +124,17 @@ class AtRiskCode(StrEnum):
     FORECAST_THRESHOLD_CROSSED = "FORECAST_THRESHOLD_CROSSED"
     DWELL_ABOVE_THRESHOLD = "DWELL_ABOVE_THRESHOLD"
     DOCUMENTATION_INCOMPLETE = "DOCUMENTATION_INCOMPLETE"
+
+
+# Load planner (CG-022).
+class BookingType(StrEnum):
+    FULL = "full"
+    SHARED = "shared"
+
+
+class CargoCategory(StrEnum):
+    BOX = "box"
+    CRATE = "crate"
+    PALLET = "pallet"
+    DRUM = "drum"
+    FRAGILE = "fragile"

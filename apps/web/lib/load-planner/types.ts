@@ -43,6 +43,10 @@ export interface CargoItem {
   height: number;
   weight: number;
   quantity: number;
+  /** Display name; falls back to `code`. */
+  label?: string;
+  /** False keeps load off this line even if its category is stackable. */
+  stackable?: boolean;
 }
 
 /** One physical parcel. Dimensions are as placed (after any rotation). */
@@ -58,6 +62,12 @@ export interface Parcel {
   position: Vec3;
   /** Rotation about the vertical axis, in degrees (0 or 90). */
   rotationY: 0 | 90;
+  /** Display name; falls back to `id`. */
+  label?: string;
+  /** Another shipment's parcel: drawn grey, cannot be selected, no details. */
+  locked?: boolean;
+  /** Units on its cargo line, when the server shared the details. */
+  quantity?: number;
 }
 
 export interface LoadingSummary {

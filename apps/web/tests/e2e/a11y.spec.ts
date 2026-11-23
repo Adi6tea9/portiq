@@ -34,12 +34,6 @@ async function waitForHeading(page: Page, name: string | RegExp) {
 
 const PAGES: PageUnderTest[] = [
   {
-    path: "/",
-    name: "landing",
-    role: null,
-    ready: async (page) => waitForHeading(page, "Predict. Plan. Ship."),
-  },
-  {
     path: "/login",
     name: "login",
     role: null,

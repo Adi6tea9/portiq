@@ -153,7 +153,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className={cn("flex h-16 items-center", collapsed ? "justify-center" : "px-4")}>
-          <Link href="/" aria-label="PortIQ home">
+          <Link href="/dashboard" aria-label="PortIQ home">
             <Wordmark compact={collapsed} />
           </Link>
         </div>

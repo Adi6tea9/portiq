@@ -215,6 +215,8 @@ The HS code prefix filter is debounced by 300 ms through the existing `lib/hooks
 
 ## GAP-034: Landing how-it-works copy
 
+**Superseded 24 Nov 2026:** the landing page was removed at the owner's request; `/` now redirects to `/login`.
+
 **Location:** `app/page.tsx`
 
 F10 names a "three-step how it works" section on the landing page but does not define its wording, and section 7 defines no copy for it. The three steps are derived from the flows that exist: F03 (create a shipment), F05 (run a prediction) and F06 (capacity forecast). The text lives in `howItWorksSteps()` in `app/page.tsx`, marked `// CONTRACT-GAP: GAP-034`, so it can be replaced without touching the layout. The hero, limitation and footer copy is grounded in F10 and section 7; no numbers, endpoint names or claims are invented.

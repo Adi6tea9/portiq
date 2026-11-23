@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -27,6 +28,7 @@ export function SignupForm({ returnTo }: SignupFormProps) {
   const [authError, setAuthError] = React.useState<string | null>(null);
   const [confirmation, setConfirmation] = React.useState<string | null>(null);
   const [accountType, setAccountType] = React.useState<AccountType>("importer");
+  const [showPassword, setShowPassword] = React.useState(false);
   const {
     register,
     handleSubmit,
@@ -108,19 +110,37 @@ export function SignupForm({ returnTo }: SignupFormProps) {
         />
       </Field>
 
-      <Field
-        id="password"
-        label="Password"
-        hint="At least 8 characters."
-        error={errors.password?.message}
-        required
-      >
-        <Input
-          type="password"
-          autoComplete="new-password"
-          {...register("password")}
-        />
-      </Field>
+      <div className="relative">
+        <Field
+          id="password"
+          label="Password"
+          hint="At least 8 characters."
+          error={errors.password?.message}
+          required
+        >
+          <Input
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            className="app-input-lock pr-11"
+            {...register("password")}
+          />
+        </Field>
+        {/* Sits over the input; the hint row pushes it below the label (3.5rem). */}
+        <button
+          type="button"
+          onClick={() => setShowPassword((value) => !value)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          aria-pressed={showPassword}
+          aria-controls="password"
+          className="absolute right-1 top-[3.5rem] flex h-9 w-9 items-center justify-center rounded-md text-muted hover:text-text"
+        >
+          {showPassword ? (
+            <EyeOff aria-hidden="true" className="h-4 w-4" />
+          ) : (
+            <Eye aria-hidden="true" className="h-4 w-4" />
+          )}
+        </button>
+      </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Creating account…" : "Create account"}

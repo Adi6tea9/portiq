@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ShipmentCreate } from "../api/types";
 import {
+  BOOKING_TYPE_OPTIONS,
   CARGO_PRIORITY_OPTIONS,
   CARGO_TYPE_OPTIONS,
   CONTAINER_SIZE_OPTIONS,
@@ -73,6 +74,9 @@ export const shipmentFormSchema = z.object({
   cargo_priority: z.enum(CARGO_PRIORITY_OPTIONS, {
     errorMap: () => ({ message: "Select a cargo priority." }),
   }),
+  booking_type: z.enum(BOOKING_TYPE_OPTIONS, {
+    errorMap: () => ({ message: "Select a booking type." }),
+  }),
 });
 
 export type ShipmentFormValues = z.input<typeof shipmentFormSchema>;
@@ -92,7 +96,9 @@ export const shipmentEditSchema = shipmentFormSchema.pick({
   customs_channel: true,
   importer_type: true,
   cargo_priority: true,
-});
+})
+  // Optional: the select is disabled (so omitted) once the shipment has cargo.
+  .extend({ booking_type: z.enum(BOOKING_TYPE_OPTIONS).optional() });
 
 export type ShipmentEditValues = z.input<typeof shipmentEditSchema>;
 
@@ -113,6 +119,7 @@ export const SHIPMENT_FORM_FIELDS = [
   "customs_channel",
   "importer_type",
   "cargo_priority",
+  "booking_type",
 ] as const satisfies readonly ShipmentFormField[];
 
 export function toShipmentCreate(
@@ -136,5 +143,6 @@ export function toShipmentCreate(
     customs_channel: values.customs_channel,
     importer_type: values.importer_type,
     cargo_priority: values.cargo_priority,
+    booking_type: values.booking_type,
   };
 }

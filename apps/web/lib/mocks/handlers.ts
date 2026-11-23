@@ -2,6 +2,10 @@ import { http, HttpResponse, delay } from "msw";
 import type {
   ApiErrorBody,
   CapacityBucket,
+  CargoItem,
+  CargoItemCreate,
+  CargoItemPost,
+  ContainerFullDetail,
   Envelope,
   Me,
   OperatorOverview,
@@ -46,6 +50,16 @@ import { mockOperatorOverview, mockOperatorRows } from "./fixtures/operator";
 import { mockTariffs } from "./fixtures/tariffs";
 import { mockAuditLogs } from "./fixtures/audit";
 import { mockErrorByCode, mockErrorResponses } from "./fixtures/errors";
+import {
+  bumpVersion,
+  checkFit,
+  containerItems,
+  groupContainers,
+  loadPlanFor,
+  mockCargo,
+  openNextContainer,
+  sharedContainerSummaries,
+} from "./fixtures/cargo";
 
 const API_BASE = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1"
@@ -267,6 +281,64 @@ function daysBetween(start: string, end: string): number {
   return Number(((Date.parse(end) - Date.parse(start)) / DAY_MS).toFixed(1));
 }
 
+function visibleShipment(id: string): ShipmentDetail | undefined {
+  const shipment = shipmentDetail(id);
+  if (!shipment) return undefined;
+  if (hasRole("port_operator") && !currentUser().assigned_port_ids.includes(shipment.port_id)) {
+    return undefined;
+  }
+  return shipment;
+}
+
+/** Shared guard for cargo writes: 404, 403 for staff, 409 unless submitted. */
+function cargoWriteGuard(id: string): ShipmentDetail | Response {
+  const shipment = visibleShipment(id);
+  if (!shipment) return notFound();
+  if (!hasRole("importer_exporter")) return forbidden();
+  if (shipment.status !== "submitted") {
+    return HttpResponse.json(mockErrorResponses[409], { status: 409 });
+  }
+  return shipment;
+}
+
+const CARGO_CATEGORY_IDS = ["box", "crate", "pallet", "drum", "fragile"];
+
+function cargoValidation(body: Partial<CargoItemCreate>, size: number): Response | null {
+  const name = body.name?.trim() ?? "";
+  if (name.length < 1 || name.length > 80) return validationError("name", "Must be 1-80 characters.");
+  if (!CARGO_CATEGORY_IDS.includes(body.category ?? "")) return validationError("category", "Unknown category.");
+  for (const field of ["length_cm", "width_cm", "height_cm"] as const) {
+    const value = Number(body[field]);
+    if (!(value >= 1 && value <= 1203)) return validationError(field, "Must be 1-1203 cm.");
+  }
+  const inner = size === 40 ? [1203, 235, 239] : [590, 235, 239];
+  const { length_cm: l = 0, width_cm: w = 0, height_cm: h = 0 } = body;
+  if (h > inner[2] || !((l <= inner[0] && w <= inner[1]) || (w <= inner[0] && l <= inner[1]))) {
+    return validationError("length_cm", "Does not fit the container in any orientation.");
+  }
+  const weight = Number(body.weight_kg);
+  if (!(weight >= 0.1 && weight <= 30000)) return validationError("weight_kg", "Must be 0.1-30000 kg.");
+  const quantity = Number(body.quantity);
+  if (!(Number.isInteger(quantity) && quantity >= 1 && quantity <= 500)) {
+    return validationError("quantity", "Must be a whole number 1-500.");
+  }
+  return null;
+}
+
+function containerFull(detail: ContainerFullDetail): Response {
+  return HttpResponse.json(
+    {
+      error: {
+        code: "CONTAINER_FULL",
+        message: "That cargo does not fit in the container.",
+        details: [detail],
+        request_id: "req_mock_409_full",
+      },
+    },
+    { status: 409 },
+  );
+}
+
 export const handlers = [
   http.get(`${API_BASE}/me`, ({ request }) => {
     return maybeMockError(request) ?? HttpResponse.json(envelope(currentUser()));
@@ -377,6 +449,7 @@ export const handlers = [
       customs_channel: body.customs_channel ?? "unknown",
       importer_type: body.importer_type ?? "regular",
       cargo_priority: body.cargo_priority ?? "standard",
+      booking_type: body.booking_type ?? "full",
       id: `ship_${crypto.randomUUID().slice(0, 8)}`,
       status: "submitted",
       actual_arrival_at: null,
@@ -498,6 +571,14 @@ export const handlers = [
     }
 
     const patch = (await request.json()) as ShipmentPatch;
+
+    if (
+      patch.booking_type !== undefined &&
+      patch.booking_type !== shipment.booking_type &&
+      mockCargo.some((item) => item.shipment_id === shipment.id)
+    ) {
+      return HttpResponse.json(mockErrorResponses[409], { status: 409 });
+    }
     const updated: ShipmentDetail = {
       ...shipment,
       ...patch,
@@ -576,6 +657,129 @@ export const handlers = [
     };
 
     return HttpResponse.json(envelope(updated));
+  }),
+
+  http.get(`${API_BASE}/shipments/:id/cargo`, ({ params }) => {
+    const shipment = visibleShipment(String(params.id));
+    if (!shipment) return notFound();
+    return HttpResponse.json(
+      envelope(mockCargo.filter((item) => item.shipment_id === shipment.id)),
+    );
+  }),
+
+  http.post(`${API_BASE}/shipments/:id/cargo`, async ({ params, request }) => {
+    const guard = cargoWriteGuard(String(params.id));
+    if (guard instanceof Response) return guard;
+    const shipment = guard;
+    const body = (await request.json()) as CargoItemPost;
+    const invalid = cargoValidation(body, shipment.container_size_ft);
+    if (invalid) return invalid;
+
+    const time = new Date().toISOString();
+    const make = (containerId: string | null, quantity: number): CargoItem => ({
+      id: `cargo_${crypto.randomUUID().slice(0, 8)}`,
+      shipment_id: shipment.id,
+      container_id: containerId,
+      name: body.name.trim(),
+      category: body.category,
+      length_cm: body.length_cm,
+      width_cm: body.width_cm,
+      height_cm: body.height_cm,
+      weight_kg: body.weight_kg,
+      quantity,
+      stackable: body.stackable,
+      created_at: time,
+      updated_at: time,
+    });
+
+    let containerId: string | null = null;
+    let sequence = 1;
+    if (shipment.booking_type === "shared") {
+      const group = groupContainers(shipment);
+      const target = body.container_id
+        ? group.find((container) => container.id === body.container_id)
+        : (group.at(-1) ?? openNextContainer(shipment));
+      if (!target) return validationError("container_id", "Not a container in this group.");
+      containerId = target.id;
+      sequence = target.sequence;
+    }
+
+    const candidate = make(containerId, body.quantity);
+    const full = checkFit(
+      shipment.container_size_ft,
+      containerId,
+      sequence,
+      containerItems(containerId, shipment.id),
+      candidate,
+    );
+    if (!full) {
+      mockCargo.push(candidate);
+      bumpVersion(containerId, shipment.id);
+      return HttpResponse.json(envelope({ items: [candidate] }), { status: 201 });
+    }
+    if (!body.allow_split || shipment.booking_type !== "shared" || full.fits_quantity === 0) {
+      return containerFull(full);
+    }
+    const next = openNextContainer(shipment);
+    const items = [
+      make(containerId, full.fits_quantity),
+      make(next.id, body.quantity - full.fits_quantity),
+    ];
+    mockCargo.push(...items);
+    bumpVersion(containerId, shipment.id);
+    bumpVersion(next.id, shipment.id);
+    return HttpResponse.json(envelope({ items }), { status: 201 });
+  }),
+
+  http.patch(`${API_BASE}/shipments/:id/cargo/:itemId`, async ({ params, request }) => {
+    const guard = cargoWriteGuard(String(params.id));
+    if (guard instanceof Response) return guard;
+    const index = mockCargo.findIndex(
+      (item) => item.id === params.itemId && item.shipment_id === guard.id,
+    );
+    if (index < 0) return notFound();
+    const current = mockCargo[index];
+    const patch = (await request.json()) as Partial<CargoItemCreate>;
+    const updated: CargoItem = { ...current, ...patch, updated_at: new Date().toISOString() };
+    const invalid = cargoValidation(updated, guard.container_size_ft);
+    if (invalid) return invalid;
+    const sequence =
+      groupContainers(guard).find((c) => c.id === current.container_id)?.sequence ?? 1;
+    const others = containerItems(current.container_id, guard.id).filter(
+      (item) => item.id !== current.id,
+    );
+    const full = checkFit(guard.container_size_ft, current.container_id, sequence, others, updated);
+    if (full) return containerFull(full);
+    mockCargo[index] = updated;
+    bumpVersion(current.container_id, guard.id);
+    return HttpResponse.json(envelope(updated));
+  }),
+
+  http.delete(`${API_BASE}/shipments/:id/cargo/:itemId`, ({ params }) => {
+    const guard = cargoWriteGuard(String(params.id));
+    if (guard instanceof Response) return guard;
+    const index = mockCargo.findIndex(
+      (item) => item.id === params.itemId && item.shipment_id === guard.id,
+    );
+    if (index < 0) return notFound();
+    const [removed] = mockCargo.splice(index, 1);
+    bumpVersion(removed.container_id, guard.id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${API_BASE}/shipments/:id/shared-containers`, ({ params }) => {
+    const shipment = visibleShipment(String(params.id));
+    if (!shipment) return notFound();
+    if (shipment.booking_type !== "shared") {
+      return validationError("booking_type", "Only shared bookings have shared containers.");
+    }
+    return HttpResponse.json(envelope(sharedContainerSummaries(shipment)));
+  }),
+
+  http.get(`${API_BASE}/shipments/:id/load-plan`, ({ params }) => {
+    const shipment = visibleShipment(String(params.id));
+    if (!shipment) return notFound();
+    return HttpResponse.json(envelope(loadPlanFor(shipment, !hasRole("importer_exporter"))));
   }),
 
   http.get(`${API_BASE}/shipments/:id`, ({ params, request }) => {

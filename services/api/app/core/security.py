@@ -54,6 +54,8 @@ def verify_dev_token(token: str) -> DevIdentity:
     return DevIdentity(email=email)
 
 
+JWT_LEEWAY_SECONDS = 60
+
 _jwks_client: PyJWKClient | None = None
 _jwks_client_url: str | None = None
 
@@ -87,6 +89,9 @@ def verify_supabase_token(token: str) -> SupabaseIdentity:
             audience=settings.supabase_jwt_audience,
             issuer=settings.supabase_jwt_issuer,
             options={"require": list(REQUIRED_CLAIMS)},
+            # Docker Desktop clocks drift a few seconds behind Supabase; a strict iat check
+            # rejected brand-new tokens as "issued in the future".
+            leeway=JWT_LEEWAY_SECONDS,
         )
     except jwt.PyJWTError as exc:
         logger.info("token_rejected", extra={"reason": type(exc).__name__})

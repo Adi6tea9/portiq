@@ -10,11 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Callout } from "@/components/shared/Callout";
 import { Field } from "@/components/shared/Field";
 import { ApiError } from "@/lib/api/client";
+import { useCargo } from "@/lib/api/hooks/useLoadPlan";
 import type { ShipmentDetail, ShipmentPatch } from "@/lib/api/types";
 import { portWallTimeToUtc, utcToPortWallTime } from "@/lib/port-time";
 import { updateShipment } from "@/lib/shipments/api";
 import { mapShipmentValidationDetails } from "@/lib/shipments/errors";
 import {
+  BOOKING_TYPE_OPTIONS,
+  bookingTypeLabel,
   CARGO_TYPE_OPTIONS,
   CONTAINER_SIZE_OPTIONS,
   DOCUMENTATION_STATUS_OPTIONS,
@@ -30,6 +33,9 @@ import {
 import { ModelInputFields } from "./ModelInputFields";
 import { SelectControl, type SelectOption } from "./SelectControl";
 
+const BOOKING_TYPE_SELECT_OPTIONS: SelectOption[] = BOOKING_TYPE_OPTIONS.map(
+  (value) => ({ value, label: bookingTypeLabel(value) }),
+);
 const CARGO_TYPE_SELECT_OPTIONS: SelectOption[] = CARGO_TYPE_OPTIONS.map(
   (value) => ({ value, label: humanizeOption(value) }),
 );
@@ -69,6 +75,8 @@ export function EditShipmentForm({
     requestId: string;
   } | null>(null);
   const submittingRef = React.useRef(false);
+  // The API allows a booking-type change only while the shipment has no cargo.
+  const hasCargo = (useCargo(shipment.id).data?.length ?? 1) > 0;
   const {
     register,
     handleSubmit,
@@ -95,6 +103,7 @@ export function EditShipmentForm({
       customs_channel: shipment.customs_channel,
       importer_type: shipment.importer_type,
       cargo_priority: shipment.cargo_priority,
+      booking_type: shipment.booking_type,
     },
   });
 
@@ -155,6 +164,9 @@ export function EditShipmentForm({
       }
       if (values.importer_type !== shipment.importer_type) {
         patch.importer_type = values.importer_type;
+      }
+      if (values.booking_type && values.booking_type !== shipment.booking_type) {
+        patch.booking_type = values.booking_type;
       }
       if (values.cargo_priority !== shipment.cargo_priority) {
         patch.cargo_priority = values.cargo_priority;
@@ -232,6 +244,20 @@ export function EditShipmentForm({
                 {...register("container_size_ft")}
                 options={CONTAINER_SIZE_SELECT_OPTIONS}
                 aria-invalid={!!errors.container_size_ft}
+              />
+            </Field>
+
+            <Field
+              id="booking_type"
+              label="Booking type"
+              hint={hasCargo ? "Remove all cargo lines to change the booking type." : undefined}
+              error={errors.booking_type?.message}
+              required
+            >
+              <SelectControl
+                {...register("booking_type")}
+                options={BOOKING_TYPE_SELECT_OPTIONS}
+                disabled={hasCargo}
               />
             </Field>
 

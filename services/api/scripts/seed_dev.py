@@ -1,4 +1,5 @@
-"""Development seed: ports, users, demo tariffs (backend spec section 12) and 12 shipments.
+"""Development seed: ports, users, demo tariffs (backend spec section 12),
+13 shipments and load-planner cargo.
 
 Idempotent: every row gets a deterministic UUID derived from its natural key, and a
 re-run only inserts what is missing. Dev only: refuses anything except ``local``/``test``.
@@ -26,20 +27,25 @@ from app.db import session_scope
 from app.models import (
     AuditLog,
     CapacityForecast,
+    CargoItem,
     OperatorPort,
     Port,
     PredictionRun,
     Profile,
+    SharedContainer,
     Shipment,
     ShipmentEvent,
     TariffRule,
 )
+from app.repositories import cargo as cargo_repo
 from app.repositories import operator_ports as operator_ports_repo
 from app.repositories import ports as ports_repo
 from app.repositories import profiles as profiles_repo
 from app.repositories import shipments as shipments_repo
 from app.repositories import tariffs as tariffs_repo
 from app.schemas.enums import (
+    BookingType,
+    CargoCategory,
     CargoType,
     Currency,
     Direction,
@@ -199,6 +205,7 @@ SHIPMENTS: tuple[dict[str, Any], ...] = (
         "expected_arrival_at": _dt(12, 6),
         "documentation_status": DocumentationStatus.COMPLETE,
         "status": ShipmentStatus.SUBMITTED,
+        "booking_type": BookingType.SHARED,
     },
     {
         "reference": "DEMO-2026-002",
@@ -385,6 +392,24 @@ SHIPMENTS: tuple[dict[str, Any], ...] = (
         "actual_arrival_at": _dt(20, 13, 20, month=10),
         "actual_cleared_at": _dt(23, 15, 0, month=10),
     },
+    # Shares a container with DEMO-2026-001: same port, direction, size and arrival day.
+    {
+        "reference": "DEMO-2026-013",
+        "port": "INNSA",
+        "owner": "importer2@portiq.demo",
+        "direction": Direction.IMPORT,
+        "cargo_type": CargoType.GENERAL_CONTAINER,
+        "container_size_ft": 40,
+        "hs_code": "940360",
+        "weight_kg": Decimal("6400.00"),
+        "declared_value": Decimal("1300000.00"),
+        "shipping_line": ShippingLine.LINE_A,
+        "vessel_size_band": VesselSizeBand.LARGE,
+        "expected_arrival_at": _dt(12, 14),
+        "documentation_status": DocumentationStatus.COMPLETE,
+        "status": ShipmentStatus.SUBMITTED,
+        "booking_type": BookingType.SHARED,
+    },
 )
 
 
@@ -497,6 +522,7 @@ def _seat_shipments(session: Session, ports: dict[str, Port], profiles: dict[str
             vessel_size_band=row["vessel_size_band"],
             expected_arrival_at=row["expected_arrival_at"],
             documentation_status=row["documentation_status"],
+            booking_type=row.get("booking_type", BookingType.FULL),
             status=row["status"],
             actual_arrival_at=row.get("actual_arrival_at"),
             actual_cleared_at=row.get("actual_cleared_at"),
@@ -538,6 +564,51 @@ def _seat_shipments(session: Session, ports: dict[str, Port], profiles: dict[str
             )
 
 
+# (shipment reference, name, category, l, w, h cm, kg per unit, quantity, stackable)
+CARGO: tuple[tuple[str, str, CargoCategory, int, int, int, str, int, bool], ...] = (
+    ("DEMO-2026-001", "Server cartons", CargoCategory.BOX, 60, 40, 40, "18.00", 24, True),
+    ("DEMO-2026-001", "Rack crate", CargoCategory.CRATE, 120, 100, 100, "260.00", 2, True),
+    ("DEMO-2026-013", "Furniture pallets", CargoCategory.PALLET, 120, 80, 60, "420.00", 4, True),
+    ("DEMO-2026-013", "Glass panels", CargoCategory.FRAGILE, 100, 60, 50, "45.00", 3, False),
+    ("DEMO-2026-002", "Grape boxes", CargoCategory.BOX, 50, 30, 30, "9.50", 40, True),
+    ("DEMO-2026-002", "Juice drums", CargoCategory.DRUM, 60, 60, 90, "190.00", 4, False),
+)
+
+
+def _seat_cargo(session: Session) -> None:
+    """Demo cargo; shared lines go in one shared container that has two owners."""
+    for index, row in enumerate(CARGO):
+        reference, name, category, length, width, height, kg, qty, stackable = row
+        item_id = _seed_id(f"cargo:{reference}:{index}")
+        shipment = shipments_repo.get_by_reference(session, reference)
+        if shipment is None or session.get(CargoItem, item_id) is not None:
+            continue
+        container_id = None
+        if shipment.booking_type == BookingType.SHARED:
+            key = cargo_repo.GroupKey.of(shipment)
+            seed_id = _seed_id(f"shared-container:{key.port_id}:{key.arrival_date}:1")
+            container = session.get(SharedContainer, seed_id) or cargo_repo.create_container(
+                session, key, container_id=seed_id
+            )
+            container_id = container.id
+        session.add(
+            CargoItem(
+                id=item_id,
+                shipment_id=shipment.id,
+                container_id=container_id,
+                name=name,
+                category=category,
+                length_cm=length,
+                width_cm=width,
+                height_cm=height,
+                weight_kg=Decimal(kg),
+                quantity=qty,
+                stackable=stackable,
+            )
+        )
+        session.flush()
+
+
 COUNTED_TABLES = (
     Profile,
     Port,
@@ -548,6 +619,8 @@ COUNTED_TABLES = (
     CapacityForecast,
     TariffRule,
     AuditLog,
+    SharedContainer,
+    CargoItem,
 )
 
 
@@ -567,6 +640,7 @@ def seed_demo(session: Session, *, app_env: str) -> dict[str, int]:
     profiles = _seat_users(session, ports)
     _seat_tariffs(session, admin_id=profiles["admin@portiq.demo"].id)
     _seat_shipments(session, ports, profiles)
+    _seat_cargo(session)
     session.flush()
     return row_counts(session)
 

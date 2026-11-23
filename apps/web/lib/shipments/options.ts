@@ -1,4 +1,5 @@
 import type {
+  BookingType,
   CargoPriority,
   CargoType,
   CustomsChannel,
@@ -23,6 +24,12 @@ export const CARGO_TYPE_OPTIONS = [
 ] as const satisfies readonly CargoType[];
 
 export const CONTAINER_SIZE_OPTIONS = ["20", "40"] as const;
+
+export const BOOKING_TYPE_OPTIONS = ["full", "shared"] as const satisfies readonly BookingType[];
+
+export function bookingTypeLabel(value: BookingType): string {
+  return value === "full" ? "Full container" : "Shared container";
+}
 
 export const SHIPPING_LINE_OPTIONS = [
   "Line A",

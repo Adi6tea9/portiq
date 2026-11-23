@@ -287,5 +287,6 @@ Every endpoint the frontend calls now exists. Remaining backend gaps are listed 
 - `services/api/CONTRACT_GAPS.md` — every undefined corner and the one function that owns it
 - `docs/PROJECT_STATUS.md` — current stage, completion, pending work and architecture reference
 - `docs/load-planner-integration.md` — the 3D Load planner and how to feed it real cargo
+- `docs/LOAD_PLANNER_PLAN.md` — real cargo, shared containers and live updates: decisions, API contract, progress
 - `PORTIQ_THEME_CHANGES.md`, `BACKEND_FIXES_REPORT.md` — change reports
 - `services/api/README.md` — API-specific setup, migrations, database notes

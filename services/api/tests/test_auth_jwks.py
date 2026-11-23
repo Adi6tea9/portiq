@@ -155,7 +155,7 @@ def test_unknown_kid_is_rejected(supabase_jwks: RSAPrivateKey) -> None:
 
 
 def test_expired_token_is_rejected(supabase_jwks: RSAPrivateKey) -> None:
-    expired = datetime.now(UTC) - timedelta(seconds=5)
+    expired = datetime.now(UTC) - timedelta(minutes=5)
 
     _rejected(_token(supabase_jwks, _claims(exp=expired)))
 
@@ -180,3 +180,15 @@ def test_unreachable_jwks_url_is_a_401_not_a_500(
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
     _rejected(_token(key, _claims()))
+
+
+def test_token_issued_a_few_seconds_ahead_is_accepted(supabase_jwks: RSAPrivateKey) -> None:
+    ahead = datetime.now(UTC) + timedelta(seconds=10)
+    identity = security.resolve_identity(_token(supabase_jwks, _claims(iat=ahead, nbf=ahead)))
+    assert isinstance(identity, security.SupabaseIdentity)
+
+
+def test_token_issued_far_in_the_future_is_rejected(supabase_jwks: RSAPrivateKey) -> None:
+    ahead = datetime.now(UTC) + timedelta(minutes=10)
+    claims = _claims(iat=ahead, nbf=ahead, exp=ahead + timedelta(minutes=5))
+    _rejected(_token(supabase_jwks, claims))

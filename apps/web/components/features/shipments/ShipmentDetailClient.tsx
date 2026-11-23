@@ -117,6 +117,10 @@ function FieldsPanel({
     { label: "Direction", value: humanizeOption(shipment.direction) },
     { label: "Cargo type", value: humanizeOption(shipment.cargo_type) },
     { label: "Container size", value: `${shipment.container_size_ft} ft` },
+    {
+      label: "Booking type",
+      value: shipment.booking_type === "shared" ? "Shared container" : "Full container",
+    },
     { label: "HS code", value: shipment.hs_code },
     { label: "Weight", value: `${shipment.weight_kg.toLocaleString("en-IN")} kg` },
     { label: "Declared value", value: <Money amount={shipment.declared_value} /> },
@@ -436,7 +440,12 @@ export function ShipmentDetailClient({
             {shipment.latest_prediction?.is_demo_data && <DemoBadge />}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/load-planner?shipment=${encodeURIComponent(id)}`}>
+              Plan this container
+            </Link>
+          </Button>
           {canEdit && (
             <Button variant="outline" onClick={() => router.push(`/shipments/${id}/edit`)}>
               Edit

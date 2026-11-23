@@ -69,7 +69,7 @@ export function CargoList({
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-text">
                   {CARGO_CATEGORIES[item.categoryId]?.name ?? item.categoryId} (
-                  {item.code})
+                  {item.label ?? item.code})
                 </span>
                 <span className="block text-xs text-muted">
                   {formatDims(item.length, item.width, item.height)}
@@ -97,7 +97,7 @@ export function CargoList({
                 <div
                   className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto"
                   role="group"
-                  aria-label={`${item.code} parcels`}
+                  aria-label={`${item.label ?? item.code} parcels`}
                 >
                   {placed.map((parcel) => (
                     <button
@@ -112,7 +112,7 @@ export function CargoList({
                           : "border-border bg-canvas text-text hover:border-primary",
                       )}
                     >
-                      {parcel.id}
+                      {parcel.label ?? parcel.id}
                     </button>
                   ))}
                 </div>

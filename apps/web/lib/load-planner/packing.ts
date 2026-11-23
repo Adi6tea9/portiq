@@ -84,7 +84,8 @@ export function arrangeCargo(
       unplacedIds.push(id);
       continue;
     }
-    const stackable = CARGO_CATEGORIES[item.categoryId]?.stackable ?? true;
+    const stackable =
+      (item.stackable ?? true) && (CARGO_CATEGORIES[item.categoryId]?.stackable ?? true);
     const orientations: Array<[number, number, 0 | 90]> = [[item.length, item.width, 0]];
     if (Math.abs(item.length - item.width) > EPS)
       orientations.push([item.width, item.length, 90]);

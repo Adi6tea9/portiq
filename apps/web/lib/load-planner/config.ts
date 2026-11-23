@@ -43,6 +43,21 @@ export const CARGO_CATEGORIES: Record<string, CargoCategory> = {
     shape: "cylinder",
     stackable: false,
   },
+  fragile: {
+    id: "fragile",
+    name: "Fragile",
+    color: "#c97b84",
+    shape: "box",
+    stackable: false,
+  },
+  /** Another shipment's parcel in a shared container. */
+  other: {
+    id: "other",
+    name: "Other shipment",
+    color: "#b9bcb6",
+    shape: "box",
+    stackable: true,
+  },
 };
 
 /** Sample cargo for the demo. It fits in both container sizes. */

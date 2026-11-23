@@ -16,6 +16,8 @@ import { portWallTimeToUtc } from "@/lib/port-time";
 import { createShipment } from "@/lib/shipments/api";
 import { mapShipmentValidationDetails } from "@/lib/shipments/errors";
 import {
+  BOOKING_TYPE_OPTIONS,
+  bookingTypeLabel,
   CARGO_TYPE_OPTIONS,
   CONTAINER_SIZE_OPTIONS,
   DIRECTION_OPTIONS,
@@ -34,6 +36,9 @@ import {
 import { ModelInputFields } from "./ModelInputFields";
 import { SelectControl, type SelectOption } from "./SelectControl";
 
+const BOOKING_TYPE_SELECT_OPTIONS: SelectOption[] = BOOKING_TYPE_OPTIONS.map(
+  (value) => ({ value, label: bookingTypeLabel(value) }),
+);
 const DIRECTION_SELECT_OPTIONS: SelectOption[] = DIRECTION_OPTIONS.map(
   (value) => ({ value, label: humanizeOption(value) }),
 );
@@ -85,6 +90,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
       customs_channel: "unknown",
       importer_type: "regular",
       cargo_priority: "standard",
+      booking_type: "full",
     },
   });
 
@@ -252,6 +258,19 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
                     placeholder="Select a container size."
                     options={CONTAINER_SIZE_SELECT_OPTIONS}
                     {...register("container_size_ft")}
+                  />
+                </Field>
+
+                <Field
+                  id="booking_type"
+                  label="Booking type"
+                  hint="Shared puts your cargo in a container with other shipments."
+                  error={errors.booking_type?.message}
+                  required
+                >
+                  <SelectControl
+                    options={BOOKING_TYPE_SELECT_OPTIONS}
+                    {...register("booking_type")}
                   />
                 </Field>
 

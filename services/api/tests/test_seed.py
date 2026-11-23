@@ -17,12 +17,14 @@ EXPECTED_COUNTS = {
     "profiles": 5,
     "ports": 2,
     "operator_ports": 3,
-    "shipments": 12,
-    "shipment_events": 21,
+    "shipments": 13,
+    "shipment_events": 22,
     "prediction_runs": 0,
     "capacity_forecasts": 0,
     "tariff_rules": 12,
     "audit_logs": 0,
+    "shared_containers": 1,
+    "cargo_items": 6,
 }
 
 
@@ -38,7 +40,7 @@ def test_seed_contains_spec_demo_data(db_session: Session) -> None:
     seed_demo(db_session, app_env="test")
 
     statuses = Counter(db_session.scalars(select(Shipment.status)).all())
-    assert sum(statuses.values()) == 12
+    assert sum(statuses.values()) == 13
     assert all(statuses[status] > 0 for status in ShipmentStatus)
 
     cleared = db_session.scalars(
@@ -57,7 +59,7 @@ def test_seed_created_events_are_never_in_the_future(db_session: Session) -> Non
     occurred = db_session.scalars(
         select(ShipmentEvent.occurred_at).where(ShipmentEvent.event_type == "created")
     ).all()
-    assert len(occurred) == 12
+    assert len(occurred) == 13
     assert all(value <= datetime.now(UTC) for value in occurred)
 
 

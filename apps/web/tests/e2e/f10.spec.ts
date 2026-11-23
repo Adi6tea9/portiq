@@ -73,76 +73,12 @@ async function tabUntil(page: Page, text: string, max = 40) {
 }
 
 test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
-  test("landing states the promise, the three steps and the limitations", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Predict. Plan. Ship." }),
-    ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
-    for (const step of [
-      "Create a shipment",
-      "Run a prediction",
-      "Plan with the forecast",
-    ]) {
-      await expect(page.getByRole("heading", { name: step })).toBeVisible();
-    }
-
-    await expect(
-      page.getByRole("heading", { name: "Honest limitations" }),
-    ).toBeVisible();
-    await expect(page.getByText("No terminal integration")).toBeVisible();
-    await expect(page.getByText("Estimates, not guarantees")).toBeVisible();
-    await expect(page.getByText("Synthetic demo data").first()).toBeVisible();
-
-    await expect(
-      page.getByRole("banner").getByRole("link", { name: "Sign in" }),
-    ).toHaveAttribute("href", "/login");
-    await expect(
-      page.getByRole("banner").getByRole("link", { name: "Create account" }),
-    ).toHaveAttribute("href", "/signup");
-    await expect(
-      page.getByRole("main").getByRole("link", { name: "Sign in" }),
-    ).toHaveAttribute("href", "/login");
-    await expect(
-      page.getByRole("main").getByRole("link", { name: "Create account" }),
-    ).toHaveAttribute("href", "/signup");
-
-    await capture(page, "landing");
-  });
-
-  test("landing is mobile friendly", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/");
-
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Predict. Plan. Ship." }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("main").getByRole("link", { name: "Sign in" }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("main").getByRole("link", { name: "Create account" }),
-    ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
-
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    );
-    expect(overflow).toBeLessThanOrEqual(1);
-
-    await capture(page, "landing-mobile");
-  });
-
   test("importer creates a shipment, runs a prediction and sees the result", async ({
     page,
   }) => {
     test.setTimeout(120_000);
 
     await page.goto("/");
-    await page.getByRole("main").getByRole("link", { name: "Sign in" }).click();
     await expect(page).toHaveURL(/\/login$/);
 
     await page.getByLabel("Email").fill("importer@portiq.demo");
@@ -299,30 +235,12 @@ test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
     await capture(page, "settings");
   });
 
-  test("landing, sign-in and navigation work with the keyboard only", async ({
+  test("sign-in and navigation work with the keyboard only", async ({
     page,
   }) => {
     test.setTimeout(120_000);
 
-    await page.goto("/");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Predict. Plan. Ship." }),
-    ).toBeVisible();
-
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toHaveText("Skip to content");
-
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toHaveAttribute(
-      "aria-label",
-      "PortIQ home",
-    );
-
-    await page.keyboard.press("Tab");
-    await expect(page.locator(":focus")).toHaveText("Sign in");
-    await page.keyboard.press("Enter");
-
-    await expect(page).toHaveURL(/\/login$/);
+    await page.goto("/login");
     await expect(page.getByRole("heading", { name: "Welcome to PortIQ" })).toBeVisible();
 
     await page.keyboard.press("Tab");

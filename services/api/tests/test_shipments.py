@@ -46,6 +46,7 @@ SHIPMENT_KEYS = {
     "customs_channel",
     "importer_type",
     "cargo_priority",
+    "booking_type",
     "status",
     "actual_arrival_at",
     "actual_cleared_at",
@@ -315,6 +316,15 @@ def test_list_filters_and_pagination(api: TestClient, demo: Session) -> None:
     )
     assert set(_references(window)) == {"DEMO-2026-005", "DEMO-2026-006"}
 
+    # The web app sends whole days as timestamps; they select the same window.
+    stamped = api.get(
+        "/api/v1/shipments?arrival_from=2026-11-20T00:00:00.000Z"
+        "&arrival_to=2026-11-30T23:59:59.999Z",
+        headers=headers,
+    )
+    assert stamped.status_code == 200
+    assert set(_references(stamped)) == {"DEMO-2026-005", "DEMO-2026-006"}
+
     page = api.get("/api/v1/shipments?page=2&page_size=3", headers=headers)
     assert len(page.json()["data"]) == 3
     assert page.json()["meta"]["pagination"] == {"page": 2, "page_size": 3, "total": 7}
@@ -333,11 +343,12 @@ def test_operator_list_is_scoped_by_port(api: TestClient, demo: Session) -> None
         "DEMO-2026-007",
         "DEMO-2026-009",
         "DEMO-2026-011",
+        "DEMO-2026-013",
     }
     assert {item["port_id"] for item in in_nsa.json()["data"]} == {_port_id(demo, "INNSA")}
 
     everywhere = api.get("/api/v1/shipments?page_size=100", headers=_bearer(OPERATOR))
-    assert len(everywhere.json()["data"]) == 12
+    assert len(everywhere.json()["data"]) == 13
 
     admin = api.get("/api/v1/shipments", headers=_bearer(ADMIN))
     assert admin.status_code == 403
@@ -354,8 +365,8 @@ def test_summary_is_importer_only(api: TestClient, demo: Session) -> None:
 
     second = api.get("/api/v1/shipments/summary", headers=_bearer(IMPORTER2))
     assert second.json()["data"] == {
-        "total": 5,
-        "status_counts": {"submitted": 2, "arrived": 2, "cleared": 1},
+        "total": 6,
+        "status_counts": {"submitted": 3, "arrived": 2, "cleared": 1},
     }
 
     for email in (OPERATOR, ADMIN):

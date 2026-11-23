@@ -68,12 +68,14 @@ export function ParcelMeshes({ parcels, selectedId, onSelect }: ParcelMeshesProp
               material={materialFor(parcel.categoryId, state)}
               scale={[parcel.length * 0.985, parcel.height * 0.985, parcel.width * 0.985]}
               onClick={(event: ThreeEvent<MouseEvent>) => {
+                if (parcel.locked) return;
                 if (event.delta > DRAG_TOLERANCE) return;
                 event.stopPropagation();
                 onSelect(parcel.id);
               }}
               onPointerOver={(event) => {
                 event.stopPropagation();
+                if (parcel.locked) return;
                 setHoveredId(parcel.id);
               }}
               onPointerOut={() =>
@@ -94,7 +96,7 @@ export function ParcelMeshes({ parcels, selectedId, onSelect }: ParcelMeshesProp
                 zIndexRange={[20, 0]}
               >
                 <span className="pointer-events-none whitespace-nowrap rounded-full bg-primary px-2 py-0.5 text-xs font-semibold text-white shadow">
-                  {parcel.id}
+                  {parcel.label ?? parcel.id}
                 </span>
               </Html>
             )}

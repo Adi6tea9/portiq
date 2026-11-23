@@ -14,6 +14,22 @@ const RECOVERY_ERROR = "Unable to send a recovery link. Please try again.";
 const UPDATE_PASSWORD_ERROR =
   "Unable to update your password. Please try again.";
 
+// Supabase error codes worth telling the user; anything else stays generic.
+const SIGN_UP_MESSAGES: Record<string, string> = {
+  user_already_exists: "An account with this email already exists. Sign in instead.",
+  email_exists: "An account with this email already exists. Sign in instead.",
+  weak_password: "Choose a stronger password.",
+  email_address_invalid: "This email address cannot be used.",
+  over_email_send_rate_limit:
+    "Too many emails were sent recently. Wait a few minutes and try again.",
+  over_request_rate_limit: "Too many attempts. Wait a few minutes and try again.",
+  signup_disabled: "New accounts are not open right now.",
+};
+
+export function signUpErrorMessage(code: string | undefined): string {
+  return (code && SIGN_UP_MESSAGES[code]) || SIGN_UP_ERROR;
+}
+
 function redirectUrl(path: string): string | undefined {
   if (typeof window === "undefined") {
     return undefined;
@@ -66,7 +82,7 @@ export async function signUpWithPassword(
   });
 
   if (error) {
-    return { error: SIGN_UP_ERROR };
+    return { error: signUpErrorMessage(error.code) };
   }
 
   return { error: null, needsEmailConfirmation: !data.session };

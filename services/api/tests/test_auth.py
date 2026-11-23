@@ -306,7 +306,7 @@ def test_supabase_rejects_invalid_tokens(supabase: RSAPrivateKey) -> None:
     del missing_sub["sub"]
 
     tokens = {
-        "expired": _token(supabase, _claims(exp=now - timedelta(seconds=1))),
+        "expired": _token(supabase, _claims(exp=now - timedelta(minutes=5))),
         "wrong_audience": _token(supabase, _claims(aud="someone-else")),
         "wrong_issuer": _token(supabase, _claims(iss="https://evil.example/auth/v1")),
         "bad_signature": _token(other_key, _claims()),
@@ -385,7 +385,7 @@ def test_supabase_http_rejects_invalid_expired_and_wrong_audience_tokens(
     now = datetime.now(UTC)
     other_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     tokens = [
-        _token(supabase, _claims(exp=now - timedelta(seconds=1))),
+        _token(supabase, _claims(exp=now - timedelta(minutes=5))),
         _token(supabase, _claims(aud="someone-else")),
         _token(other_key, _claims()),
     ]

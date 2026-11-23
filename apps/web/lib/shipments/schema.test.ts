@@ -24,6 +24,7 @@ const validValues: ShipmentFormValues = {
   customs_channel: "unknown",
   importer_type: "regular",
   cargo_priority: "standard",
+  booking_type: "full",
 };
 
 function fieldError(field: string, value: unknown): string | undefined {
@@ -133,6 +134,7 @@ describe("toShipmentCreate", () => {
       customs_channel: "unknown",
       importer_type: "regular",
       cargo_priority: "standard",
+      booking_type: "full",
     });
     expect(payload).not.toHaveProperty("owner_id");
     expect(payload).not.toHaveProperty("status");

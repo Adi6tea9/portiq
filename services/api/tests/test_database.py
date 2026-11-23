@@ -120,7 +120,7 @@ def test_migrations_apply_from_empty_and_create_every_spec_table(
 
     with migrated_engine.connect() as connection:
         revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-    assert revision == "0002_shipment_model_inputs"
+    assert revision == "0003_load_planner"
 
 
 def test_row_level_security_is_enabled_on_every_table(migrated_engine: Engine) -> None:

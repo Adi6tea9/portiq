@@ -17,8 +17,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.v1 import cargo as cargo_api
 from app.core.deps import get_db
-from app.models import Port, Profile, Shipment, TariffRule
+from app.models import CargoItem, Port, Profile, Shipment, TariffRule
 from app.schemas.enums import ShipmentStatus
 from app.services.prediction import RATE_LIMIT_CACHE
 from scripts.seed_dev import seed_demo
@@ -42,6 +43,13 @@ MATRIX: list[tuple[str, str, set[str]]] = [
     ("POST", "/shipments/{shipment}/prediction", {IMP, OPS}),
     ("GET", "/shipments/{shipment}/predictions", {IMP, OPS}),
     ("GET", "/shipments/{shipment}/predictions/{prediction}", {IMP, OPS}),
+    ("GET", "/shipments/{shipment}/cargo", {IMP, OPS, ADM}),
+    ("POST", "/shipments/{shipment}/cargo", {IMP}),
+    ("PATCH", "/shipments/{shipment}/cargo/{item}", {IMP}),
+    ("DELETE", "/shipments/{shipment}/cargo/{item}", {IMP}),
+    ("GET", "/shipments/{shipment}/shared-containers", {IMP, OPS, ADM}),
+    ("GET", "/shipments/{shipment}/load-plan", {IMP, OPS, ADM}),
+    ("GET", "/shipments/{shipment}/load-plan/stream", {IMP, OPS, ADM}),
     ("GET", "/capacity/forecast?port_id={port}&resource_type=yard&from=2026-11-01&to=2026-11-10",
      {IMP, OPS, ADM}),
     ("GET", "/operator/overview", {OPS, ADM}),
@@ -54,8 +62,9 @@ MATRIX: list[tuple[str, str, set[str]]] = [
 
 
 @pytest.fixture(autouse=True)
-def reset_rate_limiter() -> None:
+def reset_rate_limiter(monkeypatch: pytest.MonkeyPatch) -> None:
     RATE_LIMIT_CACHE.clear()
+    monkeypatch.setattr(cargo_api, "STREAM_MAX_SECONDS", 0)
 
 
 @pytest.fixture
@@ -90,7 +99,10 @@ def ids(api: TestClient, db_session: Session) -> dict[str, str]:
     assert created.status_code == 201, created.text
     rule = db_session.query(TariffRule).first()
     assert rule is not None
+    item = db_session.query(CargoItem).filter(CargoItem.shipment_id == shipment.id).first()
+    assert item is not None, "seed has no cargo on the importer's INMUN shipment"
     return {
+        "item": str(item.id),
         "shipment": str(shipment.id),
         "prediction": created.json()["data"]["prediction_id"],
         "rule": str(rule.id),
@@ -136,7 +148,8 @@ def test_matrix_covers_every_contract_route(app: FastAPI) -> None:
     listed = {(method, path.split("?")[0]) for method, path, _ in MATRIX}
     named = {
         (m, p.replace("{shipment}", "{shipment_id}")
-             .replace("{prediction}", "{prediction_id}").replace("{rule}", "{rule_id}"))
+             .replace("{prediction}", "{prediction_id}").replace("{rule}", "{rule_id}")
+             .replace("{item}", "{item_id}"))
         for m, p in listed
     }
     outside_contract = {("POST", "/predict/dwell"), ("GET", "/operator/dashboard/summary")}

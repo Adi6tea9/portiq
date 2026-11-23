@@ -28,7 +28,8 @@ class ErrorDetail(BaseModel):
 class ErrorBody(BaseModel):
     code: str
     message: str
-    details: list[ErrorDetail] | None = None
+    # ``{field, issue}`` for validation; code-specific objects otherwise (e.g. CONTAINER_FULL).
+    details: list[ErrorDetail | dict[str, Any]] | None = None
     request_id: str
 
 

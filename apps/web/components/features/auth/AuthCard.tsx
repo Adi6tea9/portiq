@@ -33,7 +33,7 @@ export function AuthCard({
 export function AuthBrand() {
   return (
     <Link
-      href="/"
+      href="/login"
       aria-label="PortIQ home"
       className="inline-flex items-center gap-2 text-harbor-navy"
     >
