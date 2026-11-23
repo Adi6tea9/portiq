@@ -232,6 +232,7 @@ apps/web/.next/
 apps/web/out/
 apps/web/.env*.local
 apps/web/test-results/
+apps/web/test-results-live/
 apps/web/playwright-report/
 apps/web/tsconfig.tsbuildinfo
 apps/web/.localstorage*

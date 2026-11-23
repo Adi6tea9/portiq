@@ -23,7 +23,7 @@ import type { ShipmentDetail, ShipmentStatus } from "@/lib/api/types";
 import { ApiError } from "@/lib/api/client";
 import { useShipmentDetail, usePredictionHistory } from "@/lib/api/hooks/useShipmentDetail";
 import { usePorts } from "@/lib/api/hooks/usePorts";
-import { useRole } from "@/components/providers/RoleProvider";
+import { useMe } from "@/components/providers/MeProvider";
 import { recordShipmentEvent } from "@/lib/shipments/api";
 import { RunPredictionButton } from "@/components/features/predictions/RunPredictionButton";
 import {
@@ -335,7 +335,8 @@ export function ShipmentDetailClient({
   runMockError,
 }: ShipmentDetailClientProps) {
   const router = useRouter();
-  const { role } = useRole();
+  // The signed-in account's role; RoleProvider only tracks the mock role switcher.
+  const { role } = useMe();
   const query = useShipmentDetail({ id, mockError });
   const portsQuery = usePorts();
   const [eventSheetOpen, setEventSheetOpen] = React.useState(false);

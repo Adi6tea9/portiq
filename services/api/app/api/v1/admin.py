@@ -227,7 +227,8 @@ def list_audit_logs(
     """Append-only audit trail, newest first (backend spec section 8)."""
     total = session.scalar(select(func.count()).select_from(AuditLog)) or 0
     rows = session.execute(
-        select(AuditLog, Profile.display_name)
+        # Accounts from Supabase sign-up have no display name; admins still need to see who acted.
+        select(AuditLog, func.coalesce(Profile.display_name, Profile.email))
         .outerjoin(Profile, Profile.id == AuditLog.actor_user_id)
         .order_by(AuditLog.created_at.desc(), AuditLog.id.desc())
         .offset((page - 1) * page_size)

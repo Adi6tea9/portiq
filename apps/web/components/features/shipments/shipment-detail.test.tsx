@@ -16,8 +16,8 @@ vi.mock("next/navigation", () => ({
 
 const mockRole = vi.hoisted(() => ({ role: "importer_exporter" }));
 
-vi.mock("@/components/providers/RoleProvider", () => ({
-  useRole: () => mockRole,
+vi.mock("@/components/providers/MeProvider", () => ({
+  useMe: () => mockRole,
 }));
 
 function renderWithClient(ui: ReactElement) {

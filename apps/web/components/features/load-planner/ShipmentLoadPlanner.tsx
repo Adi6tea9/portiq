@@ -6,7 +6,7 @@ import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageState } from "@/components/shared/PageState";
 import { SelectControl } from "@/components/features/shipments/SelectControl";
-import { useRole } from "@/components/providers/RoleProvider";
+import { useMe } from "@/components/providers/MeProvider";
 import { useShipmentDetail } from "@/lib/api/hooks/useShipmentDetail";
 import { useCargo, useLoadPlan, useLoadPlanStream } from "@/lib/api/hooks/useLoadPlan";
 import { validatePlacement } from "@/lib/load-planner/calculations";
@@ -22,7 +22,8 @@ import { PlannerWorkspace } from "./LoadPlannerClient";
 
 /** Shipment mode: real cargo, packed by the server, refreshed live. */
 export function ShipmentLoadPlanner({ shipmentId }: { shipmentId: string }) {
-  const { role } = useRole();
+  // The signed-in account's role; RoleProvider only tracks the mock role switcher.
+  const { role } = useMe();
   const shipmentQuery = useShipmentDetail({ id: shipmentId });
   const planQuery = useLoadPlan(shipmentId);
   const cargoQuery = useCargo(shipmentId);
@@ -97,9 +98,11 @@ export function ShipmentLoadPlanner({ shipmentId }: { shipmentId: string }) {
         </>
       }
       subtitle={
-        shipment.booking_type === "shared"
-          ? "Packed automatically. Grey blocks are other shipments' cargo."
-          : "Packed automatically from your cargo lines."
+        planQuery.data?.viewer_sees_all
+          ? "Packed automatically. As port staff you can see every shipment's cargo here."
+          : shipment.booking_type === "shared"
+            ? "Packed automatically. Grey blocks are other shipments' cargo."
+            : "Packed automatically from your cargo lines."
       }
       containerControl={
         <>

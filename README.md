@@ -139,9 +139,9 @@ The suite drops and recreates the `public` schema of `portiq_test`, runs every m
 empty, and rolls each test back. It refuses any database whose name does not end in `_test` on a
 non-local host, so it can never touch Supabase.
 
-Current state (23 Nov): `pytest` **197 passed** (plus **20** in `ml/tests`), `ruff check .` **clean**,
+Current state (24 Nov): `pytest` **241 passed** (plus **20** in `ml/tests`), `ruff check .` **clean**,
 `mypy .` **0 errors**. Without a local Python, run the suite in Docker (command in
-`BACKEND_FIXES_REPORT.md`). Frontend: 191 Vitest tests pass; Playwright runs in mock mode.
+`BACKEND_FIXES_REPORT.md`). Frontend: 209 Vitest tests pass; Playwright (87) runs in mock mode.
 
 ```powershell
 cd apps\web
@@ -149,6 +149,27 @@ npm run lint
 npm run typecheck
 npm test
 ```
+
+
+### Live browser test
+
+`apps/web/tests/live/` signs in through real Supabase as an importer, creates a shipment, runs a
+prediction, adds cargo in the Load planner and opens every importer screen. It needs the API and
+the web app running in live mode, and the account's email and password in two environment
+variables (never in a file). Without them the tests are skipped. Each run leaves one
+`LIVE-E2E-…` shipment on that account.
+
+```powershell
+cd apps\web
+$env:PORTIQ_LIVE_EMAIL = "test@portiq.dev"
+$env:PORTIQ_LIVE_PASSWORD = Read-Host "Password"
+npm run test:live
+```
+
+Two more checks run when their accounts are set the same way: `PORTIQ_LIVE_OPERATOR_EMAIL` /
+`PORTIQ_LIVE_OPERATOR_PASSWORD` (overview scope, no editing) and `PORTIQ_LIVE_ADMIN_EMAIL` /
+`PORTIQ_LIVE_ADMIN_PASSWORD` (tariffs, audit log naming each actor). A real run ends with
+"passed"; "skipped" means the variables were not set in that PowerShell window.
 
 ## Supabase integration (B11)
 

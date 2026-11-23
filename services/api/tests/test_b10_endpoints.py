@@ -274,3 +274,23 @@ def test_overview_scope_and_validation(api: TestClient, demo: Session) -> None:
     assert len(admin.json()["data"]["port_scope"]) >= 2
     importer = api.get("/api/v1/operator/overview", headers=auth("importer@portiq.demo"))
     assert importer.status_code == 403
+
+
+def test_audit_log_names_an_actor_without_a_display_name_by_email(
+    api: TestClient, demo: Session
+) -> None:
+    operator = demo.query(Profile).filter(Profile.email == "operator@portiq.demo").one()
+    operator.display_name = None
+    demo.flush()
+    shipment = (
+        demo.query(Shipment).filter(Shipment.status == ShipmentStatus.SUBMITTED).first()
+    )
+    assert shipment is not None
+    api.post(
+        f"/api/v1/shipments/{shipment.id}/events",
+        headers=auth("operator@portiq.demo"),
+        json={"to_status": "arrived", "occurred_at": datetime.now(UTC).isoformat()},
+    )
+
+    logs = api.get("/api/v1/admin/audit-logs", headers=auth("admin@portiq.demo")).json()["data"]
+    assert logs[0]["actor_display_name"] == "operator@portiq.demo"
