@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Badge } from "@/components/ui/badge";
 import { PageState } from "@/components/shared/PageState";
 import { Callout } from "@/components/shared/Callout";
@@ -78,7 +79,7 @@ function HeadlineCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-        <CardTitle className="text-base">Prediction result</CardTitle>
+        <CardTitle className="text-base">Prediction result <InfoTip label="Prediction result">The model’s best guess of how many days the container will wait at the port, and when it should clear. It is an estimate, not a promise.</InfoTip></CardTitle>
         <Badge variant="outline" className="text-xs">
           Estimate
         </Badge>
@@ -106,7 +107,7 @@ function CostCard({ prediction }: { prediction: Prediction }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Cost breakdown</CardTitle>
+        <CardTitle className="text-base">Cost breakdown <InfoTip label="Cost breakdown">Charges worked out from the predicted dwell and the tariffs in force. Days beyond the free period add storage and demurrage. Check with your carrier before paying.</InfoTip></CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <ul className="space-y-2">
@@ -174,7 +175,7 @@ function CapacityCard({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Port capacity</CardTitle>
+          <CardTitle className="text-base">Port capacity <InfoTip label="Port capacity">How busy the port is expected to be around your arrival date. High use often means longer dwell.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm font-medium">Unavailable</p>
@@ -191,7 +192,7 @@ function CapacityCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Port capacity</CardTitle>
+        <CardTitle className="text-base">Port capacity <InfoTip label="Port capacity">How busy the port is expected to be around your arrival date. High use often means longer dwell.</InfoTip></CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <dl className="space-y-3 text-sm">
@@ -268,7 +269,7 @@ function ExplanationCard({ explanation }: { explanation: Prediction["explanation
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">What influenced this prediction</CardTitle>
+          <CardTitle className="text-base">What influenced this prediction <InfoTip label="What influenced this prediction">The shipment details that pushed the estimate up or down the most. Longer bars had a bigger effect.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm font-medium">Unavailable</p>
@@ -281,7 +282,7 @@ function ExplanationCard({ explanation }: { explanation: Prediction["explanation
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">What influenced this prediction</CardTitle>
+        <CardTitle className="text-base">What influenced this prediction <InfoTip label="What influenced this prediction">The shipment details that pushed the estimate up or down the most. Longer bars had a bigger effect.</InfoTip></CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {explanation.base_value_days !== undefined && (

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageState } from "@/components/shared/PageState";
@@ -172,7 +173,7 @@ export function CapacityClient({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Forecast controls</CardTitle>
+          <CardTitle className="text-base">Forecast controls <InfoTip label="Forecast controls">Pick a port, date range and area (yard or berth) to see how full it is expected to be.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
@@ -273,6 +274,7 @@ export function CapacityClient({
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
               <CardTitle className="text-base">
                 {resourceType === "yard" ? "Yard" : "Berth"} utilization
+                <InfoTip label="utilization">Share of capacity expected to be in use each day. The chart and the table show the same numbers.</InfoTip>
               </CardTitle>
               <ThresholdLegend thresholds={config.capacity_thresholds} />
             </CardHeader>

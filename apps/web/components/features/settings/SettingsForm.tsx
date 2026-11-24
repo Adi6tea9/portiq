@@ -4,6 +4,7 @@ import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Callout } from "@/components/shared/Callout";
 import { Field } from "@/components/shared/Field";
@@ -82,12 +83,13 @@ export function SettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Profile</CardTitle>
+        <CardTitle className="text-base">Profile <InfoTip label="Profile">Your account details. Only the display name can be changed here.</InfoTip></CardTitle>
       </CardHeader>
       <CardContent>
         <form noValidate className="space-y-6" onSubmit={onSubmit}>
           <Field
             id="settings-display-name"
+            info="The name other people see on shipments and events. Your email can't be changed here."
             label="Display name"
             required
             hint={`Shown on shipments and events you record. Up to ${DISPLAY_NAME_MAX_LENGTH} characters.`}

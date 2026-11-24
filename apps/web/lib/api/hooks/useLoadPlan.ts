@@ -163,12 +163,15 @@ export function useLoadPlanStream(shipmentId: string): { connected: boolean } {
           if (!response.ok || !response.body) throw new Error(`stream ${response.status}`);
           setConnected(true);
           attempt = 0;
-          const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+          // Read bytes directly: pipeThrough() leaves an internal pipe promise that rejects
+          // with an unhandled AbortError when the page closes the stream.
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
           let buffer = "";
           for (;;) {
             const { value, done } = await reader.read();
             if (done) break;
-            const parsed = parseSseChunk(buffer + value);
+            const parsed = parseSseChunk(buffer + decoder.decode(value, { stream: true }));
             buffer = parsed.rest;
             if (parsed.events.some((event) => event.event === "version")) {
               void queryClient.invalidateQueries({ queryKey: planKey(shipmentId) });
@@ -183,7 +186,7 @@ export function useLoadPlanStream(shipmentId: string): { connected: boolean } {
         await new Promise((resolve) => setTimeout(resolve, wait));
       }
     };
-    void run();
+    run().catch(() => undefined);
     return () => controller.abort();
   }, [shipmentId, queryClient]);
 

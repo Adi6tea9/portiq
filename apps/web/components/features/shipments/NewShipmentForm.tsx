@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Callout } from "@/components/shared/Callout";
 import { Field } from "@/components/shared/Field";
+import { SHIPMENT_FIELD_INFO } from "@/lib/shipments/field-info";
 import { PageState } from "@/components/shared/PageState";
 import { ApiError } from "@/lib/api/client";
 import { usePorts } from "@/lib/api/hooks/usePorts";
@@ -201,6 +202,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field
                   id="port_id"
+                  info={SHIPMENT_FIELD_INFO.port_id}
                   label="Port"
                   hint={portHint}
                   error={errors.port_id?.message}
@@ -215,6 +217,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="reference"
+                  info={SHIPMENT_FIELD_INFO.reference}
                   label="Reference"
                   error={errors.reference?.message}
                   required
@@ -224,6 +227,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="direction"
+                  info={SHIPMENT_FIELD_INFO.direction}
                   label="Direction"
                   error={errors.direction?.message}
                   required
@@ -237,6 +241,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="cargo_type"
+                  info={SHIPMENT_FIELD_INFO.cargo_type}
                   label="Cargo type"
                   error={errors.cargo_type?.message}
                   required
@@ -250,6 +255,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="container_size_ft"
+                  info={SHIPMENT_FIELD_INFO.container_size_ft}
                   label="Container size"
                   error={errors.container_size_ft?.message}
                   required
@@ -263,6 +269,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="booking_type"
+                  info={SHIPMENT_FIELD_INFO.booking_type}
                   label="Booking type"
                   hint="Shared puts your cargo in a container with other shipments."
                   error={errors.booking_type?.message}
@@ -276,6 +283,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="hs_code"
+                  info={SHIPMENT_FIELD_INFO.hs_code}
                   label="HS code"
                   hint="6 digits."
                   error={errors.hs_code?.message}
@@ -291,6 +299,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="weight_kg"
+                  info={SHIPMENT_FIELD_INFO.weight_kg}
                   label="Weight"
                   hint="kg"
                   error={errors.weight_kg?.message}
@@ -307,6 +316,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="declared_value"
+                  info={SHIPMENT_FIELD_INFO.declared_value}
                   label="Declared value"
                   hint="INR, two decimal places."
                   error={errors.declared_value?.message}
@@ -319,12 +329,13 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
                   />
                 </Field>
 
-                <Field id="currency" label="Currency">
+                <Field id="currency" label="Currency" info={SHIPMENT_FIELD_INFO.currency}>
                   <Input value="INR" readOnly aria-readonly="true" />
                 </Field>
 
                 <Field
                   id="shipping_line"
+                  info={SHIPMENT_FIELD_INFO.shipping_line}
                   label="Shipping line"
                   error={errors.shipping_line?.message}
                   required
@@ -338,6 +349,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="vessel_size_band"
+                  info={SHIPMENT_FIELD_INFO.vessel_size_band}
                   label="Vessel size band"
                   error={errors.vessel_size_band?.message}
                   required
@@ -351,6 +363,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="expected_arrival_at"
+                  info={SHIPMENT_FIELD_INFO.expected_arrival_at}
                   label="Expected arrival"
                   hint={arrivalHint}
                   error={errors.expected_arrival_at?.message}
@@ -364,6 +377,7 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
 
                 <Field
                   id="documentation_status"
+                  info={SHIPMENT_FIELD_INFO.documentation_status}
                   label="Documentation status"
                   error={errors.documentation_status?.message}
                   required

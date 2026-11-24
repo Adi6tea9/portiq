@@ -7,6 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -425,7 +426,7 @@ export function TariffsClient() {
         <TabsContent value="rules" className="space-y-6 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">New version</CardTitle>
+              <CardTitle className="text-base">New version <InfoTip label="New version">Add a tariff rule. It applies from its valid-from date; existing versions stay in the audit trail.</InfoTip></CardTitle>
             </CardHeader>
             <CardContent>
               <form
@@ -435,6 +436,7 @@ export function TariffsClient() {
               >
                 <Field
                   id="tariff-rule-type"
+                  info="What the rule charges for, such as customs duty, storage or demurrage."
                   label="Rule type"
                   required
                   error={errors.rule_type?.message}
@@ -446,6 +448,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-rate-type"
+                  info="How the rate is applied: flat amount, percent of declared value, per day, or tiered (rate changes after set days)."
                   label="Rate type"
                   required
                   error={errors.rate_type?.message}
@@ -455,7 +458,7 @@ export function TariffsClient() {
                     {...form.register("rate_type")}
                   />
                 </Field>
-                <Field id="tariff-port" label="Port">
+                <Field id="tariff-port" info="Limit the rule to one port, or leave it for all ports." label="Port">
                   <SelectControl
                     options={portOptions}
                     {...form.register("port_id")}
@@ -463,6 +466,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-hs-prefix"
+                  info="Apply only to goods whose HS code starts with these digits. Leave blank for all goods."
                   label="HS code prefix"
                   error={errors.hs_code_prefix?.message}
                 >
@@ -473,19 +477,19 @@ export function TariffsClient() {
                     {...form.register("hs_code_prefix")}
                   />
                 </Field>
-                <Field id="tariff-shipping-line" label="Shipping line">
+                <Field id="tariff-shipping-line" info="Limit the rule to one carrier, or leave it for all." label="Shipping line">
                   <SelectControl
                     options={SHIPPING_SELECT}
                     {...form.register("shipping_line")}
                   />
                 </Field>
-                <Field id="tariff-cargo-type" label="Cargo type">
+                <Field id="tariff-cargo-type" info="Limit the rule to one cargo type, or leave it for all." label="Cargo type">
                   <SelectControl
                     options={CARGO_SELECT}
                     {...form.register("cargo_type")}
                   />
                 </Field>
-                <Field id="tariff-container-size" label="Container size">
+                <Field id="tariff-container-size" info="Limit the rule to 20 ft or 40 ft containers, or leave it for both." label="Container size">
                   <SelectControl
                     options={CONTAINER_SELECT}
                     {...form.register("container_size_ft")}
@@ -493,6 +497,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-rate-value"
+                  info="The amount or percentage charged, depending on the rate type."
                   label="Rate value"
                   required
                   hint="Decimal string, e.g. 850.00"
@@ -506,6 +511,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-free-days"
+                  info="Days at the port before this charge starts."
                   label="Free days"
                   error={errors.free_days?.message}
                 >
@@ -518,6 +524,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-valid-from"
+                  info="The first day this rule applies."
                   label="Valid from"
                   required
                   error={errors.valid_from?.message}
@@ -526,6 +533,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-valid-to"
+                  info="The last day this rule applies. Leave blank if it has no end date."
                   label="Valid to"
                   hint="Leave blank for open-ended"
                   error={errors.valid_to?.message}
@@ -534,6 +542,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-version"
+                  info="A label for this version so you can tell changes apart."
                   label="Version"
                   required
                   error={errors.version?.message}
@@ -546,6 +555,7 @@ export function TariffsClient() {
                 </Field>
                 <Field
                   id="tariff-source-note"
+                  info="Where the rate came from, such as a circular or carrier notice."
                   label="Source note"
                   required
                   className="md:col-span-2"
@@ -559,6 +569,7 @@ export function TariffsClient() {
                 {rateType === "tiered" ? (
                   <Field
                     id="tariff-tier-config"
+                    info="Only for the tiered rate type: JSON listing the rate for each band of days."
                     label="Tier config (JSON)"
                     required
                     className="md:col-span-2"
@@ -599,7 +610,7 @@ export function TariffsClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Rules</CardTitle>
+              <CardTitle className="text-base">Rules <InfoTip label="Rules">All tariff rule versions. Filter them to find the one that applies.</InfoTip></CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -702,7 +713,7 @@ export function TariffsClient() {
         <TabsContent value="audit" className="space-y-6 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Audit trail</CardTitle>
+              <CardTitle className="text-base">Audit trail <InfoTip label="Audit trail">Who changed which rule and when.</InfoTip></CardTitle>
             </CardHeader>
             <CardContent>
               {auditQuery.isError ? (

@@ -253,6 +253,7 @@ node_modules/
 
 # Build files
 .next/
+.next-e2e/
 dist/
 build/
 

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Callout } from "@/components/shared/Callout";
 import { Field } from "@/components/shared/Field";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { SelectControl } from "@/components/features/shipments/SelectControl";
 import {
   containerFullDetail,
@@ -37,7 +38,7 @@ import {
   toCargoCreate,
   type CargoFormValues,
 } from "@/lib/load-planner/cargo-schema";
-import { CARGO_CATEGORIES } from "@/lib/load-planner/config";
+import { CARGO_CATEGORIES, CONTAINERS } from "@/lib/load-planner/config";
 
 const CATEGORY_OPTIONS = CARGO_CATEGORY_OPTIONS.map((id) => ({
   value: id,
@@ -175,28 +176,29 @@ export function CargoPanel({ shipment, cargo, editable }: CargoPanelProps) {
           <h3 className="text-sm font-semibold text-text">
             {editing ? `Edit ${editing.name}` : "Add cargo"}
           </h3>
-          <Field id="cargo-name" label="Name" error={errors.name?.message} required>
+          <ContainerLimits size={shipment.container_size_ft} />
+          <Field id="cargo-name" label="Name" info="A short name for this cargo line, up to 80 characters." error={errors.name?.message} required>
             <Input autoComplete="off" {...register("name")} />
           </Field>
-          <Field id="cargo-category" label="Category" error={errors.category?.message} required>
+          <Field id="cargo-category" label="Category" info="The kind of package. Fragile parcels never carry anything on top." error={errors.category?.message} required>
             <SelectControl options={CATEGORY_OPTIONS} {...register("category")} />
           </Field>
           <div className="grid grid-cols-3 gap-2">
-            <Field id="cargo-length" label="Length cm" error={errors.length_cm?.message} required>
+            <Field id="cargo-length" label="Length cm" info={<>Size of one parcel in centimetres. Must fit inside the container. Parcels may be turned 90° on the floor, so length and width can swap.</>} error={errors.length_cm?.message} required>
               <Input inputMode="decimal" {...register("length_cm")} />
             </Field>
-            <Field id="cargo-width" label="Width cm" error={errors.width_cm?.message} required>
+            <Field id="cargo-width" label="Width cm" info={<>Size of one parcel in centimetres. Must fit inside the container. Parcels may be turned 90° on the floor, so length and width can swap.</>} error={errors.width_cm?.message} required>
               <Input inputMode="decimal" {...register("width_cm")} />
             </Field>
-            <Field id="cargo-height" label="Height cm" error={errors.height_cm?.message} required>
+            <Field id="cargo-height" label="Height cm" info={<>Size of one parcel in centimetres. Must fit inside the container. Parcels are never tipped, so the height must fit as it is.</>} error={errors.height_cm?.message} required>
               <Input inputMode="decimal" {...register("height_cm")} />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <Field id="cargo-weight" label="Weight kg (each)" error={errors.weight_kg?.message} required>
+            <Field id="cargo-weight" label="Weight kg (each)" info="Weight of one parcel, 0.1 to 30,000 kg. All lines together must stay within the container payload." error={errors.weight_kg?.message} required>
               <Input inputMode="decimal" {...register("weight_kg")} />
             </Field>
-            <Field id="cargo-quantity" label="Quantity" error={errors.quantity?.message} required>
+            <Field id="cargo-quantity" label="Quantity" info="How many identical parcels, a whole number from 1 to 500." error={errors.quantity?.message} required>
               <Input inputMode="numeric" {...register("quantity")} />
             </Field>
           </div>
@@ -204,6 +206,10 @@ export function CargoPanel({ shipment, cargo, editable }: CargoPanelProps) {
             <input type="checkbox" {...register("stackable")} />
             Other cargo may be stacked on top
           </label>
+          <InfoTip label="stacking">
+            Untick this for parcels that must not carry weight. Fragile and non-stackable parcels never
+            have anything placed on them.
+          </InfoTip>
           {error && <Callout variant="danger">{error}</Callout>}
           <div className="flex gap-2">
             <Button type="submit" disabled={busy}>
@@ -326,5 +332,17 @@ function ContainerFullDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Compact reminder of what fits, from the same numbers the server checks. */
+function ContainerLimits({ size }: { size: Shipment["container_size_ft"] }) {
+  const c = CONTAINERS[size === 20 ? "20ft" : "40ft"];
+  return (
+    <p className="rounded-md border border-border px-2 py-1.5 text-xs text-muted">
+      <span className="font-medium text-text">Limits for this {size} ft container:</span> inside{" "}
+      {Math.round(c.length * 100)} × {Math.round(c.width * 100)} × {Math.round(c.height * 100)} cm, payload {c.maxPayload.toLocaleString("en-IN")} kg. Per
+      line: 1–500 parcels, 0.1–30,000 kg each, never tipped.
+    </p>
   );
 }

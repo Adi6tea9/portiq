@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Callout } from "@/components/shared/Callout";
 import { Field } from "@/components/shared/Field";
+import { SHIPMENT_FIELD_INFO } from "@/lib/shipments/field-info";
 import { ApiError } from "@/lib/api/client";
 import { useCargo } from "@/lib/api/hooks/useLoadPlan";
 import type { ShipmentDetail, ShipmentPatch } from "@/lib/api/types";
@@ -223,6 +224,7 @@ export function EditShipmentForm({
 
             <Field
               id="cargo_type"
+              info={SHIPMENT_FIELD_INFO.cargo_type}
               label="Cargo type"
               error={errors.cargo_type?.message}
               required
@@ -236,6 +238,7 @@ export function EditShipmentForm({
 
             <Field
               id="container_size_ft"
+              info={SHIPMENT_FIELD_INFO.container_size_ft}
               label="Container size"
               error={errors.container_size_ft?.message}
               required
@@ -249,6 +252,7 @@ export function EditShipmentForm({
 
             <Field
               id="booking_type"
+              info={SHIPMENT_FIELD_INFO.booking_type}
               label="Booking type"
               hint={hasCargo ? "Remove all cargo lines to change the booking type." : undefined}
               error={errors.booking_type?.message}
@@ -263,6 +267,7 @@ export function EditShipmentForm({
 
             <Field
               id="hs_code"
+              info={SHIPMENT_FIELD_INFO.hs_code}
               label="HS code"
               hint="6-digit Harmonized System code"
               error={errors.hs_code?.message}
@@ -278,6 +283,7 @@ export function EditShipmentForm({
 
             <Field
               id="weight_kg"
+              info={SHIPMENT_FIELD_INFO.weight_kg}
               label="Weight"
               hint="kg"
               error={errors.weight_kg?.message}
@@ -294,6 +300,7 @@ export function EditShipmentForm({
 
             <Field
               id="declared_value"
+              info={SHIPMENT_FIELD_INFO.declared_value}
               label="Declared value"
               hint="INR, two decimal places"
               error={errors.declared_value?.message}
@@ -310,6 +317,7 @@ export function EditShipmentForm({
 
             <Field
               id="shipping_line"
+              info={SHIPMENT_FIELD_INFO.shipping_line}
               label="Shipping line"
               error={errors.shipping_line?.message}
               required
@@ -323,6 +331,7 @@ export function EditShipmentForm({
 
             <Field
               id="vessel_size_band"
+              info={SHIPMENT_FIELD_INFO.vessel_size_band}
               label="Vessel size band"
               error={errors.vessel_size_band?.message}
               required
@@ -336,6 +345,7 @@ export function EditShipmentForm({
 
             <Field
               id="expected_arrival_at"
+              info={SHIPMENT_FIELD_INFO.expected_arrival_at}
               label="Expected arrival"
               hint={`Entered in ${portTimezone}; sent to the API as UTC.`}
               error={errors.expected_arrival_at?.message}
@@ -350,6 +360,7 @@ export function EditShipmentForm({
 
             <Field
               id="documentation_status"
+              info={SHIPMENT_FIELD_INFO.documentation_status}
               label="Documentation status"
               error={errors.documentation_status?.message}
               required

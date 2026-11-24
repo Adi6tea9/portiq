@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Callout } from "@/components/shared/Callout";
@@ -389,7 +390,7 @@ export function OperatorClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Date range</CardTitle>
+          <CardTitle className="text-base">Date range <InfoTip label="Date range">The overview below only counts shipments arriving in this range.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -510,7 +511,7 @@ export function OperatorClient() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Yard utilization</CardTitle>
+                <CardTitle className="text-base">Yard utilization <InfoTip label="Yard utilization">Share of yard space expected to be in use each day. The colours show the moderate and high thresholds.</InfoTip></CardTitle>
                 <ThresholdLegend
                   thresholds={config.capacity_thresholds}
                 />
@@ -535,7 +536,7 @@ export function OperatorClient() {
 
             <Card>
               <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Berth utilization</CardTitle>
+                <CardTitle className="text-base">Berth utilization <InfoTip label="Berth utilization">Share of berth (quay) capacity expected to be in use each day.</InfoTip></CardTitle>
                 <ThresholdLegend
                   thresholds={config.capacity_thresholds}
                 />
@@ -561,7 +562,7 @@ export function OperatorClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Dwell distribution</CardTitle>
+              <CardTitle className="text-base">Dwell distribution <InfoTip label="Dwell distribution">How many shipments are predicted to wait each number of days.</InfoTip></CardTitle>
             </CardHeader>
             <CardContent>
               <DwellDistribution bins={overview.dwell_distribution} />
@@ -570,7 +571,7 @@ export function OperatorClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">At-risk list</CardTitle>
+              <CardTitle className="text-base">At-risk list <InfoTip label="At-risk list">Shipments that may be delayed, with the reasons, such as incomplete papers or a red customs channel.</InfoTip></CardTitle>
             </CardHeader>
             <CardContent>
               {overview.at_risk.length === 0 ? (
@@ -610,7 +611,7 @@ export function OperatorClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Shipments</CardTitle>
+          <CardTitle className="text-base">Shipments <InfoTip label="Shipments">All shipments at your port in this range. Open one to record an arrival or clearance.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">

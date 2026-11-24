@@ -4,6 +4,7 @@ import * as React from "react";
 import { Boxes, Maximize, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { DemoBadge } from "@/components/shared/DemoBadge";
 import { SelectControl } from "@/components/features/shipments/SelectControl";
 import {
@@ -133,6 +134,7 @@ export function PlannerWorkspace({
           <CardContent className="space-y-3">
             <h2 className="text-base font-semibold text-text">
               Cargo to load ({cargo.reduce((sum, item) => sum + item.quantity, 0)})
+              <InfoTip label="cargo to load">Every parcel in the container. Parcels turn only 90° on the floor and are never tipped; fragile or non-stackable ones never carry load.</InfoTip>
             </h2>
             {cargo.length > 0 ? (
               <CargoList
@@ -164,7 +166,7 @@ export function PlannerWorkspace({
           <div className="grid gap-5 lg:grid-cols-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Selected parcel</CardTitle>
+                <CardTitle className="text-base">Selected parcel <InfoTip label="Selected parcel">Details of the parcel you clicked in the 3D view.</InfoTip></CardTitle>
               </CardHeader>
               <CardContent>
                 <ParcelInspector
@@ -176,7 +178,7 @@ export function PlannerWorkspace({
             </Card>
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Floor utilization matrix</CardTitle>
+                <CardTitle className="text-base">Floor utilization matrix <InfoTip label="Floor utilization matrix">A top-down map of the floor. Darker cells are stacked higher. Use the layer control to look at one level at a time.</InfoTip></CardTitle>
               </CardHeader>
               <CardContent>
                 <UtilizationMatrix
@@ -194,7 +196,7 @@ export function PlannerWorkspace({
         </div>
         <Card className="xl:col-start-1 xl:row-start-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Container utilization</CardTitle>
+            <CardTitle className="text-base">Container utilization <InfoTip label="Container utilization">How much of the container’s space and payload the packed cargo uses.</InfoTip></CardTitle>
           </CardHeader>
           <CardContent>
             <UtilizationSummary summary={summary} issues={issues} />

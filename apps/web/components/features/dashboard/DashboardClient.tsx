@@ -6,6 +6,7 @@ import { ArrowRight, BarChart3, Database, Layers, Timer } from "lucide-react";
 import { portiqThemeContent } from "@/themes/portiq/content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { Callout } from "@/components/shared/Callout";
 import { DateTime } from "@/components/shared/DateTime";
 import { DemoBadge } from "@/components/shared/DemoBadge";
@@ -288,7 +289,7 @@ export function DashboardClient({
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Active shipments</CardTitle>
+          <CardTitle className="text-base">Active shipments <InfoTip label="Active shipments">How many of your shipments are submitted, arrived at port, or cleared customs.</InfoTip></CardTitle>
         </CardHeader>
         <CardContent>
           <CardState
@@ -330,7 +331,7 @@ export function DashboardClient({
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Latest predicted dwell</CardTitle>
+            <CardTitle className="text-base">Latest predicted dwell <InfoTip label="Latest predicted dwell">Dwell is the number of days a container waits at the port before it is cleared. This is the newest estimate across your shipments.</InfoTip></CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <CardState
@@ -376,7 +377,7 @@ export function DashboardClient({
 
         <Card data-testid="latest-cost-card">
           <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="text-base">Latest indicative cost</CardTitle>
+            <CardTitle className="text-base">Latest indicative cost <InfoTip label="Latest indicative cost">Expected port charges for that same shipment, worked out from the predicted dwell and the current tariffs. A guide, not an invoice.</InfoTip></CardTitle>
             {predictions?.provenance.is_demo_data && <DemoBadge />}
           </CardHeader>
           <CardContent className="space-y-4">
@@ -433,6 +434,7 @@ export function DashboardClient({
           <CardHeader>
             <CardTitle className="text-base">
               Upcoming arrivals (next {UPCOMING_DAYS} days)
+              <InfoTip label="Upcoming arrivals">Your shipments expected at port in the next {UPCOMING_DAYS} days.</InfoTip>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -527,7 +529,7 @@ export function DashboardClient({
 
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="text-base">Capacity snapshot</CardTitle>
+            <CardTitle className="text-base">Capacity snapshot <InfoTip label="Capacity snapshot">How full the port yard is expected to be soon. A busier yard usually means longer waits.</InfoTip></CardTitle>
             {bucket?.source_type === "synthetic" && <DemoBadge />}
           </CardHeader>
           <CardContent className="space-y-3">

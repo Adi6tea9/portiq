@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// PLAYWRIGHT_PORT runs the suite on its own mock server when :3000 is already taken.
+const port = process.env.PLAYWRIGHT_PORT ?? "3000";
+const baseURL = `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -14,7 +18,7 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 15_000 },
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -25,8 +29,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
+    command: port === "3000" ? "npm run dev" : `npx next dev -p ${port}`,
+    url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
@@ -34,6 +38,7 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "placeholder-key",
       NEXT_PUBLIC_API_BASE_URL: "http://localhost:8000/api/v1",
       NEXT_PUBLIC_USE_MOCKS: "true",
+      ...(port === "3000" ? {} : { NEXT_DIST_DIR: ".next-e2e" }),
     },
   },
 });

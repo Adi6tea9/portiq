@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
+import { InfoTip } from "./InfoTip";
 
 type FieldControlProps = React.HTMLAttributes<HTMLElement> & {
   required?: boolean;
@@ -10,6 +11,8 @@ interface FieldProps {
   id: string;
   label: string;
   hint?: string;
+  /** Longer explanation shown in an "i" tip next to the label. */
+  info?: React.ReactNode;
   error?: string;
   required?: boolean;
   className?: string;
@@ -20,6 +23,7 @@ export function Field({
   id,
   label,
   hint,
+  info,
   error,
   required,
   className,
@@ -36,16 +40,27 @@ export function Field({
     "aria-describedby": describedBy,
   });
 
+  const labelEl = (
+    <Label htmlFor={id}>
+      {label}
+      {required ? (
+        <span aria-hidden="true" className="ml-1 text-danger">
+          *
+        </span>
+      ) : null}
+    </Label>
+  );
+
   return (
     <div className={cn("space-y-2", className)}>
-      <Label htmlFor={id}>
-        {label}
-        {required ? (
-          <span aria-hidden="true" className="ml-1 text-danger">
-            *
-          </span>
-        ) : null}
-      </Label>
+      {info ? (
+        <div className="flex items-center gap-1">
+          {labelEl}
+          <InfoTip label={label}>{info}</InfoTip>
+        </div>
+      ) : (
+        labelEl
+      )}
       {hint ? (
         <p id={hintId} className="text-xs text-muted">
           {hint}

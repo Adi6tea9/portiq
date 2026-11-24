@@ -2,6 +2,7 @@
 
 import type { UseFormRegisterReturn } from "react-hook-form";
 import { Field } from "@/components/shared/Field";
+import { SHIPMENT_FIELD_INFO } from "@/lib/shipments/field-info";
 import {
   CARGO_PRIORITY_OPTIONS,
   CUSTOMS_CHANNEL_OPTIONS,
@@ -32,6 +33,7 @@ export function ModelInputFields({ registered, errors }: ModelInputFieldsProps) 
     <>
       <Field
         id="customs_channel"
+        info={SHIPMENT_FIELD_INFO.customs_channel}
         label="Customs channel"
         hint="Leave as 'Not known yet' if the channel has not been assigned."
         error={errors.customs_channel}
@@ -40,6 +42,7 @@ export function ModelInputFields({ registered, errors }: ModelInputFieldsProps) 
       </Field>
       <Field
         id="importer_type"
+        info={SHIPMENT_FIELD_INFO.importer_type}
         label="Importer type"
         hint="AEO-certified importers usually clear faster."
         error={errors.importer_type}
@@ -48,6 +51,7 @@ export function ModelInputFields({ registered, errors }: ModelInputFieldsProps) 
       </Field>
       <Field
         id="cargo_priority"
+        info={SHIPMENT_FIELD_INFO.cargo_priority}
         label="Cargo priority"
         hint="Expedited covers perishable, medical and other urgent cargo."
         error={errors.cargo_priority}
