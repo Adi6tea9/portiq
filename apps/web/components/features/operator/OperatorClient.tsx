@@ -1,5 +1,16 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import {
+  AlertTriangle,
+  Anchor,
+  BarChart3,
+  BarChartHorizontal,
+  CalendarRange,
+  Package,
+  Users,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
 import * as React from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -13,7 +24,7 @@ import {
   YAxis,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -378,19 +389,21 @@ export function OperatorClient() {
   }
 
   return (
-    <div className="max-w-6xl space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold text-harbor-navy">
-          Operator overview
-        </h1>
-        <p className="text-sm text-muted">
-          Port scope: {portScope.map((port) => port.name).join(", ") || "—"}
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={Users}
+        title="Operator overview"
+        description={
+          <>
+            Status, utilization and at-risk shipments for your ports.{" "}
+            <span>Port scope: {portScope.map((port) => port.name).join(", ") || "—"}</span>
+          </>
+        }
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Date range <InfoTip label="Date range">The overview below only counts shipments arriving in this range.</InfoTip></CardTitle>
+          <SectionTitle icon={CalendarRange}>Date range <InfoTip label="Date range">The overview below only counts shipments arriving in this range.</InfoTip></SectionTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -469,7 +482,7 @@ export function OperatorClient() {
 
       {overview ? (
         <div className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Stat
               label="Submitted"
               value={String(overview.status_counts.submitted)}
@@ -511,7 +524,7 @@ export function OperatorClient() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Yard utilization <InfoTip label="Yard utilization">Share of yard space expected to be in use each day. The colours show the moderate and high thresholds.</InfoTip></CardTitle>
+                <SectionTitle icon={BarChart3}>Yard utilization <InfoTip label="Yard utilization">Share of yard space expected to be in use each day. The colours show the moderate and high thresholds.</InfoTip></SectionTitle>
                 <ThresholdLegend
                   thresholds={config.capacity_thresholds}
                 />
@@ -536,7 +549,7 @@ export function OperatorClient() {
 
             <Card>
               <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Berth utilization <InfoTip label="Berth utilization">Share of berth (quay) capacity expected to be in use each day.</InfoTip></CardTitle>
+                <SectionTitle icon={Anchor}>Berth utilization <InfoTip label="Berth utilization">Share of berth (quay) capacity expected to be in use each day.</InfoTip></SectionTitle>
                 <ThresholdLegend
                   thresholds={config.capacity_thresholds}
                 />
@@ -562,7 +575,7 @@ export function OperatorClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Dwell distribution <InfoTip label="Dwell distribution">How many shipments are predicted to wait each number of days.</InfoTip></CardTitle>
+              <SectionTitle icon={BarChartHorizontal}>Dwell distribution <InfoTip label="Dwell distribution">How many shipments are predicted to wait each number of days.</InfoTip></SectionTitle>
             </CardHeader>
             <CardContent>
               <DwellDistribution bins={overview.dwell_distribution} />
@@ -571,7 +584,7 @@ export function OperatorClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">At-risk list <InfoTip label="At-risk list">Shipments that may be delayed, with the reasons, such as incomplete papers or a red customs channel.</InfoTip></CardTitle>
+              <SectionTitle icon={AlertTriangle}>At-risk list <InfoTip label="At-risk list">Shipments that may be delayed, with the reasons, such as incomplete papers or a red customs channel.</InfoTip></SectionTitle>
             </CardHeader>
             <CardContent>
               {overview.at_risk.length === 0 ? (
@@ -611,10 +624,10 @@ export function OperatorClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Shipments <InfoTip label="Shipments">All shipments at your port in this range. Open one to record an arrival or clearance.</InfoTip></CardTitle>
+          <SectionTitle icon={Package}>Shipments <InfoTip label="Shipments">All shipments at your port in this range. Open one to record an arrival or clearance.</InfoTip></SectionTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Field id="operator-status" label="Status">
               <SelectControl
                 placeholder="All statuses"
@@ -626,14 +639,14 @@ export function OperatorClient() {
                 }}
               />
             </Field>
-            <Field id="operator-arrival-from" label="Arrival from" hint="UTC day">
+            <Field id="operator-arrival-from" label="Arrival from" info="Dates are matched as whole days in UTC.">
               <Input
                 type="date"
                 value={arrivalFrom}
                 onChange={(event) => setArrivalFrom(event.target.value)}
               />
             </Field>
-            <Field id="operator-arrival-to" label="Arrival to" hint="UTC day">
+            <Field id="operator-arrival-to" label="Arrival to" info="Dates are matched as whole days in UTC.">
               <Input
                 type="date"
                 value={arrivalTo}

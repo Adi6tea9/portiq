@@ -1,7 +1,17 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import { PageHeader } from "@/components/shell/PageHeader";
+import {
+  Box,
+  Boxes,
+  Container,
+  Gauge,
+  Grid3x3,
+  Maximize,
+  RotateCcw,
+} from "lucide-react";
 import * as React from "react";
-import { Boxes, Maximize, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoTip } from "@/components/shared/InfoTip";
@@ -40,7 +50,10 @@ const CONTAINER_OPTIONS = CONTAINER_TYPES.map((type) => ({
 }));
 
 export interface PlannerWorkspaceProps {
+  /** The page h1 content. */
   title: React.ReactNode;
+  /** Badges shown beside the title. */
+  badges?: React.ReactNode;
   subtitle: string;
   actions?: React.ReactNode;
   /** Top of the left card: the container picker or the locked size. */
@@ -58,6 +71,7 @@ export interface PlannerWorkspaceProps {
 /** Shared layout for the sample demo and shipment mode. */
 export function PlannerWorkspace({
   title,
+  badges,
   subtitle,
   actions,
   containerControl,
@@ -102,27 +116,29 @@ export function PlannerWorkspace({
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex flex-wrap items-center gap-3">{title}</div>
-          <p className="text-sm text-muted">{subtitle}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={resetView}>
-            <RotateCcw aria-hidden="true" className="mr-2 h-4 w-4" />
-            Reset view
-          </Button>
-          <Button variant="outline" onClick={() => sceneApi.current?.fit()}>
-            <Maximize aria-hidden="true" className="mr-2 h-4 w-4" />
-            Fit to container
-          </Button>
-          {actions}
-        </div>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        icon={Container}
+        title={title}
+        badges={badges}
+        description={subtitle}
+        actions={
+          <>
+            <Button variant="outline" onClick={resetView}>
+              <RotateCcw aria-hidden="true" className="h-4 w-4" />
+              Reset view
+            </Button>
+            <Button variant="outline" onClick={() => sceneApi.current?.fit()}>
+              <Maximize aria-hidden="true" className="h-4 w-4" />
+              Fit to container
+            </Button>
+            {actions}
+          </>
+        }
+      />
 
       {/* Phones: 3D view first, then the cards. Desktop: cards in a left column beside the view. */}
-      <div className="grid items-start gap-5 xl:grid-cols-[300px_minmax(0,1fr)] xl:grid-rows-[auto_1fr]">
+      <div className="grid items-start gap-section xl:grid-cols-[300px_minmax(0,1fr)] xl:grid-rows-[auto_1fr]">
         <Card className="xl:col-start-1 xl:row-start-1">
           <CardHeader className="space-y-3 pb-3">
             {containerControl}
@@ -163,10 +179,10 @@ export function PlannerWorkspace({
             apiRef={sceneApi}
           />
           <ViewStrip view={view} onChange={setView} />
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className="grid gap-section lg:grid-cols-2">
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Selected parcel <InfoTip label="Selected parcel">Details of the parcel you clicked in the 3D view.</InfoTip></CardTitle>
+                <SectionTitle icon={Box}>Selected parcel <InfoTip label="Selected parcel">Details of the parcel you clicked in the 3D view.</InfoTip></SectionTitle>
               </CardHeader>
               <CardContent>
                 <ParcelInspector
@@ -178,7 +194,7 @@ export function PlannerWorkspace({
             </Card>
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Floor utilization matrix <InfoTip label="Floor utilization matrix">A top-down map of the floor. Darker cells are stacked higher. Use the layer control to look at one level at a time.</InfoTip></CardTitle>
+                <SectionTitle icon={Grid3x3}>Floor utilization matrix <InfoTip label="Floor utilization matrix">A top-down map of the floor. Darker cells are stacked higher. Use the layer control to look at one level at a time.</InfoTip></SectionTitle>
               </CardHeader>
               <CardContent>
                 <UtilizationMatrix
@@ -196,7 +212,7 @@ export function PlannerWorkspace({
         </div>
         <Card className="xl:col-start-1 xl:row-start-2">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Container utilization <InfoTip label="Container utilization">How much of the container’s space and payload the packed cargo uses.</InfoTip></CardTitle>
+            <SectionTitle icon={Gauge}>Container utilization <InfoTip label="Container utilization">How much of the container’s space and payload the packed cargo uses.</InfoTip></SectionTitle>
           </CardHeader>
           <CardContent>
             <UtilizationSummary summary={summary} issues={issues} />
@@ -227,21 +243,15 @@ export function LoadPlannerClient() {
 
   return (
     <PlannerWorkspace
-      title={
-        <>
-          <h1 className="text-2xl font-semibold text-harbor-navy">
-            Container load planning
-          </h1>
-          <DemoBadge>Sample cargo</DemoBadge>
-        </>
-      }
+      title="Container load planning"
+      badges={<DemoBadge>Sample cargo</DemoBadge>}
       subtitle="See how a shipment will sit inside the container before it is packed."
       actions={
         <Button
           onClick={() => setOrder("largest-first")}
           aria-pressed={order === "largest-first"}
         >
-          <Boxes aria-hidden="true" className="mr-2 h-4 w-4" />
+          <Boxes aria-hidden="true" className="h-4 w-4" />
           Auto arrange
         </Button>
       }

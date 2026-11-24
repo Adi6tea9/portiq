@@ -160,9 +160,12 @@ export function CargoPanel({ shipment, cargo, editable }: CargoPanelProps) {
                     size="sm"
                     aria-label={`Delete ${item.name}`}
                     disabled={remove.isPending}
+                    loading={remove.isPending && remove.variables === item.id}
                     onClick={() => remove.mutate(item.id)}
                   >
-                    <Trash2 aria-hidden="true" className="h-4 w-4" />
+                    {remove.isPending && remove.variables === item.id ? null : (
+                      <Trash2 aria-hidden="true" className="h-4 w-4" />
+                    )}
                   </Button>
                 </>
               )}
@@ -212,7 +215,7 @@ export function CargoPanel({ shipment, cargo, editable }: CargoPanelProps) {
           </InfoTip>
           {error && <Callout variant="danger">{error}</Callout>}
           <div className="flex gap-2">
-            <Button type="submit" disabled={busy}>
+            <Button type="submit" loading={busy}>
               {editing ? "Save line" : "Add cargo"}
             </Button>
             {editing && (
@@ -295,7 +298,7 @@ function ContainerFullDialog({
         {canMove && detail && (
           <div className="space-y-3">
             {detail.fits_quantity > 0 && (
-              <Button className="w-full" disabled={busy} onClick={onSplit}>
+              <Button className="w-full" loading={busy} onClick={onSplit}>
                 Put {detail.fits_quantity} here, rest ({rest}) in next container
               </Button>
             )}

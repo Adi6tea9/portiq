@@ -6,7 +6,7 @@ interface ExplanationTableProps {
   features: ExplanationFeature[];
 }
 
-function humanizeFeatureName(name: string): string {
+export function humanizeFeatureName(name: string): string {
   return name
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -40,24 +40,24 @@ export function ExplanationTable({ features }: ExplanationTableProps) {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-auto">
-      <table className="app-table-grid w-full text-sm">
+    <div className="relative w-full max-w-full overflow-x-auto rounded-lg border border-border">
+      <table className="app-table-grid w-full min-w-[560px] text-sm">
         <caption className="sr-only">
           Feature contributions to the estimated dwell time, shown as a text
           alternative to the chart.
         </caption>
-        <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-muted">
+        <thead className="bg-canvas text-left text-xs text-text">
           <tr>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               Feature
             </th>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               Value
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className="whitespace-nowrap px-3 py-2 text-right font-semibold">
               Effect (days)
             </th>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               What it means
             </th>
           </tr>
@@ -65,15 +65,15 @@ export function ExplanationTable({ features }: ExplanationTableProps) {
         <tbody>
           {features.map((feature) => (
             <tr key={feature.name} className="border-t border-border">
-              <th scope="row" className="px-3 py-2 text-left font-normal">
+              <th scope="row" className="px-3 py-2.5 text-left font-semibold text-harbor-navy">
                 {humanizeFeatureName(feature.name)}
               </th>
-              <td className="px-3 py-2">{formatFeatureValue(feature.value)}</td>
-              <td className="px-3 py-2 text-right tabular-nums">
+              <td className="px-3 py-2.5">{formatFeatureValue(feature.value)}</td>
+              <td className="px-3 py-2.5 text-right font-medium tabular-nums">
                 {feature.contribution > 0 ? "+" : ""}
                 {feature.contribution.toFixed(1)}
               </td>
-              <td className="px-3 py-2 text-muted">
+              <td className="px-3 py-2.5 text-muted">
                 {featureSentence(feature)}
               </td>
             </tr>

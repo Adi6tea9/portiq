@@ -47,12 +47,17 @@ export function rolesForPath(pathname: string): readonly Role[] | null {
     return IMPORTER_OR_OPERATOR;
   }
 
-  if (matchesPrefix(pathname, "/capacity")) {
+  if (matchesPrefix(pathname, "/predictions")) {
     return IMPORTER_OR_OPERATOR;
   }
 
+  // The capacity forecast API and the sample planner serve every role.
+  if (matchesPrefix(pathname, "/capacity")) {
+    return ALL_ROLES;
+  }
+
   if (matchesPrefix(pathname, "/load-planner")) {
-    return IMPORTER_OR_OPERATOR;
+    return ALL_ROLES;
   }
 
   if (matchesPrefix(pathname, "/operator")) {

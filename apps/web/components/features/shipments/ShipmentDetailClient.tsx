@@ -1,10 +1,21 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import { predictionResultHref } from "@/lib/navigation";
+import {
+  Clock,
+  FileText,
+  History,
+  Package,
+  Sparkles,
+  Target,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -136,7 +147,7 @@ function FieldsPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Shipment details</CardTitle>
+        <SectionTitle icon={FileText}>Shipment details</SectionTitle>
       </CardHeader>
       <CardContent>
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -171,7 +182,7 @@ function LatestPredictionCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base">Latest prediction</CardTitle>
+        <SectionTitle icon={Sparkles}>Latest prediction</SectionTitle>
         {prediction.is_demo_data && <DemoBadge />}
       </CardHeader>
       <CardContent className="space-y-3">
@@ -193,7 +204,7 @@ function LatestPredictionCard({
           </Callout>
         )}
         <Button variant="outline" size="sm" asChild className="w-full">
-          <Link href={`/shipments/${shipmentId}/prediction/${prediction.prediction_id}`}>
+          <Link href={predictionResultHref(shipmentId, prediction.prediction_id)}>
             View prediction
           </Link>
         </Button>
@@ -201,6 +212,10 @@ function LatestPredictionCard({
           shipmentId={shipmentId}
           runMockError={runMockError}
         />
+        <p className="text-xs text-muted">
+          Running again saves a new estimate from the current shipment details. Earlier
+          estimates stay in the prediction history below.
+        </p>
       </CardContent>
     </Card>
   );
@@ -216,10 +231,14 @@ function NoPredictionCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Prediction</CardTitle>
+        <SectionTitle icon={Sparkles}>Prediction</SectionTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <p className="text-sm text-muted">No prediction yet.</p>
+        <p className="text-sm font-medium">No prediction yet.</p>
+        <p className="text-sm text-muted">
+          Run the AI model to estimate how many days this container will wait at the port,
+          what it is likely to cost and how busy the port will be when it arrives.
+        </p>
         <RunPredictionButton
           shipmentId={shipmentId}
           runMockError={runMockError}
@@ -299,7 +318,7 @@ function PredictedVsActual({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Predicted vs Actual</CardTitle>
+        <SectionTitle icon={Target}>Predicted vs Actual</SectionTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4 text-center">
@@ -428,20 +447,19 @@ export function ShipmentDetailClient({
   const timezone = port?.timezone ?? "UTC";
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-harbor-navy">
-            {shipment.reference}
-          </h1>
-          <div className="flex flex-wrap items-center gap-2 mt-2">
+    <div className="space-y-section">
+      <PageHeader
+        icon={Package}
+        title={shipment.reference}
+        badges={
+          <>
             <StatusBadge status={shipment.status} />
-            <span className="text-sm text-muted">Port: {portName}</span>
             {shipment.latest_prediction?.is_demo_data && <DemoBadge />}
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
+          </>
+        }
+        description={<>Port: {portName}</>}
+        actions={
+        <>
           <Button variant="outline" asChild>
             <Link href={`/load-planner?shipment=${encodeURIComponent(id)}`}>
               Plan this container
@@ -491,7 +509,8 @@ export function ShipmentDetailClient({
                     </Button>
                     <Button
                       onClick={handleRecordEvent}
-                      disabled={!selectedStatus || eventSubmitting}
+                      disabled={!selectedStatus}
+                      loading={eventSubmitting}
                       className="flex-1"
                     >
                       {eventSubmitting ? "Saving..." : "Save"}
@@ -501,14 +520,15 @@ export function ShipmentDetailClient({
               </SheetContent>
             </Sheet>
           )}
-        </div>
-      </div>
+        </>
+        }
+      />
 
       {/* Timeline */}
       {shipment.events.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Timeline</CardTitle>
+            <SectionTitle icon={Clock}>Timeline</SectionTitle>
           </CardHeader>
           <CardContent>
             <ul>
@@ -521,7 +541,7 @@ export function ShipmentDetailClient({
       )}
 
       {/* Main grid */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-section lg:grid-cols-2">
         <FieldsPanel shipment={shipment} portName={portName} timezone={timezone} />
 
         {shipment.latest_prediction ? (
@@ -546,7 +566,7 @@ export function ShipmentDetailClient({
       {/* Prediction History */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Prediction history</CardTitle>
+          <SectionTitle icon={History}>Prediction history</SectionTitle>
         </CardHeader>
         <CardContent>
           <PredictionHistoryTable shipmentId={id} timezone={timezone} />

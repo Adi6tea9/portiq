@@ -149,7 +149,8 @@ test("renders role-specific navigation", async ({ page }) => {
     primary.getByRole("link", { name: "Operator overview" }),
   ).toBeVisible();
   await expect(primary.getByRole("link", { name: "Tariffs" })).toBeVisible();
-  await expect(primary.getByRole("link", { name: "Capacity" })).toHaveCount(0);
+  await expect(primary.getByRole("link", { name: "Capacity" })).toBeVisible();
+  await expect(primary.getByRole("link", { name: "Predictions" })).toHaveCount(0);
   await expect(primary.getByRole("link", { name: "Dashboard" })).toHaveCount(0);
 });
 
@@ -171,12 +172,12 @@ test("renders later-feature placeholders and delivered pages", async ({
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "SHIP-2026-001",
   );
-  await expect(page.getByText("Shipment details")).toBeVisible();
+  await expect(page.getByText("Shipment details", { exact: true })).toBeVisible();
   await expect(page.getByText("Coming in F04")).toHaveCount(0);
 
-  await page.goto("/shipments/ship_001/prediction/pred_001");
+  await page.goto("/predictions/ship_001/pred_001");
   await expect(
-    page.getByRole("heading", { name: "Prediction result" }),
+    page.getByRole("heading", { name: "Prediction results" }),
   ).toBeVisible();
   await expect(page.getByText("Coming in F05")).toHaveCount(0);
 });

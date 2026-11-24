@@ -51,7 +51,8 @@ test("role switcher changes navigation for all three roles", async ({ page }) =>
   await page.getByRole("menuitemradio", { name: "Platform admin" }).click();
   await expect(primary.getByRole("link", { name: "Operator overview" })).toBeVisible();
   await expect(primary.getByRole("link", { name: "Tariffs" })).toBeVisible();
-  await expect(primary.getByRole("link", { name: "Capacity" })).toHaveCount(0);
+  await expect(primary.getByRole("link", { name: "Capacity" })).toBeVisible();
+  await expect(primary.getByRole("link", { name: "Predictions" })).toHaveCount(0);
 });
 
 test("sandbox has no WCAG A/AA violations", async ({ page }) => {

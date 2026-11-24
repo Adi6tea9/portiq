@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Bar,
   BarChart,
+  CartesianGrid,
   Cell,
   ReferenceLine,
   ResponsiveContainer,
@@ -37,15 +38,31 @@ function formatFeatureValue(value: ExplanationFeature["value"]): string {
     : String(value);
 }
 
+/** Narrow screens get a slimmer label column so the bars keep room. */
+function useNarrow(): boolean {
+  const [narrow, setNarrow] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    const query = window.matchMedia("(max-width: 639px)");
+    const update = () => setNarrow(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return narrow;
+}
+
 export function ExplanationChart({ features }: ExplanationChartProps) {
+  const narrow = useNarrow();
   const data: ChartDatum[] = React.useMemo(
     () =>
-      features.map((feature) => {
+      // Largest effect first, matching the breakdown table.
+      [...features].sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution)).map((feature) => {
         const name = humanizeFeatureName(feature.name);
         const value = formatFeatureValue(feature.value);
 
         return {
-          label: `${name} · ${value}`,
+          label: `${name} - ${value}`,
           name,
           contribution: feature.contribution,
           value,
@@ -64,22 +81,48 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
   );
   const domain = maxAbsContribution * 1.1;
 
+  const legend = (
+    <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted">
+      <div className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="h-2.5 w-2.5 rounded-full"
+          style={{ backgroundColor: "rgb(var(--chart-decrease, var(--success)))" }}
+        />
+        <span>Decreased estimate</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className="h-2.5 w-2.5 rounded-full"
+          style={{ backgroundColor: "rgb(var(--chart-increase, var(--warning)))" }}
+        />
+        <span>Increased estimate</span>
+      </div>
+    </div>
+  );
+
   return (
-    <figure className="space-y-3">
-      <figcaption className="text-sm font-medium text-text">
-        Feature contributions (days)
-      </figcaption>
+    <figure className="space-y-2">
+      {legend}
       <div
-        className="h-72 w-full"
+        className="w-full"
+        style={{ height: Math.max(240, data.length * 34 + 56) }}
         role="img"
-        aria-label="Diverging bar chart of each feature's effect on the estimated dwell time in days. The same values are listed in the table below."
+        aria-label="Diverging bar chart of each feature's effect on the estimated dwell time in days. The same values are listed in the feature breakdown table."
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
             layout="vertical"
-            margin={{ top: 4, right: 24, left: 8, bottom: 24 }}
+            margin={{ top: 4, right: 16, left: 0, bottom: 24 }}
+            barCategoryGap="30%"
           >
+            <CartesianGrid
+              horizontal={false}
+              strokeDasharray="3 3"
+              stroke="rgb(var(--chart-grid, var(--border)))"
+            />
             <XAxis
               type="number"
               domain={[-domain, domain]}
@@ -92,17 +135,26 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
                 offset: -12,
                 fontSize: 12,
               }}
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 11 }}
+              stroke="rgb(var(--muted))"
               aria-hidden="true"
             />
             <YAxis
               type="category"
-              dataKey="label"
-              width={190}
-              tick={{ fontSize: 12 }}
+              dataKey={narrow ? "name" : "label"}
+              width={narrow ? 104 : 240}
+              tick={{ fontSize: narrow ? 10 : 12, fill: "rgb(var(--text))" }}
+              tickLine={false}
+              // Long names would clip at the chart edge; the tooltip and table show them in full.
+              tickFormatter={(text: string) => {
+                const max = narrow ? 16 : 34;
+                return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+              }}
+              stroke="rgb(var(--border))"
               aria-hidden="true"
             />
             <Tooltip
+              cursor={{ fill: "rgb(var(--canvas))" }}
               content={({ active, payload }) => {
                 if (!active || !payload || payload.length === 0) {
                   return null;
@@ -113,7 +165,7 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
                   item.contribution >= 0 ? "increased" : "decreased";
 
                 return (
-                  <div className="rounded border border-border bg-surface p-2 text-sm shadow-sm">
+                  <div className="rounded-lg border border-border bg-surface p-2 text-sm shadow-sm">
                     <p className="font-medium">{item.name}</p>
                     <p className="text-muted">Value: {item.value}</p>
                     <p>
@@ -124,8 +176,8 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
                 );
               }}
             />
-            <ReferenceLine x={0} stroke="rgb(var(--border))" />
-            <Bar dataKey="contribution" radius={[0, 4, 4, 0]} isAnimationActive={false}>
+            <ReferenceLine x={0} stroke="rgb(var(--muted))" />
+            <Bar dataKey="contribution" radius={[4, 4, 4, 4]} maxBarSize={14} isAnimationActive={false}>
               {data.map((entry) => (
                 <Cell
                   key={entry.label}
@@ -139,24 +191,6 @@ export function ExplanationChart({ features }: ExplanationChartProps) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 text-xs text-muted">
-        <div className="flex items-center gap-1">
-          <span
-            aria-hidden="true"
-            className="h-3 w-3 rounded"
-            style={{ backgroundColor: "rgb(var(--chart-decrease, var(--success)))" }}
-          />
-          <span>Decreased estimate</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span
-            aria-hidden="true"
-            className="h-3 w-3 rounded"
-            style={{ backgroundColor: "rgb(var(--chart-increase, var(--warning)))" }}
-          />
-          <span>Increased estimate</span>
-        </div>
       </div>
     </figure>
   );

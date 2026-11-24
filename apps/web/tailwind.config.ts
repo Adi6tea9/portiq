@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 const config = {
   darkMode: ["class"],
@@ -81,13 +82,40 @@ const config = {
           "monospace",
         ],
       },
+      // Layout tokens live as CSS variables in app/globals.css (themes may retune them).
+      spacing: {
+        header: "var(--header-height)",
+        sidebar: "var(--sidebar-width)",
+        "sidebar-collapsed": "var(--sidebar-width-collapsed)",
+        gutter: "var(--page-gutter)",
+        "gutter-y": "var(--page-gutter-y)",
+        section: "var(--section-gap)",
+        card: "var(--card-padding)",
+        control: "var(--control-height)",
+        "control-sm": "var(--control-height-sm)",
+        row: "var(--table-row-height)",
+        "icon-sm": "var(--icon-sm)",
+        "icon-md": "var(--icon-md)",
+        "icon-lg": "var(--icon-lg)",
+      },
       maxWidth: {
-        content: "1280px",
+        content: "var(--content-max)",
+      },
+      fontSize: {
+        "page-title": [
+          "var(--text-page-title)",
+          { lineHeight: "1.25", letterSpacing: "-0.015em", fontWeight: "600" },
+        ],
+        "section-title": ["var(--text-section-title)", { lineHeight: "1.5", fontWeight: "600" }],
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
       },
       borderRadius: {
         sm: "6px",
         md: "8px",
         lg: "12px",
+        card: "var(--radius-card)",
       },
       keyframes: {
         "accordion-down": {
@@ -105,7 +133,11 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // `coarse:` applies on touch screens (pointer: coarse), for 40px+ touch targets.
+    plugin(({ addVariant }) => addVariant("coarse", "@media (pointer: coarse)")),
+  ],
 } satisfies Config;
 
 export default config;

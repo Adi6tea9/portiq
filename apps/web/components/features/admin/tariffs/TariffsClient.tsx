@@ -1,12 +1,20 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import {
+  FilePlus,
+  History,
+  ListChecks,
+  Receipt,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -406,16 +414,13 @@ export function TariffsClient() {
   }
 
   return (
-    <div className="max-w-6xl space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-harbor-navy">Tariffs</h1>
-          <p className="text-sm text-muted">
-            Manage tariff rules and review the change trail.
-          </p>
-        </div>
-        <DemoBadge>Demo tariff data</DemoBadge>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={Receipt}
+        title="Tariffs"
+        badges={<DemoBadge>Demo tariff data</DemoBadge>}
+        description="Manage tariff rules and review the change trail. Cost estimates use the rule versions in force on each date."
+      />
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
@@ -426,7 +431,7 @@ export function TariffsClient() {
         <TabsContent value="rules" className="space-y-6 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">New version <InfoTip label="New version">Add a tariff rule. It applies from its valid-from date; existing versions stay in the audit trail.</InfoTip></CardTitle>
+              <SectionTitle icon={FilePlus}>New version <InfoTip label="New version">Add a tariff rule. It applies from its valid-from date; existing versions stay in the audit trail.</InfoTip></SectionTitle>
             </CardHeader>
             <CardContent>
               <form
@@ -600,7 +605,7 @@ export function TariffsClient() {
                   </div>
                 ) : null}
                 <div className="flex justify-end md:col-span-2">
-                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                  <Button type="submit" loading={form.formState.isSubmitting}>
                     Create version
                   </Button>
                 </div>
@@ -610,7 +615,7 @@ export function TariffsClient() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Rules <InfoTip label="Rules">All tariff rule versions. Filter them to find the one that applies.</InfoTip></CardTitle>
+              <SectionTitle icon={ListChecks}>Rules <InfoTip label="Rules">All tariff rule versions. Filter them to find the one that applies.</InfoTip></SectionTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -713,7 +718,7 @@ export function TariffsClient() {
         <TabsContent value="audit" className="space-y-6 pt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Audit trail <InfoTip label="Audit trail">Who changed which rule and when.</InfoTip></CardTitle>
+              <SectionTitle icon={History}>Audit trail <InfoTip label="Audit trail">Who changed which rule and when.</InfoTip></SectionTitle>
             </CardHeader>
             <CardContent>
               {auditQuery.isError ? (

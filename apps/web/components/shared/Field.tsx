@@ -53,14 +53,11 @@ export function Field({
 
   return (
     <div className={cn("space-y-2", className)}>
-      {info ? (
-        <div className="flex items-center gap-1">
-          {labelEl}
-          <InfoTip label={label}>{info}</InfoTip>
-        </div>
-      ) : (
-        labelEl
-      )}
+      {/* Same row height with or without a tip, so fields in a grid line up. */}
+      <div className="flex min-h-6 items-center gap-1">
+        {labelEl}
+        {info ? <InfoTip label={label}>{info}</InfoTip> : null}
+      </div>
       {hint ? (
         <p id={hintId} className="text-xs text-muted">
           {hint}

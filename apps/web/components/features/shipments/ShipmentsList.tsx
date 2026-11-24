@@ -1,5 +1,7 @@
 "use client";
 
+import { PageHeader } from "@/components/shell/PageHeader";
+import { ChevronRight, Package, Plus } from "lucide-react";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -103,17 +105,24 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-harbor-navy">Shipments</h1>
-        <Button asChild>
-          <Link href="/shipments/new">Create shipment</Link>
-        </Button>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        icon={Package}
+        title="Shipments"
+        description="Find a shipment by status, arrival date or reference. Open one to see its timeline, run a prediction or plan its container."
+        actions={
+          <Button asChild>
+            <Link href="/shipments/new">
+              <Plus aria-hidden="true" />
+              Create shipment
+            </Link>
+          </Button>
+        }
+      />
 
       <Card>
-        <CardContent className="p-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <CardContent className="pt-card">
+          <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
             <Field id="status" label="Status">
               <SelectControl
                 placeholder="All statuses"
@@ -127,7 +136,7 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
               />
             </Field>
 
-            <Field id="arrival_from" label="Arrival from" hint="UTC day">
+            <Field id="arrival_from" label="Arrival from" info="Dates are matched as whole days in UTC.">
               <Input
                 type="date"
                 value={arrivalFrom}
@@ -138,7 +147,7 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
               />
             </Field>
 
-            <Field id="arrival_to" label="Arrival to" hint="UTC day">
+            <Field id="arrival_to" label="Arrival to" info="Dates are matched as whole days in UTC.">
               <Input
                 type="date"
                 value={arrivalTo}
@@ -152,6 +161,7 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
             <Field id="reference" label="Reference">
               <Input
                 type="search"
+                placeholder="e.g. SHIP-2026-001"
                 value={reference}
                 onChange={(event) => {
                   setReference(event.target.value);
@@ -160,12 +170,13 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
               />
             </Field>
 
-            <div className="flex items-end">
+            <div className="sm:col-span-2 lg:col-span-1">
               <Button
                 type="button"
                 variant="outline"
                 onClick={clearFilters}
                 disabled={!hasFilters}
+                className="w-full lg:w-auto"
               >
                 Clear filters
               </Button>
@@ -218,8 +229,16 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
               className="app-table overflow-x-auto rounded-lg border border-border bg-surface"
               aria-busy={query.isFetching}
             >
-              <table className="app-table-grid w-full min-w-[720px] text-left text-sm">
+              <table className="app-table-grid w-full min-w-[760px] table-fixed text-left text-sm">
                 <caption className="sr-only">Shipments</caption>
+                <colgroup>
+                  <col className="w-[19%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[15%]" />
+                  <col className="w-[24%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[8%]" />
+                </colgroup>
                 <thead className="border-b border-border bg-canvas text-xs uppercase tracking-wide text-text">
                   <tr>
                     <th scope="col" className="px-4 py-3 font-medium">
@@ -237,15 +256,18 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
                     <th scope="col" className="px-4 py-3 font-medium">
                       Latest predicted dwell
                     </th>
+                    <th scope="col" className="px-4 py-3 text-right font-medium">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {shipments.map((shipment) => (
-                    <tr key={shipment.id} className="hover:bg-muted/30">
+                    <tr key={shipment.id} className="relative hover:bg-muted/30">
                       <td className="px-4 py-3">
                         <Link
                           href={`/shipments/${shipment.id}`}
-                          className="font-medium text-harbor-navy underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          className="font-medium text-harbor-navy underline-offset-4 after:absolute after:inset-0 after:content-[''] hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         >
                           {shipment.reference}
                         </Link>
@@ -256,14 +278,18 @@ export function ShipmentsList({ mockError }: ShipmentsListProps) {
                       <td className="px-4 py-3">
                         <StatusBadge status={shipment.status} />
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 tabular-nums">
                         {formatExpectedArrival(shipment.expected_arrival_at)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3 tabular-nums">
                         {formatDwell(
                           shipment.latest_prediction?.predicted_dwell_days ??
                             null,
                         )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {/* The reference link covers the row; this is only a visual cue. */}
+                        <ChevronRight aria-hidden="true" className="ml-auto size-icon-sm text-muted" />
                       </td>
                     </tr>
                   ))}

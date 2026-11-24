@@ -56,7 +56,9 @@ test("importer signs in, creates a shipment, predicts it and plans its container
 
   await page.getByRole("button", { name: "Run prediction" }).click();
   await page.waitForURL(/\/prediction\//);
-  await expect(page.getByText(/^Estimated dwell time: \d+\.\d days$/)).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Prediction summary" }).getByText(/^\d+\.\d days$/),
+  ).toBeVisible();
 
   await page.goto(shipmentUrl);
   await page.getByRole("link", { name: "Plan this container" }).click();
@@ -76,6 +78,7 @@ test("importer screens load against the live API", async ({ page }) => {
 
   for (const [path, heading] of [
     ["/shipments", "Shipments"],
+    ["/predictions", "Predictions"],
     ["/capacity", /Capacity/],
     ["/load-planner", "Container load planning"],
     ["/settings", "Settings"],

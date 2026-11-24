@@ -113,7 +113,7 @@ export function ContainerViewport({
   return (
     <div
       className={cn(
-        "app-planner-stage relative overflow-hidden rounded-2xl border border-border",
+        "app-planner-stage relative overflow-hidden rounded-card border border-border",
         className,
       )}
       role="region"

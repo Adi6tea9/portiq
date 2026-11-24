@@ -27,7 +27,8 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
     await page.waitForURL(/\/shipments\/ship_/);
 
     // Header: reference, actual status, port
-    const header = page.getByRole("heading", { level: 1 }).locator("..");
+    // The page header block: title, status badge and the "Port: …" subtitle.
+    const header = page.locator("main header").first();
     await expect(header).toContainText("SHIP-2026-001");
     await expect(header.getByText("Submitted", { exact: true })).toBeVisible();
     await expect(header.getByText("Port: Nhava Sheva (JNPA)")).toBeVisible();
@@ -39,7 +40,7 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
     ).not.toBeVisible();
 
     // Fields panel
-    await expect(page.getByText("Shipment details")).toBeVisible();
+    await expect(page.getByText("Shipment details", { exact: true })).toBeVisible();
     await expect(page.getByText("Port", { exact: true })).toBeVisible();
     await expect(page.getByText("Reference", { exact: true })).toBeVisible();
 
@@ -118,7 +119,8 @@ test.describe("F04 - Shipment detail, timeline, edit, events", () => {
     await page.click('button:has-text("Record event")');
 
     // Select status and submit
-    await page.locator("select").first().selectOption("arrived");
+    // The sheet is modal; its select, not the sidebar port picker behind it.
+    await page.getByRole("dialog").locator("select").first().selectOption("arrived");
     await page.click('button:has-text("Save")');
 
     // Check error message

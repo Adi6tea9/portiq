@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageState } from "@/components/shared/PageState";
@@ -80,12 +82,22 @@ export function ShipmentLoadPlanner({ shipmentId }: { shipmentId: string }) {
     <PlannerWorkspace
       title={
         <>
-          <h1 className="text-2xl font-semibold text-harbor-navy">
-            Load plan for{" "}
-            <Link href={`/shipments/${shipment.id}`} className="underline-offset-4 hover:underline">
-              {shipment.reference}
-            </Link>
-          </h1>
+          Load plan for{" "}
+          <Link href={`/shipments/${shipment.id}`} className="underline-offset-4 hover:underline">
+            {shipment.reference}
+          </Link>
+        </>
+      }
+      actions={
+        <Button variant="outline" asChild>
+          <Link href={`/shipments/${shipment.id}`}>
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            Back to shipment
+          </Link>
+        </Button>
+      }
+      badges={
+        <>
           <Badge variant="outline">
             {shipment.booking_type === "shared" ? "Shared container" : "Full container"}
           </Badge>

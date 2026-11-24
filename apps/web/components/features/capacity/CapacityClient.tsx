@@ -1,5 +1,12 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import {
+  Anchor,
+  BarChart3,
+  SlidersHorizontal,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
 import * as React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InfoTip } from "@/components/shared/InfoTip";
@@ -11,6 +18,7 @@ import { DateTime } from "@/components/shared/DateTime";
 import { useCapacityForecast } from "@/lib/api/hooks/useCapacityForecast";
 import { useConfig } from "@/lib/api/hooks/useConfig";
 import { usePorts } from "@/lib/api/hooks/usePorts";
+import { useActivePort } from "@/components/providers/ActivePortProvider";
 import { ApiError } from "@/lib/api/client";
 import type { CapacityBucket, ResourceType } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
@@ -70,7 +78,10 @@ export function CapacityClient({
   const [resourceType, setResourceType] = React.useState<ResourceType>("yard");
 
   const ports = portsQuery.data ?? [];
-  const selectedPortId = portId || ports[0]?.id || "";
+  const activePort = useActivePort().portId;
+  // A port picked on this page wins; otherwise the sidebar's active port, then the first port.
+  const defaultPortId = ports.some((item) => item.id === activePort) ? activePort : null;
+  const selectedPortId = portId || defaultPortId || ports[0]?.id || "";
   const port = ports.find((item) => item.id === selectedPortId);
   const timezone = port?.timezone ?? "UTC";
   const config = configQuery.data;
@@ -166,24 +177,26 @@ export function CapacityClient({
   };
 
   return (
-    <div className="max-w-5xl space-y-6">
-      <h1 className="text-2xl font-semibold text-harbor-navy">
-        Capacity forecast
-      </h1>
+    <div className="space-y-section">
+      <PageHeader
+        icon={BarChart3}
+        title="Capacity forecast"
+        description="How full the yard and berths are expected to be at a port over the coming days. High utilization often means longer dwell."
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Forecast controls <InfoTip label="Forecast controls">Pick a port, date range and area (yard or berth) to see how full it is expected to be.</InfoTip></CardTitle>
+          <SectionTitle icon={SlidersHorizontal}>Forecast controls <InfoTip label="Forecast controls">Pick a port, date range and area (yard or berth) to see how full it is expected to be.</InfoTip></SectionTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
             <div className="space-y-1.5">
               <Label htmlFor="capacity-port">Port</Label>
               <select
                 id="capacity-port"
                 value={selectedPortId}
                 onChange={(event) => setPortId(event.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="flex h-control w-full rounded-lg border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 {ports.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -223,34 +236,40 @@ export function CapacityClient({
                 onChange={(event) => setTo(event.target.value)}
               />
             </div>
-          </div>
 
-          <div
-            role="tablist"
-            aria-label="Resource type"
-            className="inline-flex rounded-md border border-border p-1"
-          >
-            {TABS.map((tab) => (
-              <button
-                key={tab.value}
-                id={`capacity-tab-${tab.value}`}
-                type="button"
-                role="tab"
-                aria-selected={resourceType === tab.value}
-                aria-controls="capacity-panel"
-                tabIndex={resourceType === tab.value ? 0 : -1}
-                onClick={() => setResourceType(tab.value)}
-                onKeyDown={onTabKeyDown}
-                className={cn(
-                  "rounded px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-                  resourceType === tab.value
-                    ? "bg-light-teal text-harbor-navy"
-                    : "text-muted hover:bg-canvas",
-                )}
+            <div className="space-y-1.5">
+              <span id="capacity-area-label" className="block text-sm font-medium leading-none">
+                Area
+              </span>
+              <div
+                role="tablist"
+                aria-label="Resource type"
+                aria-describedby="capacity-area-label"
+                className="inline-flex h-control items-center gap-1 rounded-lg border border-input bg-surface p-1 shadow-sm coarse:h-auto"
               >
-                {tab.label}
-              </button>
-            ))}
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.value}
+                    id={`capacity-tab-${tab.value}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={resourceType === tab.value}
+                    aria-controls="capacity-panel"
+                    tabIndex={resourceType === tab.value ? 0 : -1}
+                    onClick={() => setResourceType(tab.value)}
+                    onKeyDown={onTabKeyDown}
+                    className={cn(
+                      "h-8 rounded-md px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring coarse:h-control",
+                      resourceType === tab.value
+                        ? "bg-ocean-teal text-white shadow-sm"
+                        : "text-text hover:bg-canvas",
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {rangeTooLong && (
@@ -267,15 +286,17 @@ export function CapacityClient({
         role="tabpanel"
         id="capacity-panel"
         aria-labelledby={`capacity-tab-${resourceType}`}
-        className="space-y-6"
+        className="space-y-section"
       >
         {!rangeBlocked && (
           <Card>
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-              <CardTitle className="text-base">
+              <SectionTitle
+                icon={resourceType === "yard" ? BarChart3 : Anchor}
+                info={<InfoTip label="utilization">Share of capacity expected to be in use each day. The chart and the table show the same numbers.</InfoTip>}
+              >
                 {resourceType === "yard" ? "Yard" : "Berth"} utilization
-                <InfoTip label="utilization">Share of capacity expected to be in use each day. The chart and the table show the same numbers.</InfoTip>
-              </CardTitle>
+              </SectionTitle>
               <ThresholdLegend thresholds={config.capacity_thresholds} />
             </CardHeader>
             <CardContent className="space-y-4">

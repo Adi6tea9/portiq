@@ -88,10 +88,34 @@ const PAGES: PageUnderTest[] = [
     ready: async (page) => waitForHeading(page, "Edit shipment"),
   },
   {
-    path: "/shipments/ship_001/prediction/pred_001",
+    path: "/predictions/ship_001/pred_001",
     name: "prediction result",
     role: "importer_exporter",
-    ready: async (page) => waitForHeading(page, "Prediction result"),
+    ready: async (page) => waitForHeading(page, "Prediction results"),
+  },
+  {
+    path: "/predictions",
+    name: "predictions",
+    role: "importer_exporter",
+    ready: async (page) => {
+      await waitForHeading(page, "Predictions");
+      await expect(page.getByRole("table")).toBeVisible();
+    },
+  },
+  {
+    path: "/predictions",
+    name: "predictions (operator)",
+    role: "port_operator",
+    ready: async (page) => {
+      await waitForHeading(page, "Predictions");
+      await expect(page.getByRole("table")).toBeVisible();
+    },
+  },
+  {
+    path: "/capacity",
+    name: "capacity (admin)",
+    role: "platform_admin",
+    ready: async (page) => waitForHeading(page, "Capacity forecast"),
   },
   {
     path: "/capacity",

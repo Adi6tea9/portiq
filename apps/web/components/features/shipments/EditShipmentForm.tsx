@@ -1,5 +1,8 @@
 "use client";
 
+import { PageHeader } from "@/components/shell/PageHeader";
+import { PencilLine } from "lucide-react";
+import { ShipmentFormAside } from "./ShipmentFormAside";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -198,17 +201,16 @@ export function EditShipmentForm({
   });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-harbor-navy">
-          Edit shipment
-        </h1>
-        <p className="text-sm text-muted mt-1">
-          Edit allowed before shipment arrives.
-        </p>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        icon={PencilLine}
+        title="Edit shipment"
+        badges={<span className="text-sm font-medium text-muted">{shipment.reference}</span>}
+        description="Edit allowed before shipment arrives."
+      />
 
-      <form onSubmit={onSubmit} noValidate>
+      <div className="grid gap-section xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)] xl:items-start">
+      <form onSubmit={onSubmit} noValidate className="min-w-0">
         <Card>
           <CardContent className="pt-6 space-y-4">
             {apiError && (
@@ -394,13 +396,15 @@ export function EditShipmentForm({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
+              <Button type="submit" loading={isSubmitting} className="flex-1">
                 {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
             </div>
           </CardContent>
         </Card>
       </form>
+      <ShipmentFormAside mode="edit" />
+      </div>
     </div>
   );
 }

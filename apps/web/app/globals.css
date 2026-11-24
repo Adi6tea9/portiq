@@ -42,6 +42,42 @@
     --input: 98 125 152;
     --ring: 13 148 136;
     --radius: 8px;
+
+    /* Layout and sizing tokens: one source for shell, cards, controls and tables.
+       Exposed to Tailwind as h-header, w-sidebar, px-gutter, p-card, h-control, etc. */
+    --sidebar-width: 240px;
+    --sidebar-width-collapsed: 72px;
+    --header-height: 64px;
+    --content-max: 1600px;
+    --page-gutter: 16px;
+    --page-gutter-y: 24px;
+    --section-gap: 24px;
+    --card-padding: 20px;
+    --radius-card: 12px;
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --control-height: 40px;
+    --control-height-sm: 36px;
+    --table-row-height: 48px;
+    --icon-sm: 16px;
+    --icon-md: 20px;
+    --icon-lg: 24px;
+    --text-page-title: 1.5rem;
+    --text-section-title: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --page-gutter: 24px;
+      --page-gutter-y: 32px;
+      --card-padding: 24px;
+      --text-page-title: 1.75rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    :root {
+      --page-gutter: 32px;
+    }
   }
 
   * {
@@ -50,6 +86,29 @@
 
   html {
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Touch: no double-tap delay on controls, and no zoom-on-focus for small inputs. */
+  button,
+  a,
+  [role="button"],
+  select {
+    touch-action: manipulation;
+  }
+
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 
   body {
@@ -64,6 +123,35 @@
 
   .tabular-nums {
     font-feature-settings: "tnum";
+  }
+}
+
+@layer components {
+  /* Non-theme fallbacks for the overhaul surfaces (the PortIQ theme refines them). */
+  .app-summary-strip {
+    background: rgb(var(--light-teal));
+  }
+  .app-summary-cell {
+    background: rgb(var(--surface) / 0.8);
+  }
+  .app-note-callout {
+    background: rgb(var(--light-teal));
+  }
+  .app-notes-card {
+    background: rgb(var(--warning) / 0.08);
+    border: 1px solid rgb(var(--warning) / 0.2);
+  }
+  .app-nav-badge {
+    background: rgb(var(--accent));
+    color: rgb(var(--accent-foreground));
+  }
+  .app-port-select {
+    background: rgb(var(--surface));
+    border-color: rgb(var(--input));
+  }
+  /* One row height for every data table (acts as a minimum; long cells still wrap). */
+  .app-table-grid tbody tr {
+    height: var(--table-row-height);
   }
 }
 

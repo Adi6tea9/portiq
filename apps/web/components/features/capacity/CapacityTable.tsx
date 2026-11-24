@@ -18,29 +18,29 @@ export function CapacityTable({ buckets, timezone }: CapacityTableProps) {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-auto">
+    <div className="relative w-full max-w-full overflow-x-auto rounded-lg border border-border">
       <table className="app-table-grid w-full text-sm">
         <caption className="sr-only">
           Daily capacity buckets as a text alternative to the chart.
         </caption>
-        <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-muted">
+        <thead className="bg-canvas text-left text-xs text-text">
           <tr>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               Start
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className="px-3 py-2 text-right font-semibold">
               Occupied
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className="px-3 py-2 text-right font-semibold">
               Capacity
             </th>
-            <th scope="col" className="px-3 py-2 text-right font-medium">
+            <th scope="col" className="px-3 py-2 text-right font-semibold">
               Utilization
             </th>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               Source
             </th>
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="px-3 py-2 font-semibold">
               Version
             </th>
           </tr>
@@ -48,7 +48,7 @@ export function CapacityTable({ buckets, timezone }: CapacityTableProps) {
         <tbody>
           {buckets.map((bucket) => (
             <tr key={bucket.bucket_start} className="border-t border-border">
-              <th scope="row" className="px-3 py-2 text-left font-normal">
+              <th scope="row" className="whitespace-nowrap px-3 py-2 text-left font-normal">
                 {formatDate(bucket.bucket_start, timezone)}
               </th>
               <td className="px-3 py-2 text-right tabular-nums">

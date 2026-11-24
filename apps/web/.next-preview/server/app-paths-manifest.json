@@ -1,0 +1,7 @@
+{
+  "/(app)/predictions/[shipmentId]/run/page": "app/(app)/predictions/[shipmentId]/run/page.js",
+  "/(app)/shipments/page": "app/(app)/shipments/page.js",
+  "/(app)/shipments/[id]/page": "app/(app)/shipments/[id]/page.js",
+  "/(app)/load-planner/page": "app/(app)/load-planner/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js"
+}

@@ -51,6 +51,10 @@
   --input: 122 134 129;
   --ring: 22 83 67;
   --radius: 10px;
+
+  /* Layout tokens (globals.css), retuned for the theme. */
+  --radius-card: var(--portiq-card-radius);
+  --shadow-card: var(--portiq-card-shadow);
 }
 
 /* Sidebar: flat deep green (as in the reference) with an optional bottom photo layer. */
@@ -58,7 +62,9 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   isolation: isolate;
   border-right: 0;
   color: #fff;
@@ -146,9 +152,7 @@
 
 /* Cards and badges. */
 [data-theme="portiq"] .app-card {
-  border-radius: var(--portiq-card-radius);
   border-color: rgb(var(--border));
-  box-shadow: var(--portiq-card-shadow);
 }
 
 [data-theme="portiq"] .app-badge {
@@ -276,9 +280,9 @@
 
 /* Tables: white panel, quiet sentence-case header, row hover. */
 [data-theme="portiq"] .app-table {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: rgb(var(--surface));
-  box-shadow: var(--portiq-card-shadow);
+  box-shadow: var(--shadow-card);
 }
 
 [data-theme="portiq"] .app-table-grid thead {
@@ -451,4 +455,67 @@
 
 [data-theme="portiq"] .app-planner-stage {
   background: radial-gradient(120% 90% at 50% 35%, #ffffff 0%, #f6f5f1 55%, #ecebe5 100%);
+}
+
+/* ---- Stage 3: UI overhaul (reference image.png) ---- */
+
+/* Sidebar active-port picker and the "AI" nav badge. */
+[data-theme="portiq"] .app-port-picker {
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-port-select {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+[data-theme="portiq"] .app-port-select option {
+  color: rgb(var(--text));
+  background: #fff;
+}
+
+[data-theme="portiq"] .app-nav-badge {
+  background: var(--portiq-lilac-soft);
+  color: #4b2f7a;
+}
+
+/* Page title icon. */
+[data-theme="portiq"] .app-page-icon {
+  background: var(--portiq-mint-soft);
+  color: rgb(var(--ocean-teal));
+}
+
+/* Prediction summary strip: soft sage band with white cells. */
+[data-theme="portiq"] .app-summary-strip {
+  background: linear-gradient(100deg, var(--portiq-mint-soft) 0%, #e8f3ec 55%, var(--portiq-mint-soft) 100%);
+  box-shadow: var(--portiq-card-shadow);
+}
+
+[data-theme="portiq"] .app-summary-cell {
+  background: rgba(255, 255, 255, 0.72);
+  /* Secondary text keeps 4.5:1 on the translucent white. */
+  --muted: 77 89 84;
+}
+
+/* Sage model note and peach "Important notes" card. */
+[data-theme="portiq"] .app-note-callout {
+  background: var(--portiq-mint-soft);
+  border: 1px solid rgba(22, 83, 67, 0.12);
+  --muted: 77 89 84;
+}
+
+[data-theme="portiq"] .app-notes-card {
+  background: var(--portiq-amber-soft);
+  border: 1px solid rgba(180, 101, 30, 0.18);
+  --muted: 92 80 64;
+}
+
+[data-theme="portiq"] .app-notes-card .text-warning,
+[data-theme="portiq"] .app-notes-card .bg-warning {
+  color: #9a5414;
+}
+
+[data-theme="portiq"] .app-notes-card .bg-warning {
+  background: #b4651e;
 }

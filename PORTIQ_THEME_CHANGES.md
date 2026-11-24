@@ -351,3 +351,249 @@ Modified:
   - page scrolling over the 3D view
   - the container picture on the dashboard and on the prediction result
 - Not checked: a real phone or tablet (only browser emulation), touch gestures on the 3D view, and slow networks.
+
+## UI/UX overhaul — Phase 2: design tokens (2026-11-24)
+
+Status: **done, waiting for Phase 3.** Presentation only; no data, API, route or ML logic touched.
+
+### Tokens (CSS variables in `apps/web/app/globals.css`, Tailwind names in `tailwind.config.ts`)
+
+| Token | Value | Tailwind |
+|---|---|---|
+| `--sidebar-width` / `--sidebar-width-collapsed` | 240px / 72px | `w-sidebar`, `w-sidebar-collapsed` |
+| `--header-height` | 64px | `h-header` |
+| `--content-max` | 1600px (was 1280px) | `max-w-content` |
+| `--page-gutter` | 16 / 24 / 32px (mobile / md / lg) | `px-gutter` |
+| `--page-gutter-y` | 24 / 32px | `py-gutter-y` |
+| `--section-gap` | 24px | `gap-section`, `space-y-section` |
+| `--card-padding` | 20 / 24px | `p-card` |
+| `--radius-card`, `--shadow-card` | 12px + Tailwind shadow; theme: 16px + soft shadow | `rounded-card`, `shadow-card` |
+| `--control-height` / `-sm` | 40px / 36px | `h-control`, `h-control-sm`, `size-control` |
+| `--table-row-height` | 48px (minimum, on every `.app-table-grid` row) | `h-row` |
+| `--icon-sm/md/lg` | 16 / 20 / 24px | `size-icon-sm` … |
+| `--text-page-title` / `--text-section-title` | 24→28px / 16px | `text-page-title`, `text-section-title` |
+
+### Applied to shared components
+
+- `ui/button.tsx`, `ui/input.tsx`, `shipments/SelectControl.tsx`, `ui/tabs.tsx`, Capacity date select and toggle:
+  one control height (inputs and selects were 36px beside 40px buttons), one radius.
+- `ui/card.tsx`: `rounded-card shadow-card p-card`; theme `.app-card` and `.app-table` now read the same tokens
+  (tables were 14px vs cards 16px).
+- `shell/AppShell.tsx`: sidebar, header, gutters and content width from tokens.
+- `shell/PageHeader.tsx`, `shared/SectionTitle.tsx`: type-scale tokens.
+
+### Verification
+
+- `npm run typecheck` passes; `npm run lint` clean; `npx vitest run` 30 files, 250 tests passed.
+- Browser (mock mode): `/shipments` at 1024px (controls 40px, header 64px, sidebar 240px, cards/tables 16px radius)
+  and 375px (16px gutter, 24px title, no horizontal overflow, no console errors).
+
+## UI/UX overhaul — Phase 3: navigation and responsive shell (2026-11-24)
+
+Status: **done, waiting for Phase 4.** No API, data or ML logic touched.
+
+### Routes
+
+| Route | Change |
+|---|---|
+| `/predictions/[shipmentId]/[predictionId]` | **New** home of Prediction Results. URL, sidebar (Predictions), breadcrumb (Predictions → Results) and back button now agree. |
+| `/shipments/[id]/prediction/[predictionId]` | Now only redirects to the new route, keeping query params (old bookmarks keep working). |
+| `/predictions` (middleware) | Added to `PROTECTED_PREFIXES`; it was missing, so live mode didn't server-check sign-in there. |
+
+All result links go through one helper, `predictionResultHref()` in `lib/navigation.ts`
+(dashboard, predictions list, shipment detail, Run prediction button).
+
+### Navigation
+
+- Sidebar order: Dashboard, Shipments, Capacity, Load planner, Predictions, Settings (operators: Operator overview,
+  Capacity, Load planner, Predictions, Settings). Predictions badge is **ML** (was AI); the results and predictions page pills too.
+- Results page: **Back to Predictions** (→ `/predictions`); the shipment reference in the subtitle links back to the shipment.
+- Top-bar back arrow on results goes to Predictions.
+
+### Responsive shell
+
+- 768–1023px: sidebar starts as the 72px icon rail (toggle still expands it); ≥1024px full; <768px drawer.
+- Mobile drawer now closes on any route change, including browser back/forward.
+
+### Verification
+
+- typecheck passes, lint clean, `npx vitest run` 30 files / 251 tests passed (one auth test timed out once under
+  load, passed alone and on the full rerun; auth untouched). Unit and e2e specs updated for the new route and nav.
+- Browser (isolated mock server, see below): every sidebar link → correct page, active item, breadcrumb, heading;
+  old results URL redirects with query kept; Run prediction from a shipment lands on `/predictions/…` with
+  Predictions active; tablet rail 72px ↔ 240px; mobile drawer navigates and closes; no horizontal overflow at 768/375.
+- Playwright e2e **not run**.
+
+### Dev note
+
+A second `next dev` in this folder shares `.next` and corrupts both servers. `.claude/launch.json` now has
+`portiq-web-mock-isolated` (port 3002, `NEXT_DIST_DIR=.next-preview`).
+
+## UI/UX overhaul — Phase 4: prediction workflow (2026-11-24)
+
+Status: **done, waiting for Phase 5.** No API contract, model, feature calculation or data changed.
+
+### Run → processing → result
+
+- **New route** `/predictions/[shipmentId]/run?key=<Idempotency-Key>` (`PredictionRunClient.tsx`).
+  - Run prediction button (shipment detail, dashboard, results page) now only acknowledges the click
+    (disabled, "Starting prediction") and opens this page with a fresh key. Double clicks navigate once.
+  - The page sends the POST once per key (a ref guard survives React's dev double-mount; checked: 1 POST),
+    shows a spinner, an honest message and the shipment reference, with Predictions active in the sidebar
+    and the breadcrumb Predictions → Run prediction.
+  - Success: `router.replace` to the result, so browser Back returns to where the run started.
+  - Failure: "Prediction not completed" card with the reason, request ID, **Retry prediction** (new key),
+    Back to shipment and Back to Predictions. 429/503/409/404 messages kept from the old button.
+  - The key lives in the URL, so a reload replays the same request instead of starting a second run.
+- **Removed the timed fake stages.** The old dialog advanced "Checking… Scoring… Saving…" every 1.2s
+  regardless of the request. The API returns in one call with no stages, so `PredictionProgress` is now an
+  indeterminate spinner with no steps or percentages.
+
+### Results page (`PredictionResultClient.tsx`)
+
+- Tabs that hid content replaced by **jump links** (Overview, Feature impact, What it means, Key insights):
+  a sticky bar under the header, every section on one page, current section highlighted while scrolling,
+  smooth scroll only when the user allows motion.
+- Header: "Completed" badge, subtitle "Dwell-time and cost estimation based on our machine learning model
+  for <shipment link>". Back to Predictions + Run new prediction.
+- **Full feature breakdown always shown** (the 5-row limit and "View all" toggle are gone).
+- Model attribution: "Prediction generated by PortIQ's machine learning model (<version>), trained in-house on
+  the <dataset> dataset: synthetic shipment data calibrated to published port dwell averages." The synthetic
+  clause only shows when `is_demo_data` is true. Per `ml/README.md` the model is an in-house scikit-learn
+  HistGradientBoosting model trained on **synthetic** data, so the page does not claim real historical data.
+- Chart: bars ordered by impact (same order as the table); long axis labels are shortened with "…", and the
+  tooltip and table still show them in full.
+- Not added: "vs. port average" from the reference. The API returns no port-average field.
+
+### Verification
+
+- typecheck passes, lint clean. `npx vitest run --no-file-parallelism`: 30 files, 253 tests passed.
+  The default parallel run times out one random untouched test at 5s (auth / operator / active-port across
+  runs); each passes alone. Pre-existing load flakiness, not fixed here.
+- Browser (mock, port 3002): shipment → run page → result; 1 POST; Back returns to the shipment;
+  `mock_run_error=503` shows the failure card, Retry sends a new key; jump links scroll and highlight;
+  375px: no page overflow, section bar scrolls sideways, table scrolls in its own container.
+- Playwright e2e specs updated, **not run**.
+
+## UI/UX overhaul — Phase 5: Dashboard, Shipments, Capacity, Load planner (2026-11-24)
+
+Status: **done, waiting for Phase 6.** Presentation only; filtering, sorting, creation, data and the 3D viewer
+logic are unchanged.
+
+### Shipments (`ShipmentsList.tsx`)
+- **Filter row aligned.** Root cause: `Field` puts a hint between label and input, so the two date fields
+  ("UTC day" hint) sat lower than the others. The UTC note moved into the label's info tip; all five controls
+  now share one top edge and 40px height. Grid: four equal columns plus an auto-width Clear filters button
+  (full width on phones). Reference field gets an example placeholder.
+- Table: fixed column widths (`table-fixed` + `colgroup`), tabular numbers for dates and dwell, and a
+  row **Open** action (chevron, labelled "Open SHIP-…").
+- Same UTC-tip fix on the operator overview filters.
+- `shared/Field.tsx`: label row has one minimum height with or without an info tip (lines up any field grid).
+
+### Dashboard (`DashboardClient.tsx`)
+- Cards regrouped into one two-column grid of matched pairs: Active shipments + Capacity snapshot,
+  Latest predicted dwell + Latest indicative cost, Upcoming arrivals + Latest milestone. The capacity card no
+  longer spans the full width half-empty. Every card, action and figure is kept.
+
+### Capacity (`CapacityClient.tsx`)
+- Yard/Berth switch moved into the controls row with a visible "Area" label, same 40px height as Port,
+  From and To. Tab semantics and keyboard arrows unchanged.
+
+### Load planner
+- Layout kept (300px control column, large 3D stage; stage first on phones). Only page spacing and the
+  stage's corner radius moved onto the tokens. Viewer size and interactions untouched.
+
+### Token sweep
+- Page-level `space-y-6` / `gap-5|6` → `space-y-section` / `gap-section`, and card-level `rounded-2xl` →
+  `rounded-card` (new/edit shipment, shipment detail, predictions list, results page panels, planner).
+  Inner boxes inside cards keep 12px corners on purpose (nested corners stay smaller than the card's).
+
+### Verification
+- typecheck passes, lint clean, `npx vitest run --no-file-parallelism`: 30 files, 253 tests passed.
+- Browser (mock, port 3002): Dashboard, Shipments, Capacity, Load planner at 1440, 1024, 768 and 375px:
+  no page-level horizontal scroll at any width (tables scroll inside their own container); Shipments filter
+  controls and Capacity controls measured on one row at 40px; capacity chart and legend inside the card at
+  375px; 3D container renders at 1440 and 375px.
+- Playwright e2e **not run**.
+
+## UI/UX overhaul — Phase 6: testing (2026-11-24)
+
+Status: **done.**
+
+### Results (all actually run, final state)
+
+| Check | Command (from `apps/web`) | Result |
+|---|---|---|
+| Type check | `npm run typecheck` | Pass |
+| Lint | `npm run lint` | No warnings or errors |
+| Unit tests | `npx vitest run --no-file-parallelism` | 30 files, **253 passed** |
+| Production build | `NEXT_PUBLIC_USE_MOCKS=true NEXT_DIST_DIR=.next-build npx next build` | Pass, 22 routes incl. `/predictions/[shipmentId]/[predictionId]` and `/predictions/[shipmentId]/run` |
+| E2E (Playwright, bundled Chromium, mock server) | `PLAYWRIGHT_PORT=3010 npx playwright test --workers=2` | **90 passed, 0 failed** |
+
+First e2e run: 62 passed, 11 failed. Fixed:
+
+| Failure | Cause | Fix |
+|---|---|---|
+| f04 ×3 (row link lookups) | Phase 5 "Open" row link: two links per row, and its name contained the reference | Removed the extra link. The reference link now covers the whole row (stretched link); the chevron is decorative |
+| a11y, f01, f02, f03 axe `label-content-name-mismatch` | Profile button named "Open profile menu" while showing initials. Pre-existing; surfaced under axe 4.14 / bundled Chromium | Name is now "<initials>, open profile menu" |
+| f05 full fixture, f02 | Content that used to sit in hidden tabs (Key insights, What it means) is now always visible, so loose text matchers found two elements | Matchers made exact |
+| f10 end-to-end | Waited for the old `/shipments/…/prediction/…` URL; then asserted text "Estimated dwell time: X days" that no longer exists in the code (stale before this work) | New URL; asserts the dwell value in the summary region |
+| f04 header | Looked for "Port: …" inside the h1's parent, but the shared PageHeader puts the subtitle beside it (stale before this work) | Scoped to the page header block |
+| f04 409 event | Picked the page's first `<select>`, the sidebar port picker behind the modal sheet (stale before this work) | Scoped to the dialog |
+
+### Unit test flakiness (pre-existing, not fixed)
+The default parallel `npx vitest run` times out one random test at 5s (auth, operator or active-port; a different
+one each run). Each passes alone, and the suite passes with `--no-file-parallelism`. None of these files were changed.
+
+### Housekeeping
+- `tsconfig.json` restored to its original `include` (Next.js had appended `.next-preview`, `.next-build` and
+  `.next-e2e` during these runs; it re-adds them automatically when needed). `.next-build`, `.next-e2e` and
+  `test-results` deleted.
+
+---
+
+## UI/UX overhaul — final summary (2026-11-24)
+
+### Improvements
+1. **Design tokens:** one set of CSS variables plus Tailwind names for layout, controls, cards, tables, icons and type
+   (Phase 2). Controls are 40px everywhere; cards and tables share one radius and shadow; gutters adapt to screen size.
+2. **Navigation:** sidebar order Dashboard, Shipments, Capacity, Load planner, Predictions (ML badge), Settings.
+   URL, active item, breadcrumb and back button agree on every page; tablets get an icon rail; the mobile drawer
+   closes on navigation.
+3. **Prediction workflow:** dedicated processing page with honest loading, failure and retry states; one request per
+   click (idempotency key in the URL); fake timed stages removed. The results page keeps every block, shows all
+   sections with jump links, shows the full feature table, and attributes the model accurately (in-house, synthetic data).
+4. **Pages:** Shipments filters aligned (shared `Field` fix), fixed-width table with whole-row click; Dashboard in
+   balanced pairs; Capacity controls on one row; Load planner spacing on tokens with the 3D viewer untouched.
+
+### Routes
+| Route | Status |
+|---|---|
+| `/predictions/[shipmentId]/[predictionId]` | New: Prediction Results |
+| `/predictions/[shipmentId]/run?key=…` | New: prediction processing / failure / retry |
+| `/shipments/[id]/prediction/[predictionId]` | Kept as a redirect to the new results URL (query kept) |
+| `/predictions` | Now also protected in `middleware.ts` (was missing) |
+
+### Files
+- **New:** `app/(app)/predictions/[shipmentId]/[predictionId]/page.tsx`, `app/(app)/predictions/[shipmentId]/run/page.tsx`,
+  `components/features/predictions/PredictionRunClient.tsx`.
+- **Rewritten:** `RunPredictionButton.tsx`, `PredictionProgress.tsx` (+ test), `app/(app)/shipments/[id]/prediction/[predictionId]/page.tsx` (redirect).
+- **Modified:** `app/globals.css`, `tailwind.config.ts`, `themes/portiq/theme.css`, `middleware.ts`, `lib/navigation.ts`;
+  `components/ui/{button,input,card,tabs}.tsx`; `components/shell/{AppShell,PageHeader}.tsx`;
+  `components/shared/{Field,SectionTitle}.tsx`; `features/predictions/{PredictionResultClient,PredictionsClient,ExplanationChart}.tsx`;
+  `features/shipments/{ShipmentsList,SelectControl,ShipmentDetailClient,NewShipmentForm,EditShipmentForm,ShipmentFormAside}.tsx`;
+  `features/dashboard/DashboardClient.tsx`; `features/capacity/CapacityClient.tsx`; `features/operator/OperatorClient.tsx`;
+  `features/load-planner/{LoadPlannerClient,ContainerViewport}.tsx`.
+- **Tests updated:** `lib/navigation.test.ts`, `lib/auth/route-access.test.ts`, `features/predictions/{prediction-result,predictions}.test.tsx`,
+  `tests/e2e/{a11y,f02,f04,f05,f10}.spec.ts`.
+- **Dev config:** `.claude/launch.json` (outside `portiq-main`): `portiq-web-mock-isolated` preview on port 3002 with its own build folder.
+- Not touched: backend, ML model and pipeline, API contracts, Supabase auth, database, env files.
+
+### Remaining limitations
+- No "vs. port average" comparison on the results page: the API returns no port-average figure.
+- Breadcrumbs say "Shipment", not the shipment reference (crumbs come from the URL, not data).
+- On tablets the active-port picker only shows when the sidebar is expanded.
+- In mock mode a newly run prediction disappears after a page reload (mock data lives in memory).
+- Default parallel unit run is flaky (see above); not caused or fixed here.
+- Checked in Chromium only (no Firefox or Safari), and only against mock data, not the live API and Supabase.
+- The project is not a git repository, so there is no diff or rollback for these changes.

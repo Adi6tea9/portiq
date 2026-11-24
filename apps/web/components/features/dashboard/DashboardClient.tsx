@@ -1,8 +1,23 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import { predictionResultHref } from "@/lib/navigation";
+import {
+  ArrowRight,
+  CalendarClock,
+  BarChart3,
+  Coins,
+  Database,
+  Flag,
+  Layers,
+  LayoutDashboard,
+  Package,
+  Plus,
+  Timer,
+} from "lucide-react";
+import { PageHeader } from "@/components/shell/PageHeader";
 import * as React from "react";
 import Link from "next/link";
-import { ArrowRight, BarChart3, Database, Layers, Timer } from "lucide-react";
 import { portiqThemeContent } from "@/themes/portiq/content";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -239,19 +254,20 @@ export function DashboardClient({
     ) ?? null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-harbor-navy">Dashboard</h1>
-          <p className="text-sm text-muted">
-            Plan your shipments with predictive insights, cost estimates and port capacity
-            context.
-          </p>
-        </div>
-        <Button asChild>
-          <Link href="/shipments/new">New shipment</Link>
-        </Button>
-      </div>
+    <div className="space-y-section">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        description="Plan your shipments with predictive insights, cost estimates and port capacity context."
+        actions={
+          <Button asChild>
+            <Link href="/shipments/new">
+              <Plus aria-hidden="true" />
+              New shipment
+            </Link>
+          </Button>
+        }
+      />
 
       <nav
         aria-label="Quick actions"
@@ -264,7 +280,7 @@ export function DashboardClient({
           {
             title: tiles.explain,
             href: latestShipment?.latest_prediction
-              ? `/shipments/${latestShipment.id}/prediction/${latestShipment.latest_prediction.prediction_id}`
+              ? predictionResultHref(latestShipment.id, latestShipment.latest_prediction.prediction_id)
               : "/shipments",
             icon: Layers,
             tone: "lilac",
@@ -287,51 +303,98 @@ export function DashboardClient({
         ))}
       </nav>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Active shipments <InfoTip label="Active shipments">How many of your shipments are submitted, arrived at port, or cleared customs.</InfoTip></CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CardState
-            query={summaryQuery}
-            title="Unable to load shipment counts"
-            empty={
-              summary && summary.total === 0 ? (
-                <div className="space-y-4">
-                  <PageState
-                    state="empty"
-                    title="No shipments yet."
-                    message="Create your first shipment to get an estimate."
-                  />
-                  <div className="text-center">
-                    <Button asChild variant="outline">
-                      <Link href="/shipments/new">Create shipment</Link>
-                    </Button>
-                  </div>
-                </div>
-              ) : undefined
-            }
-          >
-            {summary && (
-              <div className="grid gap-4 sm:grid-cols-3">
-                {(Object.keys(STATUS_LABELS) as ShipmentStatus[]).map((status) => (
-                  <Stat
-                    key={status}
-                    label={STATUS_LABELS[status]}
-                    value={String(summary.status_counts[status])}
-                    supportingText="Across your shipments"
-                  />
-                ))}
-              </div>
-            )}
-          </CardState>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-section lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Latest predicted dwell <InfoTip label="Latest predicted dwell">Dwell is the number of days a container waits at the port before it is cleared. This is the newest estimate across your shipments.</InfoTip></CardTitle>
+            <SectionTitle icon={Package}>Active shipments <InfoTip label="Active shipments">How many of your shipments are submitted, arrived at port, or cleared customs.</InfoTip></SectionTitle>
+          </CardHeader>
+          <CardContent>
+            <CardState
+              query={summaryQuery}
+              title="Unable to load shipment counts"
+              empty={
+                summary && summary.total === 0 ? (
+                  <div className="space-y-4">
+                    <PageState
+                      state="empty"
+                      title="No shipments yet."
+                      message="Create your first shipment to get an estimate."
+                    />
+                    <div className="text-center">
+                      <Button asChild variant="outline">
+                        <Link href="/shipments/new">Create shipment</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : undefined
+              }
+            >
+              {summary && (
+                <div className="grid gap-4 sm:grid-cols-3">
+                  {(Object.keys(STATUS_LABELS) as ShipmentStatus[]).map((status) => (
+                    <Stat
+                      key={status}
+                      label={STATUS_LABELS[status]}
+                      value={String(summary.status_counts[status])}
+                      supportingText="Across your shipments"
+                    />
+                  ))}
+                </div>
+              )}
+            </CardState>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
+            <SectionTitle icon={BarChart3}>Capacity snapshot <InfoTip label="Capacity snapshot">How full the port yard is expected to be soon. A busier yard usually means longer waits.</InfoTip></SectionTitle>
+            {bucket?.source_type === "synthetic" && <DemoBadge />}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <CardState
+              query={capacityState}
+              title="Unable to load the capacity snapshot"
+              empty={
+                !bucket ? (
+                  <PageState
+                    state="empty"
+                    title="No forecast is available for this range."
+                  />
+                ) : undefined
+              }
+            >
+              {bucket && config && (
+                <>
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="text-2xl font-semibold tabular-nums text-text">
+                      {formatPercent(bucket.utilization_pct)}
+                    </span>
+                    <span className="text-sm text-muted">
+                      (
+                      {thresholdLabel(bucket.utilization_pct, config.capacity_thresholds)}
+                      )
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted">
+                    Yard at {forecastPort?.name ?? "Selected port"} |{" "}
+                    {formatDate(bucket.bucket_start, forecastPort?.timezone ?? "UTC")}
+                  </p>
+                  {bucket.source_type === "synthetic" && (
+                    <p className="text-xs text-muted">
+                      Forecast based on synthetic demo data
+                    </p>
+                  )}
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/capacity">View capacity forecast</Link>
+                  </Button>
+                </>
+              )}
+            </CardState>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <SectionTitle icon={Timer}>Latest predicted dwell <InfoTip label="Latest predicted dwell">Dwell is the number of days a container waits at the port before it is cleared. This is the newest estimate across your shipments.</InfoTip></SectionTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <CardState
@@ -377,7 +440,7 @@ export function DashboardClient({
 
         <Card data-testid="latest-cost-card">
           <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="text-base">Latest indicative cost <InfoTip label="Latest indicative cost">Expected port charges for that same shipment, worked out from the predicted dwell and the current tariffs. A guide, not an invoice.</InfoTip></CardTitle>
+            <SectionTitle icon={Coins}>Latest indicative cost <InfoTip label="Latest indicative cost">Expected port charges for that same shipment, worked out from the predicted dwell and the current tariffs. A guide, not an invoice.</InfoTip></SectionTitle>
             {predictions?.provenance.is_demo_data && <DemoBadge />}
           </CardHeader>
           <CardContent className="space-y-4">
@@ -419,7 +482,7 @@ export function DashboardClient({
                   <p className="text-xs text-muted">{COST_NOTE}</p>
                   <Button asChild variant="outline" size="sm">
                     <Link
-                      href={`/shipments/${predictions.shipment_id}/prediction/${predictions.prediction_id}`}
+                      href={predictionResultHref(predictions.shipment_id, predictions.prediction_id)}
                     >
                       Open prediction
                     </Link>
@@ -432,10 +495,12 @@ export function DashboardClient({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
+            <SectionTitle
+              icon={CalendarClock}
+              info={<InfoTip label="Upcoming arrivals">Your shipments expected at port in the next {UPCOMING_DAYS} days.</InfoTip>}
+            >
               Upcoming arrivals (next {UPCOMING_DAYS} days)
-              <InfoTip label="Upcoming arrivals">Your shipments expected at port in the next {UPCOMING_DAYS} days.</InfoTip>
-            </CardTitle>
+            </SectionTitle>
           </CardHeader>
           <CardContent>
             <CardState
@@ -480,7 +545,7 @@ export function DashboardClient({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Latest milestone</CardTitle>
+            <SectionTitle icon={Flag}>Latest milestone</SectionTitle>
           </CardHeader>
           <CardContent>
             <CardState
@@ -527,53 +592,6 @@ export function DashboardClient({
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between gap-2">
-            <CardTitle className="text-base">Capacity snapshot <InfoTip label="Capacity snapshot">How full the port yard is expected to be soon. A busier yard usually means longer waits.</InfoTip></CardTitle>
-            {bucket?.source_type === "synthetic" && <DemoBadge />}
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <CardState
-              query={capacityState}
-              title="Unable to load the capacity snapshot"
-              empty={
-                !bucket ? (
-                  <PageState
-                    state="empty"
-                    title="No forecast is available for this range."
-                  />
-                ) : undefined
-              }
-            >
-              {bucket && config && (
-                <>
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-2xl font-semibold tabular-nums text-text">
-                      {formatPercent(bucket.utilization_pct)}
-                    </span>
-                    <span className="text-sm text-muted">
-                      (
-                      {thresholdLabel(bucket.utilization_pct, config.capacity_thresholds)}
-                      )
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted">
-                    Yard at {forecastPort?.name ?? "Selected port"} |{" "}
-                    {formatDate(bucket.bucket_start, forecastPort?.timezone ?? "UTC")}
-                  </p>
-                  {bucket.source_type === "synthetic" && (
-                    <p className="text-xs text-muted">
-                      Forecast based on synthetic demo data
-                    </p>
-                  )}
-                  <Button asChild variant="outline" size="sm">
-                    <Link href="/capacity">View capacity forecast</Link>
-                  </Button>
-                </>
-              )}
-            </CardState>
-          </CardContent>
-        </Card>
       </div>
 
       <p className="text-xs text-muted">

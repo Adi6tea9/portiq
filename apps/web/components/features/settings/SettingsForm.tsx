@@ -1,9 +1,11 @@
 "use client";
 
+import { SectionTitle } from "@/components/shared/SectionTitle";
+import { User } from "lucide-react";
 import * as React from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { Input } from "@/components/ui/input";
 import { Callout } from "@/components/shared/Callout";
@@ -83,7 +85,7 @@ export function SettingsForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Profile <InfoTip label="Profile">Your account details. Only the display name can be changed here.</InfoTip></CardTitle>
+        <SectionTitle icon={User}>Profile <InfoTip label="Profile">Your account details. Only the display name can be changed here.</InfoTip></SectionTitle>
       </CardHeader>
       <CardContent>
         <form noValidate className="space-y-6" onSubmit={onSubmit}>
@@ -137,7 +139,7 @@ export function SettingsForm() {
           {notice ? <Callout variant="info">{notice}</Callout> : null}
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={saving || unchanged}>
+            <Button type="submit" disabled={unchanged} loading={saving}>
               {saving ? "Saving…" : "Save display name"}
             </Button>
           </div>

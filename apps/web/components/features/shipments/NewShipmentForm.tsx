@@ -1,5 +1,8 @@
 "use client";
 
+import { PageHeader } from "@/components/shell/PageHeader";
+import { PackagePlus } from "lucide-react";
+import { ShipmentFormAside } from "./ShipmentFormAside";
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +16,7 @@ import { SHIPMENT_FIELD_INFO } from "@/lib/shipments/field-info";
 import { PageState } from "@/components/shared/PageState";
 import { ApiError } from "@/lib/api/client";
 import { usePorts } from "@/lib/api/hooks/usePorts";
+import { useActivePort } from "@/components/providers/ActivePortProvider";
 import { portWallTimeToUtc } from "@/lib/port-time";
 import { createShipment } from "@/lib/shipments/api";
 import { mapShipmentValidationDetails } from "@/lib/shipments/errors";
@@ -81,6 +85,8 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
     register,
     handleSubmit,
     watch,
+    setValue,
+    getValues,
     setError,
     clearErrors,
     formState: { errors, isSubmitting },
@@ -96,6 +102,16 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
   });
 
   const ports = portsQuery.data ?? [];
+  const activePort = useActivePort().portId;
+
+  // Prefill the sidebar's active port, but never replace a port the user already picked.
+  React.useEffect(() => {
+    const known = portsQuery.data?.some((port) => port.id === activePort);
+    if (activePort && known && !getValues("port_id")) {
+      setValue("port_id", activePort);
+    }
+  }, [activePort, portsQuery.data, getValues, setValue]);
+
   const selectedPort = ports.find((port) => port.id === watch("port_id"));
   const portOptions: SelectOption[] = ports.map((port) => ({
     value: port.id,
@@ -160,8 +176,14 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
   });
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold text-harbor-navy">New shipment</h1>
+    <div className="space-y-section">
+      <PageHeader
+        icon={PackagePlus}
+        title="New shipment"
+        description="Add a shipment once so PortIQ can predict its dwell time, estimate its charges and plan its container."
+      />
+      <div className="grid gap-section xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)] xl:items-start">
+      <div className="min-w-0 space-y-section">
 
       {portsQuery.isLoading ? <PageState state="loading" /> : null}
 
@@ -403,13 +425,16 @@ export function NewShipmentForm({ mockError }: NewShipmentFormProps) {
                 />
               </div>
 
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" loading={isSubmitting}>
                 {isSubmitting ? "Creating…" : "Create shipment"}
               </Button>
             </form>
           </CardContent>
         </Card>
       ) : null}
+      </div>
+      <ShipmentFormAside mode="create" />
+      </div>
     </div>
   );
 }

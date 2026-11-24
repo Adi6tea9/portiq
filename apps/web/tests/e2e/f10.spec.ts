@@ -114,12 +114,14 @@ test.describe("F10 - Landing, settings, accessibility and E2E flows", () => {
     await capture(page, "shipment-detail");
 
     await page.getByRole("button", { name: "Run prediction" }).click();
-    await page.waitForURL(/\/shipments\/ship_[a-z0-9]+\/prediction\/pred_/);
+    await page.waitForURL(/\/predictions\/ship_[a-z0-9]+\/pred_/);
     await expect(
       page.getByRole("heading", { name: "Prediction result" }),
     ).toBeVisible();
     await expect(
-      page.getByText(/^Estimated dwell time: \d+\.\d days$/),
+      page
+        .getByRole("region", { name: "Prediction summary" })
+        .getByText(/^\d+\.\d days$/),
     ).toBeVisible();
     // Chart summary plus a table alternative, not a picture-only result.
     await expect(

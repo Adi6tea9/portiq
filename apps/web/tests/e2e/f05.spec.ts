@@ -14,30 +14,36 @@ const FIXTURES = [
     shipmentId: "ship_001",
     predictionId: "pred_001",
     assert: async (page: Page) => {
-      await expect(
-        page.getByText("Estimated dwell time: 6.2 days"),
-      ).toBeVisible();
-      await expect(page.getByText("₹2,85,700.00")).toBeVisible();
-      await expect(page.getByText("Customs duty")).toBeVisible();
-      await expect(page.getByText("72%")).toBeVisible();
-      await expect(page.getByText("(Moderate utilization)")).toBeVisible();
+      const summary = page.getByRole("region", { name: "Prediction summary" });
+      await expect(summary.getByText("Estimated dwell time")).toBeVisible();
+      await expect(summary.getByText("6.2 days")).toBeVisible();
+      await expect(summary.getByText("₹2,85,700.00")).toBeVisible();
+      await expect(page.getByText("Customs duty", { exact: true })).toBeVisible();
+      await expect(page.getByText("72%", { exact: true })).toBeVisible();
+      await expect(page.getByText("(Moderate utilization)", { exact: true })).toBeVisible();
       await expect(
         page.getByRole("img", { name: /diverging bar chart/i }),
       ).toBeVisible();
       await expect(
         page.getByRole("columnheader", { name: "What it means" }),
       ).toBeVisible();
-      await expect(page.getByText("Base value: 5.0 days")).toBeVisible();
+      await expect(page.getByText("Base value: 5.0 days", { exact: true })).toBeVisible();
       await expect(
-        page.getByText("These are model effects, not proof of cause."),
+        page.getByText("These are model effects, not proof of cause.", { exact: true }),
       ).toBeVisible();
       await expect(
         page.getByText("Synthetic demo data").first(),
       ).toBeVisible();
       await expect(page.getByText(/Forecast generated at/)).toBeVisible();
       await expect(
-        page.getByRole("link", { name: "Back to shipment" }),
+        page.getByRole("link", { name: "Back to Predictions" }),
+      ).toHaveAttribute("href", "/predictions");
+      await expect(
+        page.getByRole("link", { name: "SHIP-2026-001" }),
       ).toHaveAttribute("href", "/shipments/ship_001");
+      await expect(
+        page.getByRole("navigation", { name: "Primary" }).getByRole("link", { name: /Predictions/ }),
+      ).toHaveAttribute("aria-current", "page");
     },
   },
   {
@@ -87,7 +93,7 @@ const FIXTURES = [
         ),
       ).toBeVisible();
       await expect(page.getByText(/%/)).toHaveCount(0);
-      await expect(page.getByText("(Moderate utilization)")).toHaveCount(0);
+      await expect(page.getByText("(Moderate utilization)", { exact: true })).toHaveCount(0);
     },
   },
   {
@@ -112,11 +118,11 @@ test.describe("F05 - Run prediction and result page", () => {
   for (const fixture of FIXTURES) {
     test(`prediction fixture: ${fixture.name}`, async ({ page }) => {
       await page.goto(
-        `/shipments/${fixture.shipmentId}/prediction/${fixture.predictionId}`,
+        `/predictions/${fixture.shipmentId}/${fixture.predictionId}`,
       );
 
       await expect(
-        page.getByRole("heading", { name: "Prediction result" }),
+        page.getByRole("heading", { name: "Prediction results" }),
       ).toBeVisible();
 
       await fixture.assert(page);
@@ -146,13 +152,19 @@ test.describe("F05 - Run prediction and result page", () => {
     const runButton = page.getByRole("button", { name: "Run prediction" });
     await expect(runButton).toBeEnabled();
     await runButton.click();
-
-    await page.waitForURL(/\/shipments\/ship_006\/prediction\/pred_/);
+    await page.waitForURL(/\/predictions\/ship_006\/run\?key=/);
     await expect(
-      page.getByRole("heading", { name: "Prediction result" }),
+      page.getByRole("heading", { name: "Running prediction" }),
+    ).toBeVisible();
+
+    await page.waitForURL(/\/predictions\/ship_006\/pred_/);
+    await expect(
+      page.getByRole("heading", { name: "Prediction results" }),
     ).toBeVisible();
     await expect(
-      page.getByText(/^Estimated dwell time: \d+\.\d days$/),
+      page
+        .getByRole("region", { name: "Prediction summary" })
+        .getByText(/^\d+\.\d days$/),
     ).toBeVisible();
     await expect(
       page.getByText(/PortIQ provides planning estimates/).last(),
@@ -177,7 +189,7 @@ test.describe("F05 - Run prediction and result page", () => {
         "The prediction service is unavailable. Try again later.",
       ),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Retry" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Retry prediction" })).toBeVisible();
 
     await page.screenshot({
       path: "test-results/f05-run-503.png",
