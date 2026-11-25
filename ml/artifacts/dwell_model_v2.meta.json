@@ -1,0 +1,36 @@
+{
+  "version": "v2",
+  "serve": "model",
+  "features": [
+    "port_code",
+    "direction",
+    "cargo_type",
+    "container_size_ft",
+    "hs_chapter",
+    "weight_kg",
+    "shipping_line",
+    "vessel_size_band",
+    "documentation_status",
+    "forecast_capacity_utilization_pct",
+    "customs_channel",
+    "importer_type",
+    "is_holiday",
+    "exam_queue_len",
+    "cargo_priority",
+    "arrival_day_of_week",
+    "arrival_month"
+  ],
+  "chosen_config": {
+    "kind": "hgb",
+    "log": true,
+    "params": {
+      "learning_rate": 0.05,
+      "max_leaf_nodes": 15,
+      "max_iter": 300,
+      "l2_regularization": 1.0
+    }
+  },
+  "interval_margin_days": 0.07510641624128735,
+  "train_rows": 7000,
+  "note": "Trained on synthetic data calibrated to published Indian port dwell averages. Not real-world accuracy."
+}
