@@ -11,6 +11,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
+from collections.abc import Iterable
 
 DEFAULT_DATABASE_URL = "postgresql+psycopg://portiq:portiq@localhost:5432/portiq"
 DEFAULT_ALLOWED_ORIGINS = ["https://portiq-jyb1.vercel.app","http://localhost:3000"]
@@ -57,12 +58,14 @@ class Settings:
     prediction_timeout_seconds: float
 
 
-def parse_origins(raw: str) -> tuple[str, ...]:
-    """Parse comma-separated ALLOWED_ORIGINS (CONTRACT-GAP: CG-005)."""
-    origins = tuple(origin.strip() for origin in raw.split(",") if origin.strip())
-    if "*" in origins:
-        raise RuntimeError("ALLOWED_ORIGINS must not contain '*': credentials are allowed")
-    return origins
+def parse_origins(raw: str | Iterable[str] | None) -> tuple[str, ...]:
+    if raw is None:
+        return ()
+    if isinstance(raw, str):
+        items = raw.split(",")
+    else:
+        items = raw
+    return tuple(origin.strip() for origin in items if isinstance(origin, str) and origin.strip())
 
 
 def load_env_file(path: Path = ENV_FILE) -> None:
