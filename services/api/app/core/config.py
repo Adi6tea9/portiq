@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Final, Literal
 
 DEFAULT_DATABASE_URL = "postgresql+psycopg://portiq:portiq@localhost:5432/portiq"
-DEFAULT_ALLOWED_ORIGINS = "http://localhost:3000"
+DEFAULT_ALLOWED_ORIGINS = ["https://portiq-jyb1.vercel.app","http://localhost:3000"]
 
 # CONTRACT-GAP: CG-017 - section 18 says "put the server values into the API .env",
 # but section 3 defines environment variables only.
