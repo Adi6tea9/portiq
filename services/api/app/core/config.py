@@ -7,11 +7,10 @@ local-development default. No other environment variable is read.
 from __future__ import annotations
 
 import os
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Literal
-from collections.abc import Iterable
 
 DEFAULT_DATABASE_URL = "postgresql+psycopg://portiq:portiq@localhost:5432/portiq"
 DEFAULT_ALLOWED_ORIGINS = ["https://portiq-jyb1.vercel.app","http://localhost:3000"]
@@ -134,6 +133,8 @@ def load_settings(source: Mapping[str, str] | None = None) -> Settings:
         raise RuntimeError(f"LOG_LEVEL must be one of {sorted(_LOG_LEVELS)}, got {log_level!r}")
 
     database_url = env.get("DATABASE_URL", "").strip() or DEFAULT_DATABASE_URL
+    if database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
     if app_env in _URL_REQUIRED_ENVIRONMENTS and not env.get("DATABASE_URL", "").strip():
         raise RuntimeError("DATABASE_URL is required when APP_ENV is staging or production")
 

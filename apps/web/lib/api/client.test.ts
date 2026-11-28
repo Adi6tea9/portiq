@@ -68,6 +68,11 @@ describe("apiClient", () => {
     );
   });
 
+  it("accepts a Render service URL without the API path", () => {
+    process.env.NEXT_PUBLIC_API_BASE_URL = "https://portiq-api.onrender.com/";
+    expect(getApiBaseUrl()).toBe("https://portiq-api.onrender.com/api/v1");
+  });
+
   it("attaches a bearer token when a session exists", async () => {
     getAccessTokenMock.mockResolvedValue("access-token");
     fetchMock.mockResolvedValue(jsonResponse(envelope({ ok: true })));
