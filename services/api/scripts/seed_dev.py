@@ -468,7 +468,7 @@ def _seat_users(session: Session, ports: dict[str, Port]) -> dict[str, Profile]:
     return profiles
 
 
-def _seat_tariffs(session: Session, admin_id: UUID) -> None:
+def _seat_tariffs(session: Session, admin_id: UUID | None) -> None:
     for rule in TARIFFS:
         rule_id = _seed_id(_tariff_label(rule))
         if tariffs_repo.get_by_id(session, rule_id) is not None:

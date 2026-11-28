@@ -23,7 +23,8 @@ export interface ApiRequestInit extends RequestInit {
 
 export function getApiBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_BASE_URL;
-  return configured.replace(/\/+$/, "");
+  const base = configured.replace(/\/+$/, "");
+  return base.endsWith("/api/v1") ? base : `${base}/api/v1`;
 }
 
 export function buildLoginRedirectUrl(returnTo: string): string {

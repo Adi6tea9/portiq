@@ -21,7 +21,9 @@ services:
 
   # The FastAPI container
   api:
-    build: .
+    build:
+      context: ../..
+      dockerfile: services/api/Dockerfile
     restart: always
     ports:
       - "8000:8000"

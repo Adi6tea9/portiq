@@ -71,6 +71,11 @@ def test_database_url_is_required_outside_local() -> None:
         )
 
 
+def test_render_postgres_url_uses_psycopg_driver() -> None:
+    settings = load_settings({"DATABASE_URL": "postgresql://u:p@db:5432/portiq"})
+    assert settings.database_url == "postgresql+psycopg://u:p@db:5432/portiq"
+
+
 def test_supabase_settings_are_derived_from_the_project_url() -> None:
     settings = load_settings(
         {"AUTH_MODE": "supabase", "SUPABASE_URL": "https://project.supabase.co/"}

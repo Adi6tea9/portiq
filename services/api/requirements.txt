@@ -12,8 +12,8 @@ pytest-cov==7.1.0
 ruff==0.17.4
 SQLAlchemy==2.1.8
 uvicorn==0.54.0
-joblib==    1.6.0
-numpy==  2.5.4
-pandas==   3.1.0
-scikit-learn==   1.9.1
-shap==    0.54.1
+joblib==1.6.0
+numpy==2.5.4
+pandas==3.1.0
+scikit-learn==1.9.1
+shap==0.54.1

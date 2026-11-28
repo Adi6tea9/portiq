@@ -57,7 +57,7 @@ The first E2E run needs Chromium:
 npx playwright install chromium
 ```
 
-Node 26 prints a `localStorage` warning unless a storage file is supplied. `.npmrc` sets `node-options=--localstorage-file=.localstorage`, and the ignored `.localstorage` file is created on first use.
+Node 26 may print a `localStorage` warning during local development. The app runs normally; do not set `--localstorage-file` in `.npmrc` because Render uses Node 20.
 
 ## Routes
 
