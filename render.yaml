@@ -36,6 +36,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20.19.0
+      - key: NODE_OPTIONS
+        value: ""
       - key: NEXT_PUBLIC_USE_MOCKS
         value: "false"
       - key: NEXT_PUBLIC_API_BASE_URL
