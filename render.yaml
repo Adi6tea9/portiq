@@ -31,13 +31,11 @@ services:
     plan: free
     region: ohio
     rootDir: apps/web
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start -- -H 0.0.0.0 -p $PORT
+    buildCommand: env -u NODE_OPTIONS npm ci && env -u NODE_OPTIONS npm run build
+    startCommand: env -u NODE_OPTIONS npm run start -- -H 0.0.0.0 -p $PORT
     envVars:
       - key: NODE_VERSION
         value: 20.19.0
-      - key: NODE_OPTIONS
-        value: ""
       - key: NEXT_PUBLIC_USE_MOCKS
         value: "false"
       - key: NEXT_PUBLIC_API_BASE_URL
