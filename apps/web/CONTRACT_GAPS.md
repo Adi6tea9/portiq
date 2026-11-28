@@ -52,9 +52,9 @@ Fixtures derive a few display values (utilization percent, actual dwell days, ev
 
 ## GAP-009: Node 26 localStorage warning
 
-**Location:** `apps/web/.npmrc`
+**Location:** `apps/web/README.md`
 
-Node 26 warns when the experimental global `localStorage` is accessed without `--localstorage-file`. `.npmrc` supplies the ignored `.localstorage` file so dev, build, and test commands run without that warning. Browser code still uses `window.localStorage` with an in-memory fallback.
+Node 26 may warn when experimental global `localStorage` is accessed without `--localstorage-file`. Browser code uses `window.localStorage` with an in-memory fallback. The flag is not set project-wide because it prevents the Node 20 build on Render.
 
 ## GAP-010: Mock auth adapter
 
